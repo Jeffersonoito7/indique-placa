@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIndicadorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { notificarNovoLead, notificarNovaIndicacao } from "@/lib/whatsapp";
 import { z } from "zod";
 
 const schema = z.object({
@@ -33,6 +34,29 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) return NextResponse.json({ error: "Erro ao salvar indicacao" }, { status: 500 });
+
+  // Notificacoes WhatsApp em background (nao bloqueia resposta)
+  const { data: consultor } = await supabaseAdmin
+    .from("consultores")
+    .select("nome, telefone")
+    .eq("id", indicador.consultor_id)
+    .single();
+
+  if (consultor) {
+    notificarNovoLead({
+      nomeConsultor: consultor.nome,
+      telefoneConsultor: consultor.telefone,
+      nomeLead: nome_lead,
+      telefoneLead: tel,
+      viaIndicador: indicador.nome,
+    }).catch(() => {});
+  }
+
+  notificarNovaIndicacao({
+    nomeIndicador: indicador.nome,
+    telefoneIndicador: indicador.telefone,
+    nomeLead: nome_lead,
+  }).catch(() => {});
 
   return NextResponse.json({ ok: true });
 }

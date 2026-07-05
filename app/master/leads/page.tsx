@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClipboardList, Flame, CheckCircle2, XCircle, PhoneCall } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { StatusLead } from "@/components/status-lead";
 
 async function getLeads() {
   const { data, count } = await supabaseAdmin
@@ -90,9 +91,7 @@ export default async function LeadsPage() {
                       <td className="px-6 py-3.5 text-sm text-muted-foreground font-mono">{lead.telefone_lead}</td>
                       <td className="px-6 py-3.5 text-sm text-muted-foreground">{(lead.consultores as any)?.nome ?? "-"}</td>
                       <td className="px-6 py-3.5">
-                        <span className={cn("text-[11px] font-semibold px-2.5 py-1 rounded-full", statusStyle[lead.status] ?? "bg-muted text-muted-foreground")}>
-                          {lead.status}
-                        </span>
+                        <StatusLead leadId={lead.id} statusInicial={lead.status as any} endpoint="/api/master/lead" />
                       </td>
                       <td className="px-6 py-3.5 text-xs text-muted-foreground">
                         {new Date(lead.criado_em).toLocaleDateString("pt-BR")}

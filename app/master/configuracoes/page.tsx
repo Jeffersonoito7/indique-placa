@@ -1,88 +1,132 @@
-export const dynamic = "force-dynamic";
-import { supabaseAdmin } from "@/lib/supabase-server";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Globe, Phone, Mail, MapPin, Building2, AlertCircle } from "lucide-react";
+import { Settings, Globe, Phone, Mail, MapPin, Building2, Save, CheckCircle2 } from "lucide-react";
 
-async function getConfig() {
-  try {
-    const { data, error } = await supabaseAdmin
-      .from("configuracoes")
-      .select("*")
-      .limit(1)
-      .single();
-    if (error) return null;
-    return data;
-  } catch {
-    return null;
-  }
-}
+type Config = {
+  nome_plataforma: string;
+  site?: string | null;
+  email?: string | null;
+  telefone?: string | null;
+  endereco?: string | null;
+};
 
-function Campo({ label, valor, icon: Icon }: { label: string; valor?: string | null; icon: React.ElementType }) {
-  return (
-    <div className="flex items-start gap-3 py-4 border-b border-border last:border-0">
-      <div className="w-8 h-8 rounded-lg bg-muted flex items-center justify-center flex-shrink-0 mt-0.5">
-        <Icon className="h-4 w-4 text-muted-foreground" />
-      </div>
-      <div className="flex-1 min-w-0">
-        <div className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-0.5">{label}</div>
-        <div className="text-sm text-foreground font-medium">
-          {valor ? valor : <span className="text-muted-foreground/50 italic text-xs">nao configurado</span>}
-        </div>
-      </div>
+const VAZIO: Config = { nome_plataforma: "", site: "", email: "", telefone: "", endereco: "" };
+
+export default function ConfiguracoesPage() {
+  const [form, setForm] = useState<Config>(VAZIO);
+  const [carregando, setCarregando] = useState(true);
+  const [salvando, setSalvando] = useState(false);
+  const [sucesso, setSucesso] = useState(false);
+  const [erro, setErro] = useState("");
+
+  useEffect(() => {
+    fetch("/api/master/configuracoes")
+      .then((r) => r.json())
+      .then(({ config }) => {
+        if (config) setForm({
+          nome_plataforma: config.nome_plataforma ?? "",
+          site: config.site ?? "",
+          email: config.email ?? "",
+          telefone: config.telefone ?? "",
+          endereco: config.endereco ?? "",
+        });
+      })
+      .finally(() => setCarregando(false));
+  }, []);
+
+  const salvar = async () => {
+    setSalvando(true);
+    setErro("");
+    setSucesso(false);
+    try {
+      const r = await fetch("/api/master/configuracoes", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(form),
+      });
+      const json = await r.json();
+      if (!r.ok) { setErro(json.error ?? "Erro ao salvar"); return; }
+      setSucesso(true);
+      setTimeout(() => setSucesso(false), 3000);
+    } finally {
+      setSalvando(false);
+    }
+  };
+
+  const campo = (
+    label: string,
+    field: keyof Config,
+    Icon: React.ElementType,
+    placeholder: string,
+    type = "text"
+  ) => (
+    <div>
+      <label className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+        <Icon className="h-3.5 w-3.5" />
+        {label}
+      </label>
+      <input
+        type={type}
+        value={form[field] ?? ""}
+        onChange={(e) => setForm((f) => ({ ...f, [field]: e.target.value }))}
+        placeholder={placeholder}
+        className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+      />
     </div>
   );
-}
-
-export default async function ConfiguracoesPage() {
-  const config = await getConfig();
 
   return (
     <div className="flex-1 flex flex-col">
-      <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Configuracoes</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Dados e parametros da plataforma</p>
+      <div className="px-8 py-5 border-b border-border flex items-center justify-between">
+        <div>
+          <h1 className="text-base font-bold text-foreground">Configuracoes</h1>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Dados e parametros da plataforma</p>
+        </div>
+        <button
+          onClick={salvar}
+          disabled={salvando || carregando}
+          className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors disabled:opacity-50"
+        >
+          {sucesso ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
+          {salvando ? "Salvando..." : sucesso ? "Salvo!" : "Salvar alteracoes"}
+        </button>
       </div>
 
       <div className="flex-1 p-8 bg-muted/30">
-        {!config ? (
-          <Card className="border-amber-500/30 bg-amber-500/5">
-            <CardContent className="p-6 flex items-start gap-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                <AlertCircle className="h-5 w-5 text-amber-500" />
-              </div>
-              <div>
-                <div className="text-sm font-bold text-amber-600 dark:text-amber-400 mb-1">Configuracoes nao encontradas</div>
-                <p className="text-xs text-muted-foreground">
-                  A tabela <code className="bg-muted px-1 rounded text-[11px]">configuracoes</code> ainda nao possui registros.
-                  Insira os dados diretamente no Supabase ou aguarde a tela de edicao.
-                </p>
-              </div>
-            </CardContent>
-          </Card>
+        {carregando ? (
+          <div className="text-sm text-muted-foreground">Carregando...</div>
         ) : (
-          <div className="max-w-2xl space-y-5">
-            <Card className="border-t-4 border-t-blue-500 shadow-sm">
-              <CardHeader className="pb-2">
+          <div className="max-w-xl space-y-5">
+            {erro && (
+              <div className="p-3 rounded-lg bg-red-500/10 border border-red-500/20 text-xs text-red-500">{erro}</div>
+            )}
+
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3 border-b border-border">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <Settings className="h-4 w-4 text-blue-500" />
-                  Dados da Plataforma
+                  <Settings className="h-4 w-4 text-muted-foreground" />
+                  Identidade da Plataforma
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-0">
-                <Campo label="Nome da plataforma" valor={config.nome_plataforma} icon={Building2} />
-                <Campo label="Site" valor={config.site} icon={Globe} />
-                <Campo label="Email de contato" valor={config.email} icon={Mail} />
-                <Campo label="Telefone" valor={config.telefone} icon={Phone} />
-                <Campo label="Endereco" valor={config.endereco} icon={MapPin} />
+              <CardContent className="p-6 space-y-5">
+                {campo("Nome da plataforma", "nome_plataforma", Building2, "Ex: Indique Placa")}
+                {campo("Site oficial", "site", Globe, "Ex: https://indiqueplaca.com.br", "url")}
               </CardContent>
             </Card>
 
-            <Card className="border-amber-500/20 bg-amber-500/5">
-              <CardContent className="p-4 flex items-center gap-3">
-                <AlertCircle className="h-4 w-4 text-amber-500 flex-shrink-0" />
-                <p className="text-xs text-muted-foreground">
-                  Edicao de configuracoes disponivel em breve. Por enquanto, edite diretamente no painel do Supabase.
-                </p>
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <Phone className="h-4 w-4 text-muted-foreground" />
+                  Contato
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-5">
+                {campo("E-mail de contato", "email", Mail, "Ex: contato@indiqueplaca.com.br", "email")}
+                {campo("WhatsApp / Telefone", "telefone", Phone, "Ex: 5511999999999")}
+                {campo("Endereco", "endereco", MapPin, "Ex: Rua das Flores, 100 - Sao Paulo/SP")}
               </CardContent>
             </Card>
           </div>
