@@ -84,34 +84,26 @@ export default function AppShell({
           }}
         >
           {!collapsed && (
-            <div className="flex items-center gap-3 flex-1 min-w-0">
+            <div className="flex flex-col gap-2 flex-1 min-w-0 py-1">
               <img
-                src="/logo-indique.png"
-                alt="Logo"
-                style={{ width: 36, height: 36, objectFit: "contain", flexShrink: 0 }}
+                src="/logo-indique-placa.png"
+                alt="Indique Placa"
+                style={{ width: "100%", maxWidth: 176, height: "auto", objectFit: "contain" }}
               />
-              <div className="min-w-0">
-                <div
-                  className="text-sm font-extrabold text-white tracking-wide leading-none"
-                  style={{ letterSpacing: "0.04em" }}
-                >
-                  INDIQUE PLACA
-                </div>
-                <span
-                  className={cn("mt-1.5 inline-block text-[9px] font-bold px-2 py-0.5 rounded", badgeClass)}
-                  style={{ letterSpacing: "0.1em" }}
-                >
-                  {badgeLabel}
-                </span>
-              </div>
+              <span
+                className={cn("inline-block text-[9px] font-bold px-2 py-0.5 rounded w-fit", badgeClass)}
+                style={{ letterSpacing: "0.1em" }}
+              >
+                {badgeLabel}
+              </span>
             </div>
           )}
           {collapsed && (
             <div className="flex-1 flex justify-center">
               <img
-                src="/logo-indique.png"
-                alt="Logo"
-                style={{ width: 30, height: 30, objectFit: "contain" }}
+                src="/logo-indique-placa.png"
+                alt="Indique Placa"
+                style={{ width: 36, height: 36, objectFit: "contain" }}
               />
             </div>
           )}
