@@ -12,6 +12,13 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Indique Placa" },
   themeColor: "#0a2a4a",
+  icons: {
+    icon: [
+      { url: "/favicon-indique.png", type: "image/png" },
+    ],
+    apple: "/favicon-indique.png",
+    shortcut: "/favicon-indique.png",
+  },
 };
 
 export default function RootLayout({
