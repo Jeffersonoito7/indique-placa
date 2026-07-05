@@ -6,8 +6,8 @@ import { z } from "zod";
 const schema = z.object({
   nome: z.string().min(2).max(100),
   telefone: z.string().min(10).max(20),
-  email: z.string().email().optional().nullable(),
-  senha: z.string().min(6).max(100),
+  cidade: z.string().min(2).max(100),
+  associacao: z.string().min(2).max(100),
 });
 
 export async function POST(req: NextRequest) {
@@ -25,10 +25,10 @@ export async function POST(req: NextRequest) {
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+    return NextResponse.json({ error: "Preencha todos os campos corretamente" }, { status: 400 });
   }
 
-  const { nome, telefone, email, senha } = parsed.data;
+  const { nome, telefone, cidade, associacao } = parsed.data;
   const tel = telefone.replace(/\D/g, "");
 
   const { data: existente } = await supabaseAdmin
@@ -38,23 +38,27 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (existente) {
-    return NextResponse.json({ error: "Telefone ja cadastrado" }, { status: 409 });
+    return NextResponse.json({ error: "Este WhatsApp ja esta cadastrado" }, { status: 409 });
   }
 
+  // Senha temporaria = ultimos 6 digitos do telefone
+  const senhaTemp = tel.slice(-6);
   const { default: bcrypt } = await import("bcryptjs");
-  const senha_hash = await bcrypt.hash(senha, 10);
+  const senha_hash = await bcrypt.hash(senhaTemp, 10);
 
   const { error } = await supabaseAdmin.from("consultores").insert({
     nome,
     telefone: tel,
-    email: email ?? null,
+    cidade,
+    associacao,
     senha: senha_hash,
     status: "ativo",
   });
 
   if (error) {
-    return NextResponse.json({ error: "Erro ao cadastrar" }, { status: 500 });
+    console.error("Erro ao cadastrar consultor:", error);
+    return NextResponse.json({ error: "Erro ao salvar cadastro. Tente novamente." }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, senhaTemp });
 }
