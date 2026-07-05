@@ -20,7 +20,7 @@ const navItems = [
 
 export default function ConsultorLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname === "/consultor/login") return <>{children}</>;
+  if (pathname === "/consultor/login" || pathname === "/consultor/cadastro") return <>{children}</>;
 
   return (
     <AppShell

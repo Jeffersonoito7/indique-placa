@@ -16,7 +16,7 @@ const navItems = [
 
 export default function IndicadorLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname === "/indicador/login") return <>{children}</>;
+  if (pathname === "/indicador/login" || pathname === "/indicador/cadastro") return <>{children}</>;
 
   return (
     <AppShell
