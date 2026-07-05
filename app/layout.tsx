@@ -13,11 +13,9 @@ export const metadata: Metadata = {
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Indique Placa" },
   themeColor: "#0a2a4a",
   icons: {
-    icon: [
-      { url: "/favicon-indique.png", type: "image/png" },
-    ],
+    icon: "/favicon.ico",
     apple: "/favicon-indique.png",
-    shortcut: "/favicon-indique.png",
+    shortcut: "/favicon.ico",
   },
 };
 
