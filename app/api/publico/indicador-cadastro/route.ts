@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 
 const schema = z.object({
   nome: z.string().min(2).max(100),
@@ -51,7 +52,6 @@ export async function POST(req: NextRequest) {
     if (!data || data.status !== "ativo") cid = null;
   }
 
-  const { default: bcrypt } = await import("bcryptjs");
   const senha_hash = await bcrypt.hash(senha, 10);
 
   const { error } = await supabaseAdmin.from("indicadores").insert({

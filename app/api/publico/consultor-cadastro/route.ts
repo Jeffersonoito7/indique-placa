@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 
 const schema = z.object({
   nome: z.string().min(2).max(100),
@@ -43,7 +44,6 @@ export async function POST(req: NextRequest) {
 
   // Senha temporaria = ultimos 6 digitos do telefone
   const senhaTemp = tel.slice(-6);
-  const { default: bcrypt } = await import("bcryptjs");
   const senha_hash = await bcrypt.hash(senhaTemp, 10);
 
   const { error } = await supabaseAdmin.from("consultores").insert({
