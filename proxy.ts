@@ -52,12 +52,14 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  if (pathname.startsWith("/consultor") && pathname !== "/consultor/login") {
+  const ROTAS_PUBLICAS_CONSULTOR = ["/consultor/login", "/consultor/cadastro"];
+  if (pathname.startsWith("/consultor") && !ROTAS_PUBLICAS_CONSULTOR.includes(pathname)) {
     const auth = req.cookies.get("consultor_auth")?.value;
     if (!auth) return NextResponse.redirect(new URL("/consultor/login", req.url));
   }
 
-  if (pathname.startsWith("/indicador") && pathname !== "/indicador/login") {
+  const ROTAS_PUBLICAS_INDICADOR = ["/indicador/login", "/indicador/cadastro"];
+  if (pathname.startsWith("/indicador") && !ROTAS_PUBLICAS_INDICADOR.includes(pathname)) {
     const auth = req.cookies.get("indicador_auth")?.value;
     if (!auth) return NextResponse.redirect(new URL("/indicador/login", req.url));
   }
