@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { StatusLead } from "@/components/status-lead";
+import { AbrirWhatsApp } from "@/components/abrir-whatsapp";
 
 export default async function ConsultorLeadsPage() {
   const consultor = await getConsultorLogado();
@@ -33,7 +34,6 @@ export default async function ConsultorLeadsPage() {
         <p className="text-[11px] text-muted-foreground mt-0.5">Todas as indicacoes recebidas</p>
       </div>
       <div className="flex-1 p-8 bg-muted/30">
-        {/* Resumo por status */}
         <div className="flex gap-3 mb-6">
           {Object.entries(contagem).map(([status, qtd]) => (
             <div key={status} className={cn("px-3 py-1.5 rounded-full text-xs font-semibold", statusStyle[status])}>
@@ -53,7 +53,7 @@ export default async function ConsultorLeadsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Nome", "Telefone", "Indicado por", "Status", "Data"].map((h) => (
+                    {["Nome", "WhatsApp", "Indicado por", "Status", "Data", ""].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
                     ))}
                   </tr>
@@ -68,6 +68,9 @@ export default async function ConsultorLeadsPage() {
                         <StatusLead leadId={lead.id} statusInicial={lead.status as any} endpoint="/api/consultor/lead" />
                       </td>
                       <td className="px-6 py-3.5 text-xs text-muted-foreground">{new Date(lead.criado_em).toLocaleDateString("pt-BR")}</td>
+                      <td className="px-6 py-3.5">
+                        <AbrirWhatsApp telefone={lead.telefone_lead} nome={lead.nome_lead} />
+                      </td>
                     </tr>
                   ))}
                 </tbody>

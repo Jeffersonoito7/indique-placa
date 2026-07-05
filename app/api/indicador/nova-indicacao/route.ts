@@ -25,6 +25,17 @@ export async function POST(req: NextRequest) {
 
   const tel = telefone_lead.replace(/\D/g, "");
 
+  // Verifica duplicata por telefone dentro da carteira do consultor
+  const { data: existente } = await supabaseAdmin
+    .from("indicacoes")
+    .select("id")
+    .eq("consultor_id", indicador.consultor_id)
+    .eq("telefone_lead", tel)
+    .limit(1)
+    .single();
+
+  if (existente) return NextResponse.json({ error: "Este telefone ja foi indicado anteriormente." }, { status: 409 });
+
   const { error } = await supabaseAdmin.from("indicacoes").insert({
     nome_lead,
     telefone_lead: tel,
@@ -35,22 +46,23 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: "Erro ao salvar indicacao" }, { status: 500 });
 
-  // Notificacoes WhatsApp em background (nao bloqueia resposta)
-  const { data: consultor } = await supabaseAdmin
+  // Notificacoes em background
+  supabaseAdmin
     .from("consultores")
     .select("nome, telefone")
     .eq("id", indicador.consultor_id)
-    .single();
-
-  if (consultor) {
-    notificarNovoLead({
-      nomeConsultor: consultor.nome,
-      telefoneConsultor: consultor.telefone,
-      nomeLead: nome_lead,
-      telefoneLead: tel,
-      viaIndicador: indicador.nome,
-    }).catch(() => {});
-  }
+    .single()
+    .then(({ data }) => {
+      if (data) {
+        notificarNovoLead({
+          nomeConsultor: data.nome,
+          telefoneConsultor: data.telefone,
+          nomeLead: nome_lead,
+          telefoneLead: tel,
+          viaIndicador: indicador.nome,
+        }).catch(() => {});
+      }
+    });
 
   notificarNovaIndicacao({
     nomeIndicador: indicador.nome,

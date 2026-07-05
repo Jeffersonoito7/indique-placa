@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit } from "@/lib/rate-limit";
+import { notificarNovoLead } from "@/lib/whatsapp";
 import { z } from "zod";
 
 const schema = z.object({
@@ -26,7 +27,6 @@ export async function POST(req: NextRequest) {
 
   let cid = consultor_id ?? null;
 
-  // Se consultor_id informado, verificar se existe e esta ativo
   if (cid) {
     const { data: consultor } = await supabaseAdmin
       .from("consultores")
@@ -36,7 +36,6 @@ export async function POST(req: NextRequest) {
     if (!consultor || consultor.status !== "ativo") cid = null;
   }
 
-  // Fallback: consultor padrao configurado
   if (!cid) {
     const { data: config } = await supabaseAdmin
       .from("configuracoes")
@@ -44,6 +43,18 @@ export async function POST(req: NextRequest) {
       .limit(1)
       .single();
     cid = config?.consultor_padrao_id ?? null;
+  }
+
+  // Verifica duplicata por telefone
+  if (cid) {
+    const { data: existente } = await supabaseAdmin
+      .from("indicacoes")
+      .select("id")
+      .eq("consultor_id", cid)
+      .eq("telefone_lead", tel)
+      .limit(1)
+      .single();
+    if (existente) return NextResponse.json({ error: "Este telefone ja foi indicado anteriormente." }, { status: 409 });
   }
 
   const { error } = await supabaseAdmin.from("indicacoes").insert({
@@ -54,6 +65,25 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) return NextResponse.json({ error: "Erro ao salvar" }, { status: 500 });
+
+  // Notifica consultor em background
+  if (cid) {
+    supabaseAdmin
+      .from("consultores")
+      .select("nome, telefone")
+      .eq("id", cid)
+      .single()
+      .then(({ data }) => {
+        if (data) {
+          notificarNovoLead({
+            nomeConsultor: data.nome,
+            telefoneConsultor: data.telefone,
+            nomeLead: nome_lead,
+            telefoneLead: tel,
+          }).catch(() => {});
+        }
+      });
+  }
 
   return NextResponse.json({ ok: true });
 }

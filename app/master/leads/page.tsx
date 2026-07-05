@@ -4,6 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClipboardList, Flame, CheckCircle2, XCircle, PhoneCall } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { StatusLead } from "@/components/status-lead";
+import { AbrirWhatsApp } from "@/components/abrir-whatsapp";
 
 async function getLeads() {
   const { data, count } = await supabaseAdmin
@@ -77,7 +78,7 @@ export default async function LeadsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Nome", "Telefone", "Consultor", "Status", "Data"].map((h) => (
+                    {["Nome", "Telefone", "Consultor", "Status", "Data", ""].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">
                         {h}
                       </th>
@@ -95,6 +96,9 @@ export default async function LeadsPage() {
                       </td>
                       <td className="px-6 py-3.5 text-xs text-muted-foreground">
                         {new Date(lead.criado_em).toLocaleDateString("pt-BR")}
+                      </td>
+                      <td className="px-6 py-3.5">
+                        <AbrirWhatsApp telefone={lead.telefone_lead} nome={lead.nome_lead} />
                       </td>
                     </tr>
                   ))}

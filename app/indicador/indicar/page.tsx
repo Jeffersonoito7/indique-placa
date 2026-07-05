@@ -1,24 +1,24 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { PlusCircle, CheckCircle2 } from "lucide-react";
+import { PlusCircle, CheckCircle2, AlertCircle } from "lucide-react";
 
 export default function NovaIndicacaoPage() {
-  const router = useRouter();
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [erro, setErro] = useState("");
+  const [duplicado, setDuplicado] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(false);
 
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro("");
+    setDuplicado(false);
     setCarregando(true);
     try {
       const res = await fetch("/api/indicador/nova-indicacao", {
@@ -27,9 +27,12 @@ export default function NovaIndicacaoPage() {
         body: JSON.stringify({ nome_lead: nome, telefone_lead: telefone }),
       });
       const json = await res.json();
-      if (!res.ok) { setErro(json.error ?? "Erro ao enviar"); }
-      else { setSucesso(true); setNome(""); setTelefone(""); }
-    } catch { setErro("Erro de conexao."); }
+      if (res.status === 409) { setDuplicado(true); return; }
+      if (!res.ok) { setErro(json.error ?? "Erro ao enviar"); return; }
+      setSucesso(true);
+      setNome("");
+      setTelefone("");
+    } catch { setErro("Erro de conexao. Tente novamente."); }
     finally { setCarregando(false); }
   };
 
@@ -47,6 +50,16 @@ export default function NovaIndicacaoPage() {
               <div>
                 <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Indicacao enviada com sucesso!</div>
                 <div className="text-xs text-muted-foreground mt-0.5">O consultor vai entrar em contato em breve.</div>
+              </div>
+            </div>
+          )}
+
+          {duplicado && (
+            <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+              <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
+              <div>
+                <div className="text-sm font-bold text-amber-600 dark:text-amber-400">Telefone ja cadastrado</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Este numero ja foi indicado anteriormente. Tente com outro contato.</div>
               </div>
             </div>
           )}
@@ -69,7 +82,14 @@ export default function NovaIndicacaoPage() {
                 </div>
                 <div className="space-y-1.5">
                   <Label htmlFor="telefone" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Telefone (WhatsApp)</Label>
-                  <Input id="telefone" type="tel" placeholder="Ex: 11999999999" value={telefone} onChange={(e) => setTelefone(e.target.value)} required />
+                  <Input
+                    id="telefone"
+                    type="tel"
+                    placeholder="Ex: 11999999999"
+                    value={telefone}
+                    onChange={(e) => { setTelefone(e.target.value); setDuplicado(false); }}
+                    required
+                  />
                 </div>
                 <Button type="submit" disabled={carregando} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold">
                   {carregando ? "Enviando..." : "Enviar Indicacao"}
