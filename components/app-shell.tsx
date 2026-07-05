@@ -101,9 +101,9 @@ export default function AppShell({
           {collapsed && (
             <div className="flex-1 flex justify-center">
               <img
-                src="/logo-indique-placa.png"
+                src="/favicon-indique.png"
                 alt="Indique Placa"
-                style={{ width: 36, height: 36, objectFit: "contain" }}
+                style={{ width: 36, height: 36, objectFit: "contain", borderRadius: 8 }}
               />
             </div>
           )}
