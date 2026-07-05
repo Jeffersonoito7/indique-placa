@@ -63,37 +63,49 @@ async function getDashboardData() {
   };
 }
 
-function MetricCard({
-  title, value, sub, trend, icon: Icon, iconBg, iconColor, valueColor, borderColor,
+function BannerMetric({
+  title, value, trend, icon: Icon, iconColor, valueColor,
 }: {
-  title: string; value: string | number; sub: string;
+  title: string; value: string | number;
   trend?: { texto: string; positivo: boolean } | null;
-  icon: React.ElementType; iconBg: string; iconColor: string; valueColor: string; borderColor: string;
+  icon: React.ElementType; iconColor: string; valueColor: string;
+  iconBg: string; borderColor: string; sub: string;
 }) {
   return (
-    <Card className={cn("border-t-4 shadow-sm", borderColor)}>
-      <CardContent className="p-6">
-        <div className="flex items-start justify-between mb-4">
-          <div className={cn("w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0", iconBg)}>
-            <Icon className={cn("h-5 w-5", iconColor)} />
-          </div>
-          {trend && (
-            <Badge className={cn(
-              "text-[10px] px-2 py-0.5 font-semibold border-0",
-              trend.positivo ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
-            )}>
-              {trend.positivo
-                ? <TrendingUp className="h-3 w-3 mr-1 inline" />
-                : <TrendingDown className="h-3 w-3 mr-1 inline" />}
-              {trend.texto}
-            </Badge>
-          )}
+    <div
+      className="rounded-2xl p-5 flex flex-col gap-3"
+      style={{
+        background: "rgba(255,255,255,0.05)",
+        border: "1px solid rgba(255,255,255,0.08)",
+        backdropFilter: "blur(8px)",
+      }}
+    >
+      <div className="flex items-center justify-between">
+        <Icon className={cn("h-4 w-4", iconColor)} style={{ opacity: 0.8 }} />
+        {trend && (
+          <span
+            className="text-[10px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full"
+            style={{
+              background: trend.positivo ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
+              color: trend.positivo ? "#34d399" : "#f87171",
+            }}
+          >
+            {trend.positivo ? (
+              <TrendingUp className="h-3 w-3" />
+            ) : (
+              <TrendingDown className="h-3 w-3" />
+            )}
+            {trend.texto}
+          </span>
+        )}
+      </div>
+      <div>
+        <div className={cn("text-3xl font-extrabold tracking-tight", valueColor)}>{value}</div>
+        <div className="text-[11px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+          {title}
         </div>
-        <div className={cn("text-3xl font-bold tracking-tight mb-1", valueColor)}>{value}</div>
-        <p className="text-xs font-medium text-muted-foreground">{title}</p>
-        <p className="text-[11px] text-muted-foreground/60 mt-0.5">{sub}</p>
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
@@ -141,24 +153,50 @@ export default async function DashboardPage() {
 
   return (
     <div className="flex-1 flex flex-col">
-      <div className="px-8 py-5 border-b border-border flex items-center justify-between">
-        <div>
-          <h1 className="text-base font-bold text-foreground">Dashboard</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Visao geral da plataforma em tempo real</p>
-        </div>
-        <div className="flex items-center gap-2 text-xs font-semibold text-emerald-500">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
-          AO VIVO
+      {/* Banner */}
+      <div
+        className="relative overflow-hidden px-8 py-8"
+        style={{
+          background: "linear-gradient(135deg, #0c1929 0%, #0a2240 40%, #062d1a 100%)",
+          borderBottom: "1px solid rgba(255,255,255,0.07)",
+        }}
+      >
+        <div
+          className="absolute inset-0 pointer-events-none"
+          style={{
+            background:
+              "radial-gradient(ellipse 60% 80% at 80% 50%, rgba(16,185,129,0.08) 0%, transparent 70%)",
+          }}
+        />
+        <div className="relative">
+          <div className="flex items-start justify-between">
+            <div>
+              <h1 className="text-2xl font-extrabold text-white tracking-tight">Dashboard</h1>
+              <p className="text-sm text-white/50 mt-1">Visao geral da plataforma em tempo real</p>
+            </div>
+            <div
+              className="flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full"
+              style={{
+                background: "rgba(16,185,129,0.12)",
+                border: "1px solid rgba(16,185,129,0.25)",
+                color: "#34d399",
+              }}
+            >
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+              AO VIVO
+            </div>
+          </div>
+
+          {/* Mini metricas no banner */}
+          <div className="grid grid-cols-4 gap-4 mt-6">
+            {metrics.map((m) => (
+              <BannerMetric key={m.title} {...m} />
+            ))}
+          </div>
         </div>
       </div>
 
       <div className="flex-1 p-8 bg-muted/30">
-        <div className="grid grid-cols-4 gap-4 mb-8">
-          {metrics.map((m) => (
-            <MetricCard key={m.title} {...m} />
-          ))}
-        </div>
-
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between">
