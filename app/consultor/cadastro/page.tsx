@@ -3,6 +3,45 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 
+const ESTADOS_CIDADES: Record<string, string[]> = {
+  "AC": ["Rio Branco","Cruzeiro do Sul","Sena Madureira","Tarauacá","Feijó"],
+  "AL": ["Maceió","Arapiraca","Palmeira dos Índios","Rio Largo","Penedo","União dos Palmares"],
+  "AM": ["Manaus","Parintins","Itacoatiara","Manacapuru","Coari","Tefé","Maués"],
+  "AP": ["Macapá","Santana","Laranjal do Jari","Oiapoque","Mazagão"],
+  "BA": ["Salvador","Feira de Santana","Vitória da Conquista","Camaçari","Juazeiro","Itabuna","Ilhéus","Lauro de Freitas","Jequié","Alagoinhas","Barreiras","Porto Seguro","Simões Filho","Paulo Afonso","Eunápolis"],
+  "CE": ["Fortaleza","Caucaia","Juazeiro do Norte","Maracanaú","Sobral","Crato","Itapipoca","Maranguape","Iguatu","Quixadá"],
+  "DF": ["Brasília","Ceilândia","Taguatinga","Planaltina","Samambaia","Santa Maria","Gama"],
+  "ES": ["Vitória","Vila Velha","Serra","Cariacica","Linhares","Cachoeiro de Itapemirim","Colatina","Guarapari"],
+  "GO": ["Goiânia","Aparecida de Goiânia","Anápolis","Rio Verde","Luziânia","Águas Lindas de Goiás","Valparaíso de Goiás","Trindade","Formosa","Novo Gama"],
+  "MA": ["São Luís","Imperatriz","São José de Ribamar","Timon","Caxias","Codó","Paço do Lumiar","Açailândia","Bacabal","Balsas"],
+  "MG": ["Belo Horizonte","Uberlândia","Contagem","Juiz de Fora","Betim","Montes Claros","Ribeirão das Neves","Uberaba","Governador Valadares","Ipatinga","Sete Lagoas","Divinópolis","Santana do Paraíso","Ibirité","Poços de Caldas","Patos de Minas","Pouso Alegre","Teófilo Otoni","Barbacena","Sabará"],
+  "MS": ["Campo Grande","Dourados","Três Lagoas","Corumbá","Grande Dourados","Ponta Porã","Naviraí","Nova Andradina"],
+  "MT": ["Cuiabá","Várzea Grande","Rondonópolis","Sinop","Tangará da Serra","Cáceres","Sorriso","Lucas do Rio Verde","Primavera do Leste"],
+  "PA": ["Belém","Ananindeua","Santarém","Marabá","Castanhal","Parauapebas","Altamira","Abaetetuba","Cametá","Marituba"],
+  "PB": ["João Pessoa","Campina Grande","Santa Rita","Patos","Bayeux","Sousa","Caruaru"],
+  "PE": ["Recife","Caruaru","Petrolina","Olinda","Paulista","Palmares","Vitória de Santo Antão","Serra Talhada","Garanhuns","Jaboatão dos Guararapes","Cabo de Santo Agostinho","Camaçari"],
+  "PI": ["Teresina","Parnaíba","Picos","Piripiri","Floriano","Campo Maior","Barras"],
+  "PR": ["Curitiba","Londrina","Maringá","Ponta Grossa","Cascavel","São José dos Pinhais","Foz do Iguaçu","Colombo","Guarapuava","Paranaguá","Araucária","Toledo","Apucarana","Umuarama","Pinhais"],
+  "RJ": ["Rio de Janeiro","São Gonçalo","Duque de Caxias","Nova Iguaçu","Belford Roxo","Niterói","São João de Meriti","Campos dos Goytacazes","Petrópolis","Volta Redonda","Magé","Itaboraí","Macaé","Cabo Frio","Nova Friburgo","Resende"],
+  "RN": ["Natal","Mossoró","Parnamirim","São Gonçalo do Amarante","Caicó","Macaíba"],
+  "RO": ["Porto Velho","Ji-Paraná","Ariquemes","Vilhena","Cacoal","Rolim de Moura"],
+  "RR": ["Boa Vista","Rorainópolis","Caracaraí"],
+  "RS": ["Porto Alegre","Caxias do Sul","Pelotas","Canoas","Santa Maria","Gravataí","Viamão","Novo Hamburgo","São Leopoldo","Rio Grande","Alvorada","Passo Fundo","Sapucaia do Sul","Uruguaiana","Santa Cruz do Sul","Cachoeirinha","Bagé","Bento Gonçalves"],
+  "SC": ["Joinville","Florianópolis","Blumenau","São José","Criciúma","Chapecó","Itajaí","Lages","Jaraguá do Sul","Palhoça","Balneário Camboriú","Brusque","Tubarão","Caçador"],
+  "SE": ["Aracaju","Nossa Senhora do Socorro","Lagarto","Itabaiana","São Cristóvão","Estância"],
+  "SP": ["São Paulo","Guarulhos","Campinas","São Bernardo do Campo","Santo André","Osasco","Ribeirão Preto","Sorocaba","Mauá","São José dos Campos","Mogi das Cruzes","Santos","Diadema","Piracicaba","Bauru","São José do Rio Preto","Jundiaí","Carapicuíba","Franca","Limeira","Taubaté","Praia Grande","Caçapava","Suzano","Barueri","Taboão da Serra","Guarujá","Indaiatuba","Americana","Araraquara"],
+  "TO": ["Palmas","Araguaína","Gurupi","Porto Nacional","Paraíso do Tocantins","Colinas do Tocantins"],
+};
+
+const ESTADOS_NOMES: Record<string, string> = {
+  AC:"Acre", AL:"Alagoas", AM:"Amazonas", AP:"Amapá", BA:"Bahia", CE:"Ceará",
+  DF:"Distrito Federal", ES:"Espírito Santo", GO:"Goiás", MA:"Maranhão",
+  MG:"Minas Gerais", MS:"Mato Grosso do Sul", MT:"Mato Grosso", PA:"Pará",
+  PB:"Paraíba", PE:"Pernambuco", PI:"Piauí", PR:"Paraná", RJ:"Rio de Janeiro",
+  RN:"Rio Grande do Norte", RO:"Rondônia", RR:"Roraima", RS:"Rio Grande do Sul",
+  SC:"Santa Catarina", SE:"Sergipe", SP:"São Paulo", TO:"Tocantins",
+};
+
 /* ─── ESTILOS ─────────────────────────────────────────────────────────── */
 const STYLES = `
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -413,6 +452,7 @@ export default function ConsultorCadastroPage() {
   /* form */
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
   const [associacao, setAssociacao] = useState("");
   const [associacaoTexto, setAssociacaoTexto] = useState("");
@@ -470,6 +510,8 @@ export default function ConsultorCadastroPage() {
     setErro("");
     const tel = telefone.replace(/\D/g,"");
     if (tel.length < 10) { setErro("Digite um WhatsApp valido com DDD"); return; }
+    if (!estado) { setErro("Selecione o estado"); return; }
+    if (!cidade) { setErro("Selecione a cidade"); return; }
     const nomeAssoc = associacao === "outra" ? associacaoTexto : associacao;
     if (!nomeAssoc.trim()) { setErro("Informe a associação"); return; }
     if (senha.length < 6) { setErro("A senha precisa ter no mínimo 6 caracteres"); return; }
@@ -477,7 +519,7 @@ export default function ConsultorCadastroPage() {
     try {
       const res = await fetch("/api/publico/consultor-cadastro", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, telefone, cidade, associacao: nomeAssoc, senha }),
+        body: JSON.stringify({ nome, telefone, cidade: `${cidade} - ${estado}`, associacao: nomeAssoc, senha }),
       });
       const json = await res.json();
       if (!res.ok) setErro(json.error ?? "Erro ao cadastrar");
@@ -805,8 +847,22 @@ export default function ConsultorCadastroPage() {
                     <input className="campo" type="tel" placeholder="(11) 99999-9999" value={telefone} required onChange={e => setTelefone(fmtTel(e.target.value))} />
                   </div>
                   <div className="campo-group">
+                    <label className="campo-label">Estado</label>
+                    <select className="campo campo-select" required value={estado} onChange={e => { setEstado(e.target.value); setCidade(""); }}>
+                      <option value="">Selecione o estado</option>
+                      {Object.keys(ESTADOS_CIDADES).sort().map(uf => (
+                        <option key={uf} value={uf}>{ESTADOS_NOMES[uf]} ({uf})</option>
+                      ))}
+                    </select>
+                  </div>
+                  <div className="campo-group">
                     <label className="campo-label">Cidade</label>
-                    <input className="campo" type="text" placeholder="Sua cidade" value={cidade} required onChange={e => setCidade(e.target.value)} />
+                    <select className="campo campo-select" required value={cidade} onChange={e => setCidade(e.target.value)} disabled={!estado}>
+                      <option value="">{estado ? "Selecione a cidade" : "Selecione o estado primeiro"}</option>
+                      {(ESTADOS_CIDADES[estado] ?? []).map(c => (
+                        <option key={c} value={c}>{c}</option>
+                      ))}
+                    </select>
                   </div>
                   <div className="campo-group">
                     <label className="campo-label">Crie uma senha (mínimo 6 caracteres)</label>

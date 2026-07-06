@@ -89,7 +89,7 @@ const STYLES = `
   .olho-btn:hover { color: rgba(255,255,255,.8); }
   .btn-entrar {
     width: 100%; padding: 14px; border: none; border-radius: 10px;
-    background: linear-gradient(135deg,#3b1f8c,#5b35cc);
+    background: linear-gradient(135deg,#15803d,#16a34a,#22c55e);
     color: #fff; font-size: 14px; font-weight: 800; letter-spacing: 1px;
     cursor: pointer; font-family: inherit; transition: opacity .15s, transform .1s;
   }
@@ -162,7 +162,7 @@ export default function ConsultorLoginPage() {
           )}
 
           <form onSubmit={entrar}>
-            <input className="campo-login" type="tel" placeholder="WhatsApp com DDD (ex: 11999999999)" value={telefone} required
+            <input className="campo-login" type="text" inputMode="numeric" placeholder="WhatsApp com DDD" value={telefone} required
               onChange={(e) => setTelefone(e.target.value)} />
             <div className="senha-wrap">
               <input className="campo-login" type={verSenha ? "text" : "password"} placeholder="Senha" value={senha} required
