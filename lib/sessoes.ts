@@ -1,11 +1,21 @@
 import "server-only";
 import { createHmac } from "crypto";
 
-const SECRET = process.env.SESSION_SECRET ?? "indique-placa-secret-fallback-2024";
 const DURACAO_HORAS = 8;
 
+function getSecret(): string {
+  const secret = process.env.SESSION_SECRET;
+  if (!secret) {
+    if (process.env.NODE_ENV === "production") {
+      throw new Error("SESSION_SECRET nao configurado. Defina esta variavel de ambiente no Vercel.");
+    }
+    return "indique-placa-secret-dev-only";
+  }
+  return secret;
+}
+
 function assinar(payload: string): string {
-  return createHmac("sha256", SECRET).update(payload).digest("hex");
+  return createHmac("sha256", getSecret()).update(payload).digest("hex");
 }
 
 export async function criarSessao(usuario_id: string, tipo: "consultor" | "indicador"): Promise<string> {
@@ -35,5 +45,5 @@ export async function validarSessao(token: string, tipo: "consultor" | "indicado
 }
 
 export async function revogarSessao(_token: string): Promise<void> {
-  // Revogação via limpeza do cookie no cliente
+  // Revogacao via limpeza do cookie no cliente
 }

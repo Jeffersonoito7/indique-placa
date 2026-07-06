@@ -3,42 +3,41 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, Users, CheckCircle2, Info } from "lucide-react";
 
-const COMISSAO_CONSULTOR = 50;  // R$ por lead fechado
-const COMISSAO_INDICADOR = 20;  // R$ por lead fechado via indicador
-
 async function getDados() {
-  const { data: fechados } = await supabaseAdmin
-    .from("indicacoes")
-    .select("id, nome_lead, criado_em, consultor_id, indicador_id, consultores(nome), indicadores(nome)")
-    .eq("status", "fechado")
-    .order("criado_em", { ascending: false });
+  const [{ data: fechados }, { data: config }] = await Promise.all([
+    supabaseAdmin
+      .from("indicacoes")
+      .select("id, nome_lead, criado_em, consultor_id, indicador_id, consultores(nome), indicadores(nome)")
+      .eq("status", "fechado")
+      .order("criado_em", { ascending: false }),
+    supabaseAdmin.from("configuracoes").select("comissao_consultor, comissao_indicador").limit(1).single(),
+  ]);
 
-  return fechados ?? [];
+  const comissaoConsultor: number = (config as any)?.comissao_consultor ?? 50;
+  const comissaoIndicador: number = (config as any)?.comissao_indicador ?? 20;
+
+  return { fechados: fechados ?? [], comissaoConsultor, comissaoIndicador };
 }
-
-type Lead = Awaited<ReturnType<typeof getDados>>[number];
 
 function moeda(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
 export default async function FinanceiroPage() {
-  const fechados = await getDados();
+  const { fechados, comissaoConsultor, comissaoIndicador } = await getDados();
 
-  const totalConsultores = fechados.length * COMISSAO_CONSULTOR;
+  const totalConsultores = fechados.length * comissaoConsultor;
   const comIndicador = fechados.filter((l) => l.indicador_id);
-  const totalIndicadores = comIndicador.length * COMISSAO_INDICADOR;
+  const totalIndicadores = comIndicador.length * comissaoIndicador;
   const totalPagar = totalConsultores + totalIndicadores;
 
-  // Agrupa por consultor
   const porConsultor: Record<string, { nome: string; qtd: number; totalComissao: number }> = {};
   for (const l of fechados) {
     const id = l.consultor_id as string;
     const nome = (l.consultores as any)?.nome ?? "Sem nome";
     if (!porConsultor[id]) porConsultor[id] = { nome, qtd: 0, totalComissao: 0 };
     porConsultor[id].qtd++;
-    porConsultor[id].totalComissao += COMISSAO_CONSULTOR;
-    if (l.indicador_id) porConsultor[id].totalComissao += 0; // indicador recebe direto
+    porConsultor[id].totalComissao += comissaoConsultor;
   }
 
   const rankConsultores = Object.values(porConsultor).sort((a, b) => b.qtd - a.qtd);
@@ -52,12 +51,11 @@ export default async function FinanceiroPage() {
         </div>
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600 dark:text-amber-400">
           <Info className="h-3.5 w-3.5" />
-          Consultor: {moeda(COMISSAO_CONSULTOR)}/fechado | Indicador: {moeda(COMISSAO_INDICADOR)}/fechado
+          Consultor: {moeda(comissaoConsultor)}/fechado | Indicador: {moeda(comissaoIndicador)}/fechado
         </div>
       </div>
 
       <div className="flex-1 p-8 bg-muted/30 space-y-6">
-        {/* Metricas */}
         <div className="grid grid-cols-4 gap-4">
           {[
             { label: "Leads Fechados", valor: fechados.length, icon: CheckCircle2, color: "text-emerald-500", bg: "bg-emerald-500/10" },
@@ -80,7 +78,6 @@ export default async function FinanceiroPage() {
         </div>
 
         <div className="grid grid-cols-2 gap-6">
-          {/* Ranking consultores */}
           <Card className="shadow-sm">
             <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-sm font-semibold">Comissões por Consultor</CardTitle>
@@ -113,7 +110,6 @@ export default async function FinanceiroPage() {
             </CardContent>
           </Card>
 
-          {/* Histórico detalhado */}
           <Card className="shadow-sm">
             <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-sm font-semibold">Histórico de Fechamentos</CardTitle>

@@ -34,6 +34,18 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const token = req.cookies.get("master_auth")?.value ?? "";
   if (!verificarToken(token)) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
+  const { count } = await supabaseAdmin
+    .from("indicacoes")
+    .select("id", { count: "exact", head: true })
+    .eq("consultor_id", id);
+
+  if (count && count > 0) {
+    return NextResponse.json(
+      { error: `Este consultor possui ${count} lead(s) vinculado(s). Reatribua ou exclua os leads antes de deletar o consultor.` },
+      { status: 409 }
+    );
+  }
+
   const { error } = await supabaseAdmin.from("consultores").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

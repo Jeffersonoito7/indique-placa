@@ -10,6 +10,8 @@ const schema = z.object({
   email: z.string().email().max(200).optional().nullable(),
   telefone: z.string().max(30).optional().nullable(),
   endereco: z.string().max(300).optional().nullable(),
+  comissao_consultor: z.number().min(0).max(99999).optional().nullable(),
+  comissao_indicador: z.number().min(0).max(99999).optional().nullable(),
 });
 
 async function autenticar() {

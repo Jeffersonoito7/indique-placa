@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Globe, Phone, Mail, MapPin, Building2, Save, CheckCircle2 } from "lucide-react";
+import { Settings, Globe, Phone, Mail, MapPin, Building2, Save, CheckCircle2, DollarSign } from "lucide-react";
 
 type Config = {
   nome_plataforma: string;
@@ -10,9 +10,19 @@ type Config = {
   email?: string | null;
   telefone?: string | null;
   endereco?: string | null;
+  comissao_consultor?: number | null;
+  comissao_indicador?: number | null;
 };
 
-const VAZIO: Config = { nome_plataforma: "", site: "", email: "", telefone: "", endereco: "" };
+const VAZIO: Config = {
+  nome_plataforma: "",
+  site: "",
+  email: "",
+  telefone: "",
+  endereco: "",
+  comissao_consultor: 50,
+  comissao_indicador: 20,
+};
 
 export default function ConfiguracoesPage() {
   const [form, setForm] = useState<Config>(VAZIO);
@@ -31,6 +41,8 @@ export default function ConfiguracoesPage() {
           email: config.email ?? "",
           telefone: config.telefone ?? "",
           endereco: config.endereco ?? "",
+          comissao_consultor: config.comissao_consultor ?? 50,
+          comissao_indicador: config.comissao_indicador ?? 20,
         });
       })
       .finally(() => setCarregando(false));
@@ -41,10 +53,15 @@ export default function ConfiguracoesPage() {
     setErro("");
     setSucesso(false);
     try {
+      const body = {
+        ...form,
+        comissao_consultor: Number(form.comissao_consultor) || 50,
+        comissao_indicador: Number(form.comissao_indicador) || 20,
+      };
       const r = await fetch("/api/master/configuracoes", {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(form),
+        body: JSON.stringify(body),
       });
       const json = await r.json();
       if (!r.ok) { setErro(json.error ?? "Erro ao salvar"); return; }
@@ -127,6 +144,49 @@ export default function ConfiguracoesPage() {
                 {campo("E-mail de contato", "email", Mail, "Ex: contato@indiqueplaca.com.br", "email")}
                 {campo("WhatsApp / Telefone", "telefone", Phone, "Ex: 5511999999999")}
                 {campo("Endereço", "endereco", MapPin, "Ex: Rua das Flores, 100 - São Paulo/SP")}
+              </CardContent>
+            </Card>
+
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  Comissões por Lead Fechado
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-5">
+                <div>
+                  <label className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Comissão do Consultor (R$)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={form.comissao_consultor ?? 50}
+                    onChange={(e) => setForm((f) => ({ ...f, comissao_consultor: Number(e.target.value) }))}
+                    placeholder="Ex: 50"
+                    className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">Valor pago ao consultor por cada lead com status "fechado"</p>
+                </div>
+                <div>
+                  <label className="flex items-center gap-2 text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2">
+                    <DollarSign className="h-3.5 w-3.5" />
+                    Comissão do Indicador (R$)
+                  </label>
+                  <input
+                    type="number"
+                    min={0}
+                    step={1}
+                    value={form.comissao_indicador ?? 20}
+                    onChange={(e) => setForm((f) => ({ ...f, comissao_indicador: Number(e.target.value) }))}
+                    placeholder="Ex: 20"
+                    className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                  />
+                  <p className="text-[10px] text-muted-foreground mt-1">Valor pago ao indicador quando o lead indicado por ele é fechado</p>
+                </div>
               </CardContent>
             </Card>
           </div>
