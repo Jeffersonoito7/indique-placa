@@ -33,29 +33,36 @@ async function enviar(telefone: string, mensagem: string): Promise<boolean> {
 export async function notificarNovoLead(opts: {
   nomeConsultor: string;
   telefoneConsultor: string;
-  nomeLead: string;
-  telefoneLead: string;
+  placa: string;
+  nomeLead?: string | null;
+  telefoneLead?: string | null;
   viaIndicador?: string | null;
 }) {
   const via = opts.viaIndicador ? ` via indicador *${opts.viaIndicador}*` : "";
-  const msg = `Ola, *${opts.nomeConsultor}*!\n\nVoce recebeu um novo lead${via}:\n\n*Nome:* ${opts.nomeLead}\n*Telefone:* ${opts.telefoneLead}\n\nAcesse o painel para acompanhar: https://app.indiqueplaca.com.br/consultor/leads`;
+  const proprietario = opts.nomeLead ? `\n*Proprietário:* ${opts.nomeLead}` : "";
+  const contato = opts.telefoneLead ? `\n*Telefone:* ${opts.telefoneLead}` : "";
+  const msg = `Ola, *${opts.nomeConsultor}*!\n\nNova placa indicada${via}:\n\n*Placa:* ${opts.placa}${proprietario}${contato}\n\nAcesse o painel para acompanhar: https://app.indiqueplaca.com.br/consultor/leads`;
   return enviar(opts.telefoneConsultor, msg);
 }
 
 export async function notificarLeadFechado(opts: {
   nomeConsultor: string;
   telefoneConsultor: string;
-  nomeLead: string;
+  placa?: string | null;
+  nomeLead?: string | null;
 }) {
-  const msg = `Parabens, *${opts.nomeConsultor}*!\n\nO lead *${opts.nomeLead}* foi marcado como *FECHADO*.\n\nSua comissao foi registrada. Continue assim!`;
+  const identificador = opts.placa ? `placa *${opts.placa}*` : opts.nomeLead ? `*${opts.nomeLead}*` : "o lead";
+  const msg = `Parabens, *${opts.nomeConsultor}*!\n\nA indicacao de ${identificador} foi marcada como *FECHADO*.\n\nSua comissao foi registrada. Continue assim!`;
   return enviar(opts.telefoneConsultor, msg);
 }
 
 export async function notificarNovaIndicacao(opts: {
   nomeIndicador: string;
   telefoneIndicador: string;
-  nomeLead: string;
+  placa: string;
+  nomeLead?: string | null;
 }) {
-  const msg = `Ola, *${opts.nomeIndicador}*!\n\nSua indicacao *${opts.nomeLead}* foi recebida com sucesso.\n\nAssim que houver atualizacao, voce sera avisado. Obrigado por indicar!`;
+  const proprietario = opts.nomeLead ? ` (${opts.nomeLead})` : "";
+  const msg = `Ola, *${opts.nomeIndicador}*!\n\nSua indicacao da placa *${opts.placa}*${proprietario} foi recebida com sucesso.\n\nAssim que houver atualizacao, voce sera avisado. Obrigado por indicar!`;
   return enviar(opts.telefoneIndicador, msg);
 }

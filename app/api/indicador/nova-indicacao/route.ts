@@ -59,8 +59,9 @@ export async function POST(req: NextRequest) {
         notificarNovoLead({
           nomeConsultor: data.nome,
           telefoneConsultor: data.fone,
-          nomeLead: nome_lead ?? `Placa ${placa}`,
-          telefoneLead: tel ?? "",
+          placa,
+          nomeLead: nome_lead ?? null,
+          telefoneLead: tel,
           viaIndicador: indicador.nome,
         }).catch(() => {});
       }
@@ -69,7 +70,8 @@ export async function POST(req: NextRequest) {
   notificarNovaIndicacao({
     nomeIndicador: indicador.nome,
     telefoneIndicador: indicador.telefone,
-    nomeLead: nome_lead ?? `Placa ${placa}`,
+    placa,
+    nomeLead: nome_lead ?? null,
   }).catch(() => {});
 
   return NextResponse.json({ ok: true });

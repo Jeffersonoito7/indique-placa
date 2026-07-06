@@ -1,5 +1,6 @@
 export const dynamic = "force-dynamic";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { PlacaMercosul } from "@/components/placa-mercosul";
 import { TrendingUp, TrendingDown, Users, UserCheck, ClipboardList, DollarSign } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -208,7 +209,7 @@ export default async function DashboardPage() {
             <table className="w-full">
               <thead>
                 <tr className="border-b border-border bg-muted/40">
-                  {["Nome", "Consultor", "Telefone", "Status", "Data"].map((h) => (
+                  {["Placa", "Proprietário", "Consultor", "Status", "Data"].map((h) => (
                     <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">
                       {h}
                     </th>
@@ -229,14 +230,14 @@ export default async function DashboardPage() {
 async function RecentLeadsTable() {
   const { data: leads } = await supabaseAdmin
     .from("indicacoes")
-    .select("id, nome_lead, telefone_lead, status, criado_em, consultores(nome)")
+    .select("id, placa, nome_lead, status, criado_em, consultores(nome)")
     .order("criado_em", { ascending: false })
     .limit(10);
 
   if (!leads?.length) {
     return (
       <tr>
-        <td colSpan={5} className="text-center text-muted-foreground text-sm py-10">
+        <td colSpan={6} className="text-center text-muted-foreground text-sm py-10">
           Nenhum lead ainda
         </td>
       </tr>
@@ -254,9 +255,13 @@ async function RecentLeadsTable() {
     <>
       {leads.map((lead, i) => (
         <tr key={lead.id} className={cn("border-b border-border hover:bg-accent/40 transition-colors", i % 2 === 0 ? "" : "bg-muted/20")}>
-          <td className="px-6 py-3.5 text-sm font-medium text-foreground">{lead.nome_lead}</td>
+          <td className="px-6 py-3">
+            {(lead as any).placa
+              ? <PlacaMercosul placa={(lead as any).placa} tamanho="sm" />
+              : <span className="text-xs text-muted-foreground italic">sem placa</span>}
+          </td>
+          <td className="px-6 py-3.5 text-sm text-foreground">{lead.nome_lead ?? <span className="italic text-muted-foreground/50 text-xs">a preencher</span>}</td>
           <td className="px-6 py-3.5 text-sm text-muted-foreground">{(lead.consultores as any)?.nome ?? "-"}</td>
-          <td className="px-6 py-3.5 text-sm text-muted-foreground font-mono">{lead.telefone_lead}</td>
           <td className="px-6 py-3.5">
             <span className={cn("text-[11px] font-semibold px-2.5 py-1 rounded-full", statusStyle[lead.status] ?? "bg-muted text-muted-foreground")}>
               {lead.status}

@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClipboardList, CheckCircle2, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PlacaMercosul } from "@/components/placa-mercosul";
 
 export default async function IndicadorDashboard() {
   const indicador = await getIndicadorLogado();
@@ -13,7 +14,7 @@ export default async function IndicadorDashboard() {
   const [{ data: leads, count }, { count: countFechados }] = await Promise.all([
     supabaseAdmin
       .from("indicacoes")
-      .select("id, nome_lead, status, criado_em", { count: "exact" })
+      .select("id, placa, nome_lead, status, criado_em", { count: "exact" })
       .eq("indicador_id", indicador.id)
       .order("criado_em", { ascending: false })
       .limit(6),
@@ -32,6 +33,13 @@ export default async function IndicadorDashboard() {
     contato: "bg-amber-500/10 text-amber-500",
     fechado: "bg-emerald-500/10 text-emerald-500",
     perdido: "bg-red-500/10 text-red-500",
+  };
+
+  const statusLabel: Record<string, string> = {
+    novo: "Novo",
+    contato: "Em contato",
+    fechado: "Fechado",
+    perdido: "Perdido",
   };
 
   return (
@@ -91,7 +99,7 @@ export default async function IndicadorDashboard() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Nome", "Status", "Data"].map((h) => (
+                    {["Placa", "Proprietário", "Status", "Data"].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
                     ))}
                   </tr>
@@ -99,9 +107,18 @@ export default async function IndicadorDashboard() {
                 <tbody>
                   {leads.map((lead, i) => (
                     <tr key={lead.id} className={cn("border-b border-border hover:bg-accent/40 transition-colors", i % 2 !== 0 && "bg-muted/20")}>
-                      <td className="px-6 py-3.5 text-sm font-medium text-foreground">{lead.nome_lead}</td>
+                      <td className="px-6 py-3">
+                        {(lead as any).placa
+                          ? <PlacaMercosul placa={(lead as any).placa} tamanho="sm" />
+                          : <span className="text-xs text-muted-foreground italic">sem placa</span>}
+                      </td>
+                      <td className="px-6 py-3.5 text-sm text-foreground">
+                        {lead.nome_lead ?? <span className="italic text-muted-foreground/50 text-xs">a preencher</span>}
+                      </td>
                       <td className="px-6 py-3.5">
-                        <span className={cn("text-[11px] font-semibold px-2.5 py-1 rounded-full", statusStyle[lead.status] ?? "bg-muted text-muted-foreground")}>{lead.status}</span>
+                        <span className={cn("text-[11px] font-semibold px-2.5 py-1 rounded-full", statusStyle[lead.status] ?? "bg-muted text-muted-foreground")}>
+                          {statusLabel[lead.status] ?? lead.status}
+                        </span>
                       </td>
                       <td className="px-6 py-3.5 text-xs text-muted-foreground">{new Date(lead.criado_em).toLocaleDateString("pt-BR")}</td>
                     </tr>

@@ -5,8 +5,9 @@ import { notificarNovoLead } from "@/lib/whatsapp";
 import { z } from "zod";
 
 const schema = z.object({
-  nome_lead: z.string().min(2).max(100),
-  telefone_lead: z.string().min(10).max(20),
+  placa: z.string().min(7).max(7).regex(/^[A-Z0-9]{7}$/, "Placa inválida"),
+  nome_lead: z.string().min(2).max(100).optional(),
+  telefone_lead: z.string().min(10).max(20).optional(),
   consultor_id: z.string().uuid().optional().nullable(),
 });
 
@@ -22,8 +23,8 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
-  const { nome_lead, telefone_lead, consultor_id } = parsed.data;
-  const tel = telefone_lead.replace(/\D/g, "");
+  const { placa, nome_lead, telefone_lead, consultor_id } = parsed.data;
+  const tel = telefone_lead?.replace(/\D/g, "") ?? null;
 
   let cid = consultor_id ?? null;
 
@@ -42,23 +43,24 @@ export async function POST(req: NextRequest) {
       .select("consultor_padrao_id")
       .limit(1)
       .single();
-    cid = config?.consultor_padrao_id ?? null;
+    cid = (config as any)?.consultor_padrao_id ?? null;
   }
 
-  // Verifica duplicata por telefone
+  // Deduplicacao por placa
   if (cid) {
     const { data: existente } = await supabaseAdmin
       .from("indicacoes")
       .select("id")
       .eq("consultor_id", cid)
-      .eq("telefone_lead", tel)
+      .eq("placa", placa)
       .limit(1)
       .single();
-    if (existente) return NextResponse.json({ error: "Este telefone já foi indicado anteriormente." }, { status: 409 });
+    if (existente) return NextResponse.json({ error: "Esta placa já foi indicada anteriormente." }, { status: 409 });
   }
 
   const { error } = await supabaseAdmin.from("indicacoes").insert({
-    nome_lead,
+    placa,
+    nome_lead: nome_lead ?? null,
     telefone_lead: tel,
     consultor_id: cid,
     status: "novo",
@@ -66,7 +68,6 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: "Erro ao salvar" }, { status: 500 });
 
-  // Notifica consultor em background
   if (cid) {
     supabaseAdmin
       .from("consultores")
@@ -78,7 +79,8 @@ export async function POST(req: NextRequest) {
           notificarNovoLead({
             nomeConsultor: data.nome,
             telefoneConsultor: data.fone,
-            nomeLead: nome_lead,
+            placa,
+            nomeLead: nome_lead ?? null,
             telefoneLead: tel,
           }).catch(() => {});
         }
