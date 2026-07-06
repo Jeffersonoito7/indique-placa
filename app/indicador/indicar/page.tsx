@@ -1,13 +1,25 @@
 "use client";
 
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { PlusCircle, CheckCircle2, AlertCircle } from "lucide-react";
+import { PlacaMercosul } from "@/components/placa-mercosul";
+import { CheckCircle2, AlertCircle, Car } from "lucide-react";
 
-export default function NovaIndicacaoPage() {
+function formatarPlaca(valor: string): string {
+  const limpo = valor.toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 7);
+  if (limpo.length > 3) return limpo.slice(0, 3) + "-" + limpo.slice(3);
+  return limpo;
+}
+
+function placaValida(placa: string): boolean {
+  const limpo = placa.replace("-", "");
+  if (limpo.length !== 7) return false;
+  const mercosul = /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/.test(limpo);
+  const antiga = /^[A-Z]{3}[0-9]{4}$/.test(limpo);
+  return mercosul || antiga;
+}
+
+export default function IndicarPage() {
+  const [placa, setPlaca] = useState("");
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [erro, setErro] = useState("");
@@ -15,8 +27,18 @@ export default function NovaIndicacaoPage() {
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(false);
 
+  const handlePlaca = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setPlaca(formatarPlaca(e.target.value));
+    setDuplicado(false);
+    setErro("");
+  };
+
+  const placaLimpa = placa.replace("-", "");
+  const valida = placaValida(placa);
+
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!valida) { setErro("Digite uma placa válida (ex: ABC-1D23 ou ABC-1234)"); return; }
     setErro("");
     setDuplicado(false);
     setCarregando(true);
@@ -24,79 +46,145 @@ export default function NovaIndicacaoPage() {
       const res = await fetch("/api/indicador/nova-indicacao", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome_lead: nome, telefone_lead: telefone }),
+        body: JSON.stringify({ placa: placaLimpa, nome_lead: nome || undefined, telefone_lead: telefone || undefined }),
       });
       const json = await res.json();
       if (res.status === 409) { setDuplicado(true); return; }
       if (!res.ok) { setErro(json.error ?? "Erro ao enviar"); return; }
       setSucesso(true);
+      setPlaca("");
       setNome("");
       setTelefone("");
-    } catch { setErro("Erro de conexão. Tente novamente."); }
-    finally { setCarregando(false); }
+    } catch {
+      setErro("Erro de conexão. Tente novamente.");
+    } finally {
+      setCarregando(false);
+    }
   };
+
+  const novaSugestao = () => {
+    setSucesso(false);
+    setPlaca("");
+    setNome("");
+    setTelefone("");
+  };
+
+  if (sucesso) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 bg-muted/30">
+        <div className="w-full max-w-sm text-center space-y-6">
+          <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto">
+            <CheckCircle2 className="h-8 w-8 text-emerald-500" />
+          </div>
+          <div>
+            <h2 className="text-lg font-bold text-foreground">Placa indicada com sucesso!</h2>
+            <p className="text-sm text-muted-foreground mt-1">O consultor vai entrar em contato com o dono do veículo.</p>
+          </div>
+          <button
+            onClick={novaSugestao}
+            className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-colors"
+          >
+            Indicar outra placa
+          </button>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="flex-1 flex flex-col">
-      <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Nova Indicação</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Indique um conhecido para proteção veicular</p>
+      <div className="px-6 py-5 border-b border-border">
+        <h1 className="text-base font-bold text-foreground">Indicar Placa</h1>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Digite a placa do veículo que você quer indicar para proteção</p>
       </div>
-      <div className="flex-1 p-8 bg-muted/30">
-        <div className="max-w-md">
-          {sucesso && (
-            <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-6">
-              <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
-              <div>
-                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Indicação enviada com sucesso!</div>
-                <div className="text-xs text-muted-foreground mt-0.5">O consultor vai entrar em contato em breve.</div>
-              </div>
-            </div>
-          )}
 
+      <div className="flex-1 overflow-y-auto p-6 bg-muted/30">
+        <div className="max-w-md mx-auto space-y-6">
+
+          {/* Preview da placa */}
+          <div className="flex flex-col items-center gap-3">
+            <div className="overflow-x-auto w-full flex justify-center">
+              <PlacaMercosul placa={placaLimpa} tamanho="md" />
+            </div>
+            {placaLimpa.length === 7 && !valida && (
+              <p className="text-xs text-red-500 font-medium">Formato inválido. Use ABC-1234 ou ABC-1D23</p>
+            )}
+            {valida && (
+              <p className="text-xs text-emerald-500 font-semibold">Placa válida</p>
+            )}
+          </div>
+
+          {/* Alerta duplicado */}
           {duplicado && (
-            <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
+            <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
               <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <div className="text-sm font-bold text-amber-600 dark:text-amber-400">Telefone já cadastrado</div>
-                <div className="text-xs text-muted-foreground mt-0.5">Este número já foi indicado anteriormente. Tente com outro contato.</div>
+                <div className="text-sm font-bold text-amber-600 dark:text-amber-400">Placa já indicada</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Esta placa já foi cadastrada anteriormente.</div>
               </div>
             </div>
           )}
 
-          <Card className="border-t-4 border-t-amber-500 shadow-sm">
-            <CardHeader className="pb-3">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <PlusCircle className="h-4 w-4 text-amber-500" />
-                Dados do Indicado
-              </CardTitle>
-            </CardHeader>
-            <CardContent>
-              <form onSubmit={enviar} className="space-y-4">
-                {erro && (
-                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-xs text-red-500">{erro}</div>
-                )}
-                <div className="space-y-1.5">
-                  <Label htmlFor="nome" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Nome completo</Label>
-                  <Input id="nome" placeholder="Ex: Joao da Silva" value={nome} onChange={(e) => setNome(e.target.value)} required />
-                </div>
-                <div className="space-y-1.5">
-                  <Label htmlFor="telefone" className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">Telefone (WhatsApp)</Label>
-                  <Input
-                    id="telefone"
-                    type="tel"
-                    placeholder="Ex: 11999999999"
-                    value={telefone}
-                    onChange={(e) => { setTelefone(e.target.value); setDuplicado(false); }}
-                    required
-                  />
-                </div>
-                <Button type="submit" disabled={carregando} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold">
-                  {carregando ? "Enviando..." : "Enviar Indicação"}
-                </Button>
-              </form>
-            </CardContent>
-          </Card>
+          {/* Formulario */}
+          <form onSubmit={enviar} className="space-y-4">
+            {erro && (
+              <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-xs text-red-500">{erro}</div>
+            )}
+
+            {/* Campo placa */}
+            <div>
+              <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+                Placa do veículo
+              </label>
+              <input
+                type="text"
+                value={placa}
+                onChange={handlePlaca}
+                placeholder="ABC-1234"
+                maxLength={8}
+                autoComplete="off"
+                autoCapitalize="characters"
+                className="w-full text-center text-3xl font-black tracking-[0.3em] uppercase px-4 py-4 rounded-xl border-2 border-border bg-background focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
+                style={{ fontFamily: "'Arial Black', Arial, sans-serif" }}
+              />
+            </div>
+
+            {/* Dados opcionais */}
+            <div className="border-t border-border pt-4 space-y-3">
+              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                <Car className="h-3 w-3" />
+                Dados do dono (opcional)
+              </p>
+              <div>
+                <label className="block text-[11px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Nome</label>
+                <input
+                  type="text"
+                  value={nome}
+                  onChange={(e) => setNome(e.target.value)}
+                  placeholder="Ex: João da Silva"
+                  className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                />
+              </div>
+              <div>
+                <label className="block text-[11px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">WhatsApp</label>
+                <input
+                  type="tel"
+                  value={telefone}
+                  onChange={(e) => setTelefone(e.target.value)}
+                  placeholder="Ex: 11999999999"
+                  className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={carregando || !valida}
+              className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              {carregando ? "Enviando..." : "Indicar esta placa"}
+            </button>
+          </form>
         </div>
       </div>
     </div>

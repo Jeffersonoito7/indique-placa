@@ -5,8 +5,9 @@ import { notificarNovoLead, notificarNovaIndicacao } from "@/lib/whatsapp";
 import { z } from "zod";
 
 const schema = z.object({
-  nome_lead: z.string().min(2).max(100),
-  telefone_lead: z.string().min(10).max(20),
+  placa: z.string().min(7).max(7).regex(/^[A-Z0-9]{7}$/, "Placa inválida"),
+  nome_lead: z.string().min(2).max(100).optional(),
+  telefone_lead: z.string().min(10).max(20).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -19,25 +20,26 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
-  const { nome_lead, telefone_lead } = parsed.data;
+  const { placa, nome_lead, telefone_lead } = parsed.data;
 
   if (!indicador.consultor_id) return NextResponse.json({ error: "Indicador sem consultor vinculado" }, { status: 400 });
 
-  const tel = telefone_lead.replace(/\D/g, "");
+  const tel = telefone_lead?.replace(/\D/g, "") ?? null;
 
-  // Verifica duplicata por telefone dentro da carteira do consultor
+  // Deduplicacao por placa dentro da carteira do consultor
   const { data: existente } = await supabaseAdmin
     .from("indicacoes")
     .select("id")
     .eq("consultor_id", indicador.consultor_id)
-    .eq("telefone_lead", tel)
+    .eq("placa", placa)
     .limit(1)
     .single();
 
-  if (existente) return NextResponse.json({ error: "Este telefone já foi indicado anteriormente." }, { status: 409 });
+  if (existente) return NextResponse.json({ error: "Esta placa já foi indicada anteriormente." }, { status: 409 });
 
   const { error } = await supabaseAdmin.from("indicacoes").insert({
-    nome_lead,
+    placa,
+    nome_lead: nome_lead ?? null,
     telefone_lead: tel,
     consultor_id: indicador.consultor_id,
     indicador_id: indicador.id,
@@ -46,7 +48,7 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: "Erro ao salvar indicação" }, { status: 500 });
 
-  // Notificações em background
+  // Notificacoes em background
   supabaseAdmin
     .from("consultores")
     .select("nome, fone")
@@ -57,8 +59,8 @@ export async function POST(req: NextRequest) {
         notificarNovoLead({
           nomeConsultor: data.nome,
           telefoneConsultor: data.fone,
-          nomeLead: nome_lead,
-          telefoneLead: tel,
+          nomeLead: nome_lead ?? `Placa ${placa}`,
+          telefoneLead: tel ?? "",
           viaIndicador: indicador.nome,
         }).catch(() => {});
       }
@@ -67,7 +69,7 @@ export async function POST(req: NextRequest) {
   notificarNovaIndicacao({
     nomeIndicador: indicador.nome,
     telefoneIndicador: indicador.telefone,
-    nomeLead: nome_lead,
+    nomeLead: nome_lead ?? `Placa ${placa}`,
   }).catch(() => {});
 
   return NextResponse.json({ ok: true });

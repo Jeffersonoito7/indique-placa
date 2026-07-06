@@ -6,6 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { StatusLead } from "@/components/status-lead";
 import { AbrirWhatsApp } from "@/components/abrir-whatsapp";
+import { PlacaMercosul } from "@/components/placa-mercosul";
 
 export default async function ConsultorLeadsPage() {
   const consultor = await getConsultorLogado();
@@ -13,7 +14,7 @@ export default async function ConsultorLeadsPage() {
 
   const { data: leads } = await supabaseAdmin
     .from("indicacoes")
-    .select("id, nome_lead, telefone_lead, status, criado_em, indicadores(nome)")
+    .select("id, placa, nome_lead, telefone_lead, status, criado_em, indicadores(nome)")
     .eq("consultor_id", consultor.id)
     .order("criado_em", { ascending: false });
 
@@ -30,7 +31,7 @@ export default async function ConsultorLeadsPage() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Meus Leads</h1>
+        <h1 className="text-base font-bold text-foreground">Minhas Placas</h1>
         <p className="text-[11px] text-muted-foreground mt-0.5">Todas as indicações recebidas</p>
       </div>
       <div className="flex-1 p-8 bg-muted/30">
@@ -48,12 +49,12 @@ export default async function ConsultorLeadsPage() {
           </CardHeader>
           <CardContent className="p-0">
             {!leads?.length ? (
-              <div className="text-center text-muted-foreground text-sm py-16">Nenhum lead ainda</div>
+              <div className="text-center text-muted-foreground text-sm py-16">Nenhuma indicação ainda</div>
             ) : (
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Nome", "WhatsApp", "Indicado por", "Status", "Data", ""].map((h) => (
+                    {["Placa", "Proprietário", "Indicado por", "Status", "Data", ""].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
                     ))}
                   </tr>
@@ -61,15 +62,24 @@ export default async function ConsultorLeadsPage() {
                 <tbody>
                   {leads.map((lead, i) => (
                     <tr key={lead.id} className={cn("border-b border-border hover:bg-accent/40 transition-colors", i % 2 !== 0 && "bg-muted/20")}>
-                      <td className="px-6 py-3.5 text-sm font-medium text-foreground">{lead.nome_lead}</td>
-                      <td className="px-6 py-3.5 text-sm text-muted-foreground font-mono">{lead.telefone_lead}</td>
+                      <td className="px-6 py-3">
+                        {(lead as any).placa ? (
+                          <PlacaMercosul placa={(lead as any).placa} tamanho="sm" />
+                        ) : (
+                          <span className="text-xs text-muted-foreground italic">sem placa</span>
+                        )}
+                      </td>
+                      <td className="px-6 py-3">
+                        <div className="text-sm font-medium text-foreground">{lead.nome_lead ?? <span className="italic text-muted-foreground/50 text-xs">a preencher</span>}</div>
+                        {lead.telefone_lead && <div className="text-xs text-muted-foreground font-mono mt-0.5">{lead.telefone_lead}</div>}
+                      </td>
                       <td className="px-6 py-3.5 text-sm text-muted-foreground">{(lead.indicadores as any)?.nome ?? <span className="italic text-muted-foreground/50">direto</span>}</td>
                       <td className="px-6 py-3.5">
                         <StatusLead leadId={lead.id} statusInicial={lead.status as any} endpoint="/api/consultor/lead" />
                       </td>
                       <td className="px-6 py-3.5 text-xs text-muted-foreground">{new Date(lead.criado_em).toLocaleDateString("pt-BR")}</td>
                       <td className="px-6 py-3.5">
-                        <AbrirWhatsApp telefone={lead.telefone_lead} nome={lead.nome_lead} />
+                        {lead.telefone_lead && <AbrirWhatsApp telefone={lead.telefone_lead} nome={lead.nome_lead ?? (lead as any).placa ?? ""} />}
                       </td>
                     </tr>
                   ))}
