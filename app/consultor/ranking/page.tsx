@@ -12,7 +12,8 @@ export default async function ConsultorRankingPage() {
 
   const { data: indicacoes } = await supabaseAdmin
     .from("indicacoes")
-    .select("consultor_id, status, consultores(nome)");
+    .select("consultor_id, status, consultores(nome)")
+    .limit(2000);
 
   const map: Record<string, { nome: string; total: number; fechados: number }> = {};
   for (const ind of indicacoes ?? []) {

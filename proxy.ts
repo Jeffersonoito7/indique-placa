@@ -52,13 +52,13 @@ export async function proxy(req: NextRequest) {
     }
   }
 
-  const ROTAS_PUBLICAS_CONSULTOR = ["/consultor/login", "/consultor/cadastro"];
+  const ROTAS_PUBLICAS_CONSULTOR = ["/consultor/login", "/consultor/cadastro", "/consultor/recuperar-senha"];
   if (pathname.startsWith("/consultor") && !ROTAS_PUBLICAS_CONSULTOR.includes(pathname)) {
     const auth = req.cookies.get("consultor_auth")?.value;
     if (!auth) return NextResponse.redirect(new URL("/consultor/login", req.url));
   }
 
-  const ROTAS_PUBLICAS_INDICADOR = ["/indicador/login", "/indicador/cadastro"];
+  const ROTAS_PUBLICAS_INDICADOR = ["/indicador/login", "/indicador/cadastro", "/indicador/recuperar-senha"];
   if (pathname.startsWith("/indicador") && !ROTAS_PUBLICAS_INDICADOR.includes(pathname)) {
     const auth = req.cookies.get("indicador_auth")?.value;
     if (!auth) return NextResponse.redirect(new URL("/indicador/login", req.url));

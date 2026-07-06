@@ -48,7 +48,6 @@ export async function POST(req: NextRequest) {
   const { error } = await supabaseAdmin.from("consultores").insert({
     nome,
     fone: tel,
-    email: `${tel}@indiqueplaca.com.br`,
     cidade,
     associacao,
     senha: senha_hash,

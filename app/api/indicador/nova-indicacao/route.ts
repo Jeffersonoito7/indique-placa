@@ -49,14 +49,14 @@ export async function POST(req: NextRequest) {
   // Notificações em background
   supabaseAdmin
     .from("consultores")
-    .select("nome, telefone")
+    .select("nome, fone")
     .eq("id", indicador.consultor_id)
     .single()
     .then(({ data }) => {
       if (data) {
         notificarNovoLead({
           nomeConsultor: data.nome,
-          telefoneConsultor: data.telefone,
+          telefoneConsultor: data.fone,
           nomeLead: nome_lead,
           telefoneLead: tel,
           viaIndicador: indicador.nome,

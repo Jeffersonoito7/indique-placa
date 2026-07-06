@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit } from "@/lib/rate-limit";
-import { z } from "zod";
 import bcrypt from "bcryptjs";
+import { z } from "zod";
 
 const schema = z.object({
   nome: z.string().min(2).max(100),
   telefone: z.string().min(10).max(20),
-  senha: z.string().min(6).max(100),
+  senha: z.string().min(6).max(128),
   consultor_id: z.string().uuid().optional().nullable(),
 });
 
@@ -18,15 +18,13 @@ export async function POST(req: NextRequest) {
   }
 
   let body: unknown;
-  try {
-    body = await req.json();
-  } catch {
-    return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 });
+  try { body = await req.json(); } catch {
+    return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });
   }
 
   const parsed = schema.safeParse(body);
   if (!parsed.success) {
-    return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+    return NextResponse.json({ error: "Preencha todos os campos corretamente" }, { status: 400 });
   }
 
   const { nome, telefone, senha, consultor_id } = parsed.data;
@@ -39,17 +37,17 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (existente) {
-    return NextResponse.json({ error: "Telefone ja cadastrado" }, { status: 409 });
+    return NextResponse.json({ error: "Este WhatsApp já está cadastrado" }, { status: 409 });
   }
 
   let cid = consultor_id ?? null;
   if (cid) {
-    const { data } = await supabaseAdmin
+    const { data: consultor } = await supabaseAdmin
       .from("consultores")
       .select("id, status")
       .eq("id", cid)
       .single();
-    if (!data || data.status !== "ativo") cid = null;
+    if (!consultor || consultor.status !== "ativo") cid = null;
   }
 
   const senha_hash = await bcrypt.hash(senha, 10);
@@ -63,7 +61,8 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
-    return NextResponse.json({ error: "Erro ao cadastrar" }, { status: 500 });
+    console.error("Erro ao cadastrar indicador:", error);
+    return NextResponse.json({ error: "Erro ao salvar cadastro. Tente novamente." }, { status: 500 });
   }
 
   return NextResponse.json({ ok: true });

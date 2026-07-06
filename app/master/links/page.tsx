@@ -40,13 +40,13 @@ const links = [
     badgeColor: "bg-amber-500/10 text-amber-500",
   },
   {
-    titulo: "Link do Captador",
-    descricao: "Pagina de captacao direta para novos associados",
-    url: `${BASE}/captador`,
+    titulo: "Recuperar Senha",
+    descricao: "Página para consultores redefinam a própria senha de acesso",
+    url: `${BASE}/consultor/recuperar-senha`,
     cor: "border-t-emerald-500",
     iconBg: "bg-emerald-500/10",
     iconColor: "text-emerald-500",
-    badge: "CAPTADOR",
+    badge: "SUPORTE",
     badgeColor: "bg-emerald-500/10 text-emerald-500",
   },
 ];

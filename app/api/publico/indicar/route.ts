@@ -70,14 +70,14 @@ export async function POST(req: NextRequest) {
   if (cid) {
     supabaseAdmin
       .from("consultores")
-      .select("nome, telefone")
+      .select("nome, fone")
       .eq("id", cid)
       .single()
       .then(({ data }) => {
         if (data) {
           notificarNovoLead({
             nomeConsultor: data.nome,
-            telefoneConsultor: data.telefone,
+            telefoneConsultor: data.fone,
             nomeLead: nome_lead,
             telefoneLead: tel,
           }).catch(() => {});

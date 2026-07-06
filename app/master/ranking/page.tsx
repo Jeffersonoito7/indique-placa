@@ -7,7 +7,8 @@ import { cn } from "@/lib/utils";
 async function getRanking() {
   const { data: indicacoes } = await supabaseAdmin
     .from("indicacoes")
-    .select("consultor_id, status, consultores(nome)");
+    .select("consultor_id, status, consultores(nome)")
+    .limit(2000);
 
   if (!indicacoes) return { ranking: [] };
 
