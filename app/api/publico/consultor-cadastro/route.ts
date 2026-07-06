@@ -9,6 +9,7 @@ const schema = z.object({
   telefone: z.string().min(10).max(20),
   cidade: z.string().min(2).max(100),
   associacao: z.string().min(2).max(100),
+  senha: z.string().min(6).max(128),
 });
 
 export async function POST(req: NextRequest) {
@@ -21,7 +22,7 @@ export async function POST(req: NextRequest) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 });
+    return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });
   }
 
   const parsed = schema.safeParse(body);
@@ -29,26 +30,25 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Preencha todos os campos corretamente" }, { status: 400 });
   }
 
-  const { nome, telefone, cidade, associacao } = parsed.data;
+  const { nome, telefone, cidade, associacao, senha } = parsed.data;
   const tel = telefone.replace(/\D/g, "");
 
   const { data: existente } = await supabaseAdmin
     .from("consultores")
     .select("id")
-    .eq("telefone", tel)
+    .eq("fone", tel)
     .single();
 
   if (existente) {
-    return NextResponse.json({ error: "Este WhatsApp ja esta cadastrado" }, { status: 409 });
+    return NextResponse.json({ error: "Este WhatsApp já está cadastrado" }, { status: 409 });
   }
 
-  // Senha temporaria = ultimos 6 digitos do telefone
-  const senhaTemp = tel.slice(-6);
-  const senha_hash = await bcrypt.hash(senhaTemp, 10);
+  const senha_hash = await bcrypt.hash(senha, 10);
 
   const { error } = await supabaseAdmin.from("consultores").insert({
     nome,
-    telefone: tel,
+    fone: tel,
+    email: `${tel}@indiqueplaca.com.br`,
     cidade,
     associacao,
     senha: senha_hash,
@@ -60,5 +60,5 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Erro ao salvar cadastro. Tente novamente." }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, senhaTemp });
+  return NextResponse.json({ ok: true });
 }

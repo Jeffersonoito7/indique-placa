@@ -8,9 +8,9 @@ const navItems = [
   { group: "Painel", items: [
     { href: "/indicador/dashboard", label: "Dashboard", icon: LayoutDashboard },
   ]},
-  { group: "Indicacoes", items: [
-    { href: "/indicador/indicar", label: "Nova Indicacao", icon: PlusCircle },
-    { href: "/indicador/historico", label: "Historico", icon: ClipboardList },
+  { group: "Indicações", items: [
+    { href: "/indicador/indicar", label: "Nova Indicação", icon: PlusCircle },
+    { href: "/indicador/historico", label: "Histórico", icon: ClipboardList },
   ]},
 ];
 

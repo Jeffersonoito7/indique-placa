@@ -41,19 +41,19 @@ export default async function ConsultorRankingPage() {
       <div className="px-8 py-5 border-b border-border flex items-center justify-between">
         <div>
           <h1 className="text-base font-bold text-foreground">Ranking</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Classificacao geral de consultores</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Classificação geral de consultores</p>
         </div>
         {minhaPosicao > 0 && (
           <div className="flex items-center gap-2 bg-amber-500/10 text-amber-500 px-4 py-2 rounded-xl">
             <Trophy className="h-4 w-4" />
-            <span className="text-sm font-bold">Voce esta em #{minhaPosicao}</span>
+            <span className="text-sm font-bold">Você está em #{minhaPosicao}</span>
           </div>
         )}
       </div>
       <div className="flex-1 p-8 bg-muted/30">
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-sm font-semibold">Classificacao Geral</CardTitle>
+            <CardTitle className="text-sm font-semibold">Classificação Geral</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {!ranking.length ? (
@@ -79,7 +79,7 @@ export default async function ConsultorRankingPage() {
                           <span className={cn("text-sm font-bold", i === 0 ? "text-amber-500" : i === 1 ? "text-slate-400" : i === 2 ? "text-orange-600" : "text-muted-foreground")}>#{i + 1}</span>
                         </td>
                         <td className="px-6 py-3.5 text-sm font-medium text-foreground">
-                          {c.nome} {isEu && <span className="ml-1 text-[10px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded font-bold">VOCE</span>}
+                          {c.nome} {isEu && <span className="ml-1 text-[10px] bg-emerald-500/10 text-emerald-500 px-1.5 py-0.5 rounded font-bold">VOCÊ</span>}
                         </td>
                         <td className="px-6 py-3.5 text-sm text-muted-foreground">{c.total}</td>
                         <td className="px-6 py-3.5"><span className="text-sm font-bold text-emerald-500">{c.fechados}</span></td>

@@ -81,8 +81,8 @@ export default function ConfiguracoesPage() {
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border flex items-center justify-between">
         <div>
-          <h1 className="text-base font-bold text-foreground">Configuracoes</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Dados e parametros da plataforma</p>
+          <h1 className="text-base font-bold text-foreground">Configurações</h1>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Dados e parâmetros da plataforma</p>
         </div>
         <button
           onClick={salvar}
@@ -90,7 +90,7 @@ export default function ConfiguracoesPage() {
           className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors disabled:opacity-50"
         >
           {sucesso ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
-          {salvando ? "Salvando..." : sucesso ? "Salvo!" : "Salvar alteracoes"}
+          {salvando ? "Salvando..." : sucesso ? "Salvo!" : "Salvar alterações"}
         </button>
       </div>
 
@@ -126,7 +126,7 @@ export default function ConfiguracoesPage() {
               <CardContent className="p-6 space-y-5">
                 {campo("E-mail de contato", "email", Mail, "Ex: contato@indiqueplaca.com.br", "email")}
                 {campo("WhatsApp / Telefone", "telefone", Phone, "Ex: 5511999999999")}
-                {campo("Endereco", "endereco", MapPin, "Ex: Rua das Flores, 100 - Sao Paulo/SP")}
+                {campo("Endereço", "endereco", MapPin, "Ex: Rua das Flores, 100 - São Paulo/SP")}
               </CardContent>
             </Card>
           </div>

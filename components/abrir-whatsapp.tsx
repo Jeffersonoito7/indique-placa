@@ -3,7 +3,7 @@
 export function AbrirWhatsApp({ telefone, nome }: { telefone: string; nome: string }) {
   const numero = telefone.replace(/\D/g, "");
   const numeroFormatado = numero.startsWith("55") ? numero : `55${numero}`;
-  const texto = encodeURIComponent(`Ola, ${nome}! Tudo bem? Vi que voce tem interesse em protecao veicular. Posso te passar mais detalhes?`);
+  const texto = encodeURIComponent(`Olá, ${nome}! Tudo bem? Vi que você tem interesse em proteção veicular. Posso te passar mais detalhes?`);
   const url = `https://wa.me/${numeroFormatado}?text=${texto}`;
 
   return (

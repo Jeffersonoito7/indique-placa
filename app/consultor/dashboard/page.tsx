@@ -26,7 +26,7 @@ export default async function ConsultorDashboard() {
     { label: "Meus Leads", value: totalLeads, icon: ClipboardList, iconBg: "bg-blue-500/10", iconColor: "text-blue-500", valueColor: "text-blue-500", border: "border-t-blue-500" },
     { label: "Indicadores", value: totalIndicadores, icon: UserCheck, iconBg: "bg-violet-500/10", iconColor: "text-violet-500", valueColor: "text-violet-500", border: "border-t-violet-500" },
     { label: "Vendas Fechadas", value: totalFechados, icon: CheckCircle2, iconBg: "bg-emerald-500/10", iconColor: "text-emerald-500", valueColor: "text-emerald-500", border: "border-t-emerald-500" },
-    { label: "Taxa de Conversao", value: `${taxa}%`, icon: TrendingUp, iconBg: "bg-amber-500/10", iconColor: "text-amber-500", valueColor: "text-amber-500", border: "border-t-amber-500" },
+    { label: "Taxa de Conversão", value: `${taxa}%`, icon: TrendingUp, iconBg: "bg-amber-500/10", iconColor: "text-amber-500", valueColor: "text-amber-500", border: "border-t-amber-500" },
   ];
 
   const { data: ultimosLeads } = await supabaseAdmin
@@ -46,11 +46,11 @@ export default async function ConsultorDashboard() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Ola, {consultor.nome.split(" ")[0]}</h1>
+        <h1 className="text-base font-bold text-foreground">Olá, {consultor.nome.split(" ")[0]}</h1>
         <div className="flex items-center gap-4 mt-0.5">
           <p className="text-[11px] text-muted-foreground">Seu painel de desempenho</p>
           <span className="text-[11px] text-muted-foreground/60">|</span>
-          <span className="text-[11px] text-muted-foreground font-mono">{consultor.telefone}</span>
+          <span className="text-[11px] text-muted-foreground font-mono">{consultor.fone}</span>
         </div>
       </div>
       <div className="flex-1 p-8 bg-muted/30">
@@ -73,11 +73,11 @@ export default async function ConsultorDashboard() {
 
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-sm font-semibold">Ultimos Leads Recebidos</CardTitle>
+            <CardTitle className="text-sm font-semibold">Últimos Leads Recebidos</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {!ultimosLeads?.length ? (
-              <div className="text-center text-muted-foreground text-sm py-12">Voce ainda nao tem leads. Compartilhe seu link de indicacao!</div>
+              <div className="text-center text-muted-foreground text-sm py-12">Você ainda não tem leads. Compartilhe seu link de indicação!</div>
             ) : (
               <table className="w-full">
                 <thead>

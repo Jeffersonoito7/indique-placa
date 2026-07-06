@@ -30,7 +30,7 @@ function FormIndicacao() {
       const json = await res.json();
       if (!res.ok) setErro(json.error ?? "Erro ao enviar");
       else setSucesso(true);
-    } catch { setErro("Erro de conexao."); }
+    } catch { setErro("Erro de conexão."); }
     finally { setCarregando(false); }
   };
 
@@ -40,8 +40,8 @@ function FormIndicacao() {
         <div className="w-16 h-16 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4">
           <CheckCircle2 className="h-8 w-8 text-emerald-500" />
         </div>
-        <h2 className="text-lg font-bold text-white mb-2">Indicacao enviada!</h2>
-        <p className="text-sm text-gray-400">Em breve um consultor vai entrar em contato com voce.</p>
+        <h2 className="text-lg font-bold text-white mb-2">Indicação enviada!</h2>
+        <p className="text-sm text-gray-400">Em breve um consultor vai entrar em contato com você.</p>
       </div>
     );
   }
@@ -62,7 +62,7 @@ function FormIndicacao() {
           onFocus={(e) => (e.target.style.borderColor = "#10B981")} onBlur={(e) => (e.target.style.borderColor = "#1A1A2E")} />
       </div>
       <button type="submit" disabled={carregando} style={{ width: "100%", padding: 13, background: "linear-gradient(135deg,#064e3b,#065f46)", border: "none", borderRadius: 10, color: "#fff", fontSize: 14, fontWeight: 700, cursor: carregando ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: carregando ? 0.7 : 1, marginTop: 8 }}>
-        {carregando ? "Enviando..." : "Enviar Indicacao"}
+        {carregando ? "Enviando..." : "Enviar Indicação"}
       </button>
     </form>
   );
@@ -79,8 +79,8 @@ export default function IndiquePage() {
         </div>
 
         <div style={{ background: "#0D0D18", border: "1px solid #1A1A2E", borderRadius: 20, padding: "32px 28px" }}>
-          <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 4, marginTop: 0 }}>Fazer uma Indicacao</h2>
-          <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 24 }}>Preencha os dados da pessoa que voce quer indicar</p>
+          <h2 style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 4, marginTop: 0 }}>Fazer uma Indicação</h2>
+          <p style={{ fontSize: 13, color: "#6B7280", marginBottom: 24 }}>Preencha os dados da pessoa que você quer indicar</p>
           <Suspense>
             <FormIndicacao />
           </Suspense>

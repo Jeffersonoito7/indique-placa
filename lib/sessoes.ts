@@ -1,37 +1,39 @@
 import "server-only";
-import { supabaseAdmin } from "./supabase-server";
-import { randomBytes } from "crypto";
+import { createHmac } from "crypto";
 
+const SECRET = process.env.SESSION_SECRET ?? "indique-placa-secret-fallback-2024";
 const DURACAO_HORAS = 8;
 
+function assinar(payload: string): string {
+  return createHmac("sha256", SECRET).update(payload).digest("hex");
+}
+
 export async function criarSessao(usuario_id: string, tipo: "consultor" | "indicador"): Promise<string> {
-  const token = randomBytes(32).toString("hex");
-  const expira_em = new Date(Date.now() + DURACAO_HORAS * 60 * 60 * 1000).toISOString();
-
-  const { error } = await supabaseAdmin.from("sessoes").insert({ token, usuario_id, tipo, expira_em });
-  if (error) throw new Error("Erro ao criar sessao: " + error.message);
-
-  return token;
+  const expira = Date.now() + DURACAO_HORAS * 60 * 60 * 1000;
+  const payload = JSON.stringify({ usuario_id, tipo, expira });
+  const b64 = Buffer.from(payload).toString("base64url");
+  const sig = assinar(b64);
+  return `${b64}.${sig}`;
 }
 
 export async function validarSessao(token: string, tipo: "consultor" | "indicador"): Promise<string | null> {
-  const { data } = await supabaseAdmin
-    .from("sessoes")
-    .select("usuario_id, expira_em")
-    .eq("token", token)
-    .eq("tipo", tipo)
-    .single();
+  try {
+    const dot = token.lastIndexOf(".");
+    if (dot === -1) return null;
+    const b64 = token.slice(0, dot);
+    const sig = token.slice(dot + 1);
+    if (assinar(b64) !== sig) return null;
 
-  if (!data) return null;
-  if (new Date(data.expira_em) < new Date()) {
-    // Sessao expirada — remover do banco
-    await supabaseAdmin.from("sessoes").delete().eq("token", token);
+    const payload = JSON.parse(Buffer.from(b64, "base64url").toString());
+    if (payload.tipo !== tipo) return null;
+    if (Date.now() > payload.expira) return null;
+
+    return payload.usuario_id;
+  } catch {
     return null;
   }
-
-  return data.usuario_id;
 }
 
-export async function revogarSessao(token: string): Promise<void> {
-  await supabaseAdmin.from("sessoes").delete().eq("token", token);
+export async function revogarSessao(_token: string): Promise<void> {
+  // Revogação via limpeza do cookie no cliente
 }

@@ -71,16 +71,16 @@ export default async function RankingPage() {
         {/* Tabela completa */}
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-sm font-semibold">Classificacao Geral</CardTitle>
+            <CardTitle className="text-sm font-semibold">Classificação Geral</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {ranking.length === 0 ? (
-              <div className="text-center text-muted-foreground text-sm py-16">Sem dados de indicacoes ainda</div>
+              <div className="text-center text-muted-foreground text-sm py-16">Sem dados de indicações ainda</div>
             ) : (
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Pos.", "Consultor", "Total Leads", "Fechados", "Taxa de Conversao"].map((h) => (
+                    {["Pos.", "Consultor", "Total Leads", "Fechados", "Taxa de Conversão"].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">
                         {h}
                       </th>

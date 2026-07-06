@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
   const senhaEnv = process.env.MASTER_SENHA;
 
   if (!usuarioEnv || !senhaEnv) {
-    return NextResponse.json({ error: "Configuracao do servidor incompleta" }, { status: 500 });
+    return NextResponse.json({ error: "Configuração do servidor incompleta" }, { status: 500 });
   }
 
   // Comparacao em tempo constante para evitar timing attack

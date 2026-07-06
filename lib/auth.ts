@@ -13,7 +13,7 @@ export async function getConsultorLogado() {
 
   const { data } = await supabaseAdmin
     .from("consultores")
-    .select("id, nome, telefone, email, status")
+    .select("id, nome, fone, email, status")
     .eq("id", usuario_id)
     .single();
 

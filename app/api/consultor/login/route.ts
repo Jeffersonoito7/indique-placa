@@ -12,18 +12,18 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { telefone, senha } = parsed.data;
   const tel = telefone.replace(/\D/g, "");
 
   const { data: consultor } = await supabaseAdmin
     .from("consultores")
-    .select("id, nome, telefone, senha, status")
-    .eq("telefone", tel)
+    .select("id, nome, fone, senha, status")
+    .eq("fone", tel)
     .single();
 
   if (!consultor) {

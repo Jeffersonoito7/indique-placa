@@ -34,7 +34,7 @@ export default async function AssociacoesPage() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Associacoes</h1>
+        <h1 className="text-base font-bold text-foreground">Associações</h1>
         <p className="text-[11px] text-muted-foreground mt-0.5">Clientes white-label ativos na plataforma</p>
       </div>
 
@@ -68,11 +68,11 @@ export default async function AssociacoesPage() {
         {/* Tabela */}
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-sm font-semibold">Lista de Associacoes</CardTitle>
+            <CardTitle className="text-sm font-semibold">Lista de Associações</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {lista.length === 0 ? (
-              <div className="text-center text-muted-foreground text-sm py-16">Nenhuma associacao cadastrada ainda</div>
+              <div className="text-center text-muted-foreground text-sm py-16">Nenhuma associação cadastrada ainda</div>
             ) : (
               <table className="w-full">
                 <thead>
@@ -95,7 +95,7 @@ export default async function AssociacoesPage() {
                             {a.dominio}
                           </div>
                         ) : (
-                          <span className="text-muted-foreground/50 italic text-xs">sem dominio</span>
+                          <span className="text-muted-foreground/50 italic text-xs">sem domínio</span>
                         )}
                       </td>
                       <td className="px-6 py-3.5">

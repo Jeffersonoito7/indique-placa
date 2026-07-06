@@ -1,4 +1,4 @@
-const CACHE = "ip-assets-v1";
+const CACHE = "ip-assets-v2";
 
 // Apenas assets estaticos sao cacheados — nunca paginas ou APIs autenticadas
 const CACHEABLE = /\.(js|css|png|jpg|jpeg|webp|svg|ico|woff|woff2|ttf)$/;
@@ -6,7 +6,13 @@ const CACHEABLE = /\.(js|css|png|jpg|jpeg|webp|svg|ico|woff|woff2|ttf)$/;
 const ROTAS_PRIVADAS = ["/master", "/consultor", "/indicador", "/api/"];
 
 self.addEventListener("install", () => self.skipWaiting());
-self.addEventListener("activate", (e) => e.waitUntil(clients.claim()));
+self.addEventListener("activate", (e) =>
+  e.waitUntil(
+    caches.keys().then((keys) =>
+      Promise.all(keys.filter((k) => k !== CACHE).map((k) => caches.delete(k)))
+    ).then(() => clients.claim())
+  )
+);
 
 self.addEventListener("fetch", (e) => {
   if (e.request.method !== "GET") return;

@@ -37,21 +37,21 @@ const STYLES = `
   .login-page {
     min-height: 100vh; display: flex; align-items: center; justify-content: center;
     padding: 20px; position: relative; overflow: hidden;
-    background: linear-gradient(135deg, #031a2e, #0a2a4a, #063d20, #021a0e, #0a2a4a, #031a2e);
+    background: linear-gradient(135deg, #020c1b, #0a1f3d, #0d2a5e, #0a1f3d, #061428, #020c1b);
     background-size: 400% 400%;
     animation: gradientShift 12s ease infinite;
     font-family: Inter, system-ui, sans-serif;
   }
   .login-glow {
     position: absolute; width: 500px; height: 500px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(16,185,129,.18) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(59,130,246,.22) 0%, transparent 70%);
     top: -100px; left: -100px;
     animation: glowPulse 6s ease-in-out infinite;
     pointer-events: none;
   }
   .login-glow2 {
     position: absolute; width: 400px; height: 400px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(108,143,212,.15) 0%, transparent 70%);
+    background: radial-gradient(circle, rgba(99,102,241,.18) 0%, transparent 70%);
     bottom: -80px; right: -80px;
     animation: glowPulse 8s ease-in-out infinite reverse;
     pointer-events: none;
@@ -116,10 +116,10 @@ export default function ConsultorLoginPage() {
         body: JSON.stringify({ telefone, senha }),
       });
       const json = await res.json();
-      if (!res.ok) setErro(json.error ?? "Credenciais invalidas");
+      if (!res.ok) setErro(json.error ?? "Credenciais inválidas");
       else router.push("/consultor/dashboard");
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCarregando(false);
     }
@@ -145,9 +145,9 @@ export default function ConsultorLoginPage() {
 
           <div style={{
             display: "inline-flex", alignItems: "center", gap: 5,
-            background: "rgba(16,185,129,.15)", border: "1px solid rgba(16,185,129,.35)",
+            background: "rgba(59,130,246,.15)", border: "1px solid rgba(59,130,246,.35)",
             borderRadius: 6, padding: "3px 10px", fontSize: 10, fontWeight: 700,
-            letterSpacing: 1, color: "#10B981", textTransform: "uppercase", marginBottom: 8,
+            letterSpacing: 1, color: "#60a5fa", textTransform: "uppercase", marginBottom: 8,
           }}>CONSULTOR</div>
 
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.5)", marginBottom: 22 }}>
@@ -162,7 +162,7 @@ export default function ConsultorLoginPage() {
           )}
 
           <form onSubmit={entrar}>
-            <input className="campo-login" type="tel" placeholder="WhatsApp (somente numeros)" value={telefone} required
+            <input className="campo-login" type="tel" placeholder="WhatsApp com DDD (ex: 11999999999)" value={telefone} required
               onChange={(e) => setTelefone(e.target.value)} />
             <div className="senha-wrap">
               <input className="campo-login" type={verSenha ? "text" : "password"} placeholder="Senha" value={senha} required
@@ -187,7 +187,11 @@ export default function ConsultorLoginPage() {
             </button>
           </form>
 
-          <div style={{ marginTop: 16, fontSize: 12, color: "rgba(255,255,255,.35)", lineHeight: 1.6 }}>
+          <div style={{ marginTop: 16, fontSize: 12, color: "rgba(255,255,255,.35)", lineHeight: 1.9 }}>
+            <a href="/consultor/recuperar-senha" style={{ color: "rgba(96,165,250,.8)", textDecoration: "none" }}>
+              Esqueci minha senha
+            </a>
+            <br />
             E indicador?{" "}
             <a href="https://indicador.indiqueplaca.com.br" style={{ color: "rgba(255,255,255,.6)", textDecoration: "none" }}>
               Acesse aqui

@@ -11,13 +11,13 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const indicador = await getIndicadorLogado();
-  if (!indicador) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!indicador) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { nome_lead, telefone_lead } = parsed.data;
 
@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
     .limit(1)
     .single();
 
-  if (existente) return NextResponse.json({ error: "Este telefone ja foi indicado anteriormente." }, { status: 409 });
+  if (existente) return NextResponse.json({ error: "Este telefone já foi indicado anteriormente." }, { status: 409 });
 
   const { error } = await supabaseAdmin.from("indicacoes").insert({
     nome_lead,
@@ -44,9 +44,9 @@ export async function POST(req: NextRequest) {
     status: "novo",
   });
 
-  if (error) return NextResponse.json({ error: "Erro ao salvar indicacao" }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Erro ao salvar indicação" }, { status: 500 });
 
-  // Notificacoes em background
+  // Notificações em background
   supabaseAdmin
     .from("consultores")
     .select("nome, telefone")

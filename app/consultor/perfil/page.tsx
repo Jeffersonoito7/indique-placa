@@ -17,7 +17,7 @@ export default async function ConsultorPerfilPage() {
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
         <h1 className="text-base font-bold text-foreground">Meu Perfil</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Seus dados e links de captacao</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Seus dados e links de captação</p>
       </div>
       <div className="flex-1 p-8 bg-muted/30">
         <div className="max-w-2xl space-y-5">
@@ -39,7 +39,7 @@ export default async function ConsultorPerfilPage() {
                 <Phone className="h-4 w-4 text-muted-foreground flex-shrink-0" />
                 <div>
                   <div className="text-[10px] text-muted-foreground uppercase tracking-wider font-semibold mb-0.5">Telefone</div>
-                  <div className="text-sm font-medium text-foreground font-mono">{consultor.telefone}</div>
+                  <div className="text-sm font-medium text-foreground font-mono">{consultor.fone}</div>
                 </div>
               </div>
               {consultor.email && (
@@ -57,11 +57,11 @@ export default async function ConsultorPerfilPage() {
           <Card className="border-t-4 border-t-blue-500 shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Link2 className="h-4 w-4 text-blue-500" /> Meus Links de Captacao
+                <Link2 className="h-4 w-4 text-blue-500" /> Meus Links de Captação
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-2">
-              <CopiarLink titulo="Link de Indicacao" descricao="Envie para clientes indicarem conhecidos" url={linkIndicacao} cor="blue" />
+              <CopiarLink titulo="Link de Indicação" descricao="Envie para clientes indicarem conhecidos" url={linkIndicacao} cor="blue" />
               <CopiarLink titulo="Link para Indicadores" descricao="Envie para pessoas que querem te ajudar a captar" url={linkIndicador} cor="violet" />
             </CardContent>
           </Card>

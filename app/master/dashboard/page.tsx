@@ -41,8 +41,8 @@ async function getDashboardData() {
     supabaseAdmin.from("indicacoes").select("id", { count: "exact", head: true }),
     supabaseAdmin.from("indicacoes").select("id", { count: "exact", head: true }).eq("status", "fechado"),
     // ultimos 30 dias
-    supabaseAdmin.from("consultores").select("id", { count: "exact", head: true }).gte("criado_em", inicio30),
-    supabaseAdmin.from("consultores").select("id", { count: "exact", head: true }).gte("criado_em", inicio60).lt("criado_em", inicio30),
+    supabaseAdmin.from("consultores").select("id", { count: "exact", head: true }).gte("created_at", inicio30),
+    supabaseAdmin.from("consultores").select("id", { count: "exact", head: true }).gte("created_at", inicio60).lt("created_at", inicio30),
     supabaseAdmin.from("indicadores").select("id", { count: "exact", head: true }).gte("criado_em", inicio30),
     supabaseAdmin.from("indicadores").select("id", { count: "exact", head: true }).gte("criado_em", inicio60).lt("criado_em", inicio30),
     supabaseAdmin.from("indicacoes").select("id", { count: "exact", head: true }).gte("criado_em", inicio30),
@@ -172,7 +172,7 @@ export default async function DashboardPage() {
           <div className="flex items-start justify-between">
             <div>
               <h1 className="text-2xl font-extrabold text-white tracking-tight">Dashboard</h1>
-              <p className="text-sm text-white/50 mt-1">Visao geral da plataforma em tempo real</p>
+              <p className="text-sm text-white/50 mt-1">Visão geral da plataforma em tempo real</p>
             </div>
             <div
               className="flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full"
@@ -200,8 +200,8 @@ export default async function DashboardPage() {
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">Ultimos Leads</CardTitle>
-              <Badge variant="secondary" className="text-[10px]">ultimos 10</Badge>
+              <CardTitle className="text-sm font-semibold">Últimos Leads</CardTitle>
+              <Badge variant="secondary" className="text-[10px]">últimos 10</Badge>
             </div>
           </CardHeader>
           <CardContent className="p-0">

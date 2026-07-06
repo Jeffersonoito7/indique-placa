@@ -27,7 +27,7 @@ function FormCaptador() {
       const json = await res.json();
       if (!res.ok) setErro(json.error ?? "Erro ao enviar");
       else setSucesso(true);
-    } catch { setErro("Erro de conexao."); }
+    } catch { setErro("Erro de conexão."); }
     finally { setCarregando(false); }
   };
 

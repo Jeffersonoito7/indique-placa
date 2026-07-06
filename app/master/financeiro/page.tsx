@@ -48,7 +48,7 @@ export default async function FinanceiroPage() {
       <div className="px-8 py-5 border-b border-border flex items-center justify-between">
         <div>
           <h1 className="text-base font-bold text-foreground">Financeiro</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Comissoes sobre leads fechados</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Comissões sobre leads fechados</p>
         </div>
         <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-amber-500/10 border border-amber-500/20 text-xs text-amber-600 dark:text-amber-400">
           <Info className="h-3.5 w-3.5" />
@@ -83,7 +83,7 @@ export default async function FinanceiroPage() {
           {/* Ranking consultores */}
           <Card className="shadow-sm">
             <CardHeader className="pb-3 border-b border-border">
-              <CardTitle className="text-sm font-semibold">Comissoes por Consultor</CardTitle>
+              <CardTitle className="text-sm font-semibold">Comissões por Consultor</CardTitle>
             </CardHeader>
             <CardContent className="p-0">
               {rankConsultores.length === 0 ? (
@@ -92,7 +92,7 @@ export default async function FinanceiroPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border bg-muted/40">
-                      {["Consultor", "Fechados", "Comissao"].map((h) => (
+                      {["Consultor", "Fechados", "Comissão"].map((h) => (
                         <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-5 py-2.5">{h}</th>
                       ))}
                     </tr>
@@ -113,10 +113,10 @@ export default async function FinanceiroPage() {
             </CardContent>
           </Card>
 
-          {/* Historico detalhado */}
+          {/* Histórico detalhado */}
           <Card className="shadow-sm">
             <CardHeader className="pb-3 border-b border-border">
-              <CardTitle className="text-sm font-semibold">Historico de Fechamentos</CardTitle>
+              <CardTitle className="text-sm font-semibold">Histórico de Fechamentos</CardTitle>
             </CardHeader>
             <CardContent className="p-0 max-h-96 overflow-y-auto">
               {fechados.length === 0 ? (

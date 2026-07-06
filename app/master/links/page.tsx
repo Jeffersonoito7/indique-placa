@@ -31,7 +31,7 @@ const links = [
   },
   {
     titulo: "Link Indique",
-    descricao: "Formulario publico para envio de indicacoes de clientes",
+    descricao: "Formulário público para envio de indicações de clientes",
     url: `${BASE}/indique`,
     cor: "border-t-amber-500",
     iconBg: "bg-amber-500/10",

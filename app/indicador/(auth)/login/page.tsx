@@ -116,10 +116,10 @@ export default function IndicadorLoginPage() {
         body: JSON.stringify({ telefone, senha }),
       });
       const json = await res.json();
-      if (!res.ok) setErro(json.error ?? "Credenciais invalidas");
+      if (!res.ok) setErro(json.error ?? "Credenciais inválidas");
       else router.push("/indicador/dashboard");
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCarregando(false);
     }
@@ -162,7 +162,7 @@ export default function IndicadorLoginPage() {
           )}
 
           <form onSubmit={entrar}>
-            <input className="campo-login" type="tel" placeholder="WhatsApp (somente numeros)" value={telefone} required
+            <input className="campo-login" type="tel" placeholder="WhatsApp (somente números)" value={telefone} required
               onChange={(e) => setTelefone(e.target.value)} />
             <div className="senha-wrap">
               <input className="campo-login" type={verSenha ? "text" : "password"} placeholder="Senha" value={senha} required
@@ -187,10 +187,14 @@ export default function IndicadorLoginPage() {
             </button>
           </form>
 
-          <div style={{ marginTop: 16, fontSize: 12, color: "rgba(255,255,255,.35)", lineHeight: 1.6 }}>
-            Ainda nao tem conta? Peca seu link de cadastro ao consultor.<br />
-            <span style={{ color: "rgba(255,255,255,.4)" }}>E consultor?{" "}
-              <a href="https://app.indiqueplaca.com.br" style={{ color: "rgba(255,255,255,.6)", textDecoration: "none" }}>Acesse aqui</a>
+          <div style={{ marginTop: 16, fontSize: 12, color: "rgba(255,255,255,.35)", lineHeight: 1.9 }}>
+            <a href="/indicador/recuperar-senha" style={{ color: "rgba(245,158,11,.7)", textDecoration: "none" }}>
+              Esqueci minha senha
+            </a>
+            <br />
+            Ainda não tem conta? Peça seu link de cadastro ao consultor.<br />
+            <span style={{ color: "rgba(255,255,255,.4)" }}>É consultor?{" "}
+              <a href="/consultor/login" style={{ color: "rgba(255,255,255,.6)", textDecoration: "none" }}>Acesse aqui</a>
             </span>
           </div>
         </div>

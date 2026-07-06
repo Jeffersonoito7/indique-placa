@@ -31,7 +31,7 @@ export default async function ConsultorLeadsPage() {
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
         <h1 className="text-base font-bold text-foreground">Meus Leads</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Todas as indicacoes recebidas</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Todas as indicações recebidas</p>
       </div>
       <div className="flex-1 p-8 bg-muted/30">
         <div className="flex gap-3 mb-6">
@@ -44,7 +44,7 @@ export default async function ConsultorLeadsPage() {
 
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-sm font-semibold">Historico Completo</CardTitle>
+            <CardTitle className="text-sm font-semibold">Histórico Completo</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {!leads?.length ? (

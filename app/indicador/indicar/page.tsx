@@ -32,15 +32,15 @@ export default function NovaIndicacaoPage() {
       setSucesso(true);
       setNome("");
       setTelefone("");
-    } catch { setErro("Erro de conexao. Tente novamente."); }
+    } catch { setErro("Erro de conexão. Tente novamente."); }
     finally { setCarregando(false); }
   };
 
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Nova Indicacao</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Indique um conhecido para protecao veicular</p>
+        <h1 className="text-base font-bold text-foreground">Nova Indicação</h1>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Indique um conhecido para proteção veicular</p>
       </div>
       <div className="flex-1 p-8 bg-muted/30">
         <div className="max-w-md">
@@ -48,7 +48,7 @@ export default function NovaIndicacaoPage() {
             <div className="flex items-center gap-3 bg-emerald-500/10 border border-emerald-500/30 rounded-xl p-4 mb-6">
               <CheckCircle2 className="h-5 w-5 text-emerald-500 flex-shrink-0" />
               <div>
-                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Indicacao enviada com sucesso!</div>
+                <div className="text-sm font-bold text-emerald-600 dark:text-emerald-400">Indicação enviada com sucesso!</div>
                 <div className="text-xs text-muted-foreground mt-0.5">O consultor vai entrar em contato em breve.</div>
               </div>
             </div>
@@ -58,8 +58,8 @@ export default function NovaIndicacaoPage() {
             <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4 mb-6">
               <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
-                <div className="text-sm font-bold text-amber-600 dark:text-amber-400">Telefone ja cadastrado</div>
-                <div className="text-xs text-muted-foreground mt-0.5">Este numero ja foi indicado anteriormente. Tente com outro contato.</div>
+                <div className="text-sm font-bold text-amber-600 dark:text-amber-400">Telefone já cadastrado</div>
+                <div className="text-xs text-muted-foreground mt-0.5">Este número já foi indicado anteriormente. Tente com outro contato.</div>
               </div>
             </div>
           )}
@@ -92,7 +92,7 @@ export default function NovaIndicacaoPage() {
                   />
                 </div>
                 <Button type="submit" disabled={carregando} className="w-full bg-amber-500 hover:bg-amber-600 text-white font-bold">
-                  {carregando ? "Enviando..." : "Enviar Indicacao"}
+                  {carregando ? "Enviando..." : "Enviar Indicação"}
                 </Button>
               </form>
             </CardContent>

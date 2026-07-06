@@ -12,10 +12,10 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { telefone, senha } = parsed.data;
   const tel = telefone.replace(/\D/g, "");
@@ -42,7 +42,6 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Telefone ou senha incorretos" }, { status: 401 });
   }
 
-  // Migrar senha plaintext para bcrypt
   if (!(indicador.senha?.startsWith("$2b$") || indicador.senha?.startsWith("$2a$"))) {
     const hash = await bcrypt.hash(senha, 12);
     await supabaseAdmin.from("indicadores").update({ senha: hash }).eq("id", indicador.id);

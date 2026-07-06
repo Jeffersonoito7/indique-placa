@@ -8,7 +8,7 @@ const navItems = [
   { group: "Painel", items: [
     { href: "/consultor/dashboard", label: "Dashboard", icon: LayoutDashboard },
   ]},
-  { group: "Negocio", items: [
+  { group: "Negócio", items: [
     { href: "/consultor/leads", label: "Meus Leads", icon: ClipboardList },
     { href: "/consultor/indicadores", label: "Meus Indicadores", icon: UserCheck },
     { href: "/consultor/ranking", label: "Ranking", icon: Trophy },

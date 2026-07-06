@@ -31,7 +31,7 @@ export default async function ConsultorFinanceiroPage() {
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
         <h1 className="text-base font-bold text-foreground">Financeiro</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Suas comissoes por leads fechados</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Suas comissões por leads fechados</p>
       </div>
 
       <div className="flex-1 p-8 bg-muted/30 space-y-6">
@@ -59,7 +59,7 @@ export default async function ConsultorFinanceiroPage() {
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              Historico de Fechamentos
+              Histórico de Fechamentos
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -71,7 +71,7 @@ export default async function ConsultorFinanceiroPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Lead", "Via Indicador", "Comissao", "Data"].map((h) => (
+                    {["Lead", "Via Indicador", "Comissão", "Data"].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
                     ))}
                   </tr>

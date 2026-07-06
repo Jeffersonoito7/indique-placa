@@ -17,10 +17,10 @@ export async function POST(req: NextRequest) {
   }
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { nome_lead, telefone_lead, consultor_id } = parsed.data;
   const tel = telefone_lead.replace(/\D/g, "");
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
       .eq("telefone_lead", tel)
       .limit(1)
       .single();
-    if (existente) return NextResponse.json({ error: "Este telefone ja foi indicado anteriormente." }, { status: 409 });
+    if (existente) return NextResponse.json({ error: "Este telefone já foi indicado anteriormente." }, { status: 409 });
   }
 
   const { error } = await supabaseAdmin.from("indicacoes").insert({

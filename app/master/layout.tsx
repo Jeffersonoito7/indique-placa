@@ -5,11 +5,11 @@ import AppShell from "@/components/app-shell";
 import { LayoutDashboard, Building2, Users, UserCheck, ClipboardList, Trophy, Link2, Settings, DollarSign } from "lucide-react";
 
 const navItems = [
-  { group: "Visao Geral", items: [
+  { group: "Visão Geral", items: [
     { href: "/master/dashboard", label: "Dashboard", icon: LayoutDashboard },
   ]},
   { group: "White-Label", items: [
-    { href: "/master/associacoes", label: "Associacoes", icon: Building2 },
+    { href: "/master/associacoes", label: "Associações", icon: Building2 },
   ]},
   { group: "Base Nacional", items: [
     { href: "/master/consultores", label: "Consultores", icon: Users },
@@ -17,10 +17,10 @@ const navItems = [
     { href: "/master/leads", label: "Leads", icon: ClipboardList },
     { href: "/master/ranking", label: "Ranking", icon: Trophy },
   ]},
-  { group: "Administracao", items: [
+  { group: "Administração", items: [
     { href: "/master/financeiro", label: "Financeiro", icon: DollarSign },
     { href: "/master/links", label: "Links de Captura", icon: Link2 },
-    { href: "/master/configuracoes", label: "Configuracoes", icon: Settings },
+    { href: "/master/configuracoes", label: "Configurações", icon: Settings },
   ]},
 ];
 

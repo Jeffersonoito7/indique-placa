@@ -37,8 +37,8 @@ export default async function IndicadorDashboard() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Ola, {indicador.nome.split(" ")[0]}</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Suas indicacoes em destaque</p>
+        <h1 className="text-base font-bold text-foreground">Olá, {indicador.nome.split(" ")[0]}</h1>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Suas indicações em destaque</p>
       </div>
       <div className="flex-1 p-8 bg-muted/30">
         <div className="grid grid-cols-3 gap-4 mb-8">
@@ -79,12 +79,12 @@ export default async function IndicadorDashboard() {
 
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-sm font-semibold">Ultimas Indicacoes</CardTitle>
+            <CardTitle className="text-sm font-semibold">Últimas Indicações</CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {!leads?.length ? (
               <div className="text-center text-muted-foreground text-sm py-12 px-6">
-                Voce ainda nao fez nenhuma indicacao.{" "}
+                Você ainda não fez nenhuma indicação.{" "}
                 <a href="/indicador/indicar" className="text-amber-500 underline font-medium">Indicar agora</a>
               </div>
             ) : (

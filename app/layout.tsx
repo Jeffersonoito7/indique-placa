@@ -8,13 +8,26 @@ const inter = Inter({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "Indique Placa",
-  description: "Plataforma de indicacoes para protecao veicular",
+  description: "Monte seu time de indicadores e venda muito mais em proteção veicular",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Indique Placa" },
   themeColor: "#0a2a4a",
   icons: {
     icon: "/favicon-indique.png",
     apple: "/favicon-indique.png",
+  },
+  openGraph: {
+    title: "Indique Placa",
+    description: "Monte seu time de indicadores e venda muito mais em proteção veicular",
+    url: "https://indiqueplaca.com.br",
+    siteName: "Indique Placa",
+    locale: "pt_BR",
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Indique Placa",
+    description: "Monte seu time de indicadores e venda muito mais em proteção veicular",
   },
 };
 
