@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { z } from "zod";
 import { gerarToken } from "@/lib/master-token";
+import { rateLimit } from "@/lib/rate-limit";
 
 const schema = z.object({
   usuario: z.string().min(1).max(64),
@@ -9,6 +10,11 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
+  if (!rateLimit(`master-login:${ip}`, 10, 15 * 60)) {
+    return NextResponse.json({ error: "Muitas tentativas. Aguarde 15 minutos." }, { status: 429 });
+  }
+
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
 

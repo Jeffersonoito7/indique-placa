@@ -64,34 +64,51 @@ const STYLES = `
   .btn-rec:disabled { opacity: .6; cursor: not-allowed; }
 `;
 
+type Etapa = "telefone" | "otp" | "sucesso";
+
 export default function RecuperarSenhaPage() {
   const router = useRouter();
+  const [etapa, setEtapa] = useState<Etapa>("telefone");
   const [telefone, setTelefone] = useState("");
+  const [codigo, setCodigo] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmar, setConfirmar] = useState("");
   const [verSenha, setVerSenha] = useState(false);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState("");
-  const [sucesso, setSucesso] = useState(false);
-  const [naoEncontrado, setNaoEncontrado] = useState(false);
 
-  const enviar = async (e: React.FormEvent) => {
+  const solicitarOTP = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro("");
-    if (novaSenha.length < 6) { setErro("A senha precisa ter no mínimo 6 caracteres"); return; }
-    if (novaSenha !== confirmar) { setErro("As senhas não coincidem"); return; }
     setCarregando(true);
     try {
       const res = await fetch("/api/consultor/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telefone, novaSenha }),
+        body: JSON.stringify({ telefone }),
+      });
+      if (!res.ok) { setErro("Erro ao enviar codigo. Tente novamente."); return; }
+      setEtapa("otp");
+    } catch { setErro("Erro de conexao. Tente novamente."); }
+    finally { setCarregando(false); }
+  };
+
+  const confirmarOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErro("");
+    if (novaSenha.length < 6) { setErro("A senha precisa ter no minimo 6 caracteres"); return; }
+    if (novaSenha !== confirmar) { setErro("As senhas nao coincidem"); return; }
+    setCarregando(true);
+    try {
+      const res = await fetch("/api/consultor/recuperar-senha", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telefone, codigo, novaSenha }),
       });
       const json = await res.json();
-      if (!res.ok) { setErro(json.error ?? "Erro. Tente novamente."); return; }
-      if (json.encontrado) setSucesso(true);
-      else setNaoEncontrado(true);
-    } catch { setErro("Erro de conexão. Tente novamente."); }
+      if (!res.ok) { setErro(json.error ?? "Codigo invalido ou expirado."); return; }
+      setEtapa("sucesso");
+    } catch { setErro("Erro de conexao. Tente novamente."); }
     finally { setCarregando(false); }
   };
 
@@ -107,10 +124,10 @@ export default function RecuperarSenhaPage() {
 
           <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", marginBottom: 6 }}>Redefinir senha</div>
 
-          {sucesso ? (
+          {etapa === "sucesso" ? (
             <>
               <div style={{ background: "rgba(59,130,246,.1)", border: "1px solid rgba(59,130,246,.3)", borderRadius: 12, padding: "20px 16px", marginBottom: 20 }}>
-                <div style={{ fontSize: 36 }}>✓</div>
+                <div style={{ fontSize: 36 }}>Ok</div>
                 <div style={{ fontSize: 15, fontWeight: 700, color: "#93c5fd", marginTop: 8 }}>Senha alterada!</div>
                 <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", marginTop: 6 }}>Entre com o WhatsApp e a nova senha.</div>
               </div>
@@ -118,21 +135,12 @@ export default function RecuperarSenhaPage() {
                 Ir para o login
               </button>
             </>
-          ) : naoEncontrado ? (
-            <>
-              <div style={{ background: "rgba(245,158,11,.1)", border: "1px solid rgba(245,158,11,.25)", borderRadius: 10, padding: "12px 16px", fontSize: 13, color: "rgba(245,158,11,.9)", marginBottom: 20 }}>
-                Número não encontrado. Verifique se digitou corretamente ou cadastre-se.
-              </div>
-              <button className="btn-rec" style={{ background: "linear-gradient(135deg,#3b1f8c,#5b35cc)" }} onClick={() => router.push("/consultor/cadastro")}>
-                Fazer cadastro
-              </button>
-            </>
-          ) : (
+          ) : etapa === "otp" ? (
             <>
               <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", marginBottom: 24, lineHeight: 1.6 }}>
-                Digite seu WhatsApp e escolha uma nova senha.
+                Um codigo de 6 digitos foi enviado para o seu WhatsApp. Digite o codigo e escolha uma nova senha.
               </div>
-              <form onSubmit={enviar}>
+              <form onSubmit={confirmarOTP}>
                 {erro && (
                   <div style={{ background: "rgba(239,68,68,.15)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#f87171", marginBottom: 12 }}>
                     {erro}
@@ -140,17 +148,19 @@ export default function RecuperarSenhaPage() {
                 )}
                 <input
                   className="campo-rec"
-                  type="tel"
-                  placeholder="WhatsApp com DDD (ex: 11999999999)"
-                  value={telefone}
+                  type="text"
+                  inputMode="numeric"
+                  placeholder="Codigo de 6 digitos"
+                  value={codigo}
                   required
-                  onChange={e => setTelefone(e.target.value)}
+                  maxLength={6}
+                  onChange={e => setCodigo(e.target.value.replace(/\D/g, ""))}
                 />
                 <div className="senha-wrap">
                   <input
                     className="campo-rec"
                     type={verSenha ? "text" : "password"}
-                    placeholder="Nova senha (mínimo 6 caracteres)"
+                    placeholder="Nova senha (minimo 6 caracteres)"
                     value={novaSenha}
                     required
                     onChange={e => setNovaSenha(e.target.value)}
@@ -170,7 +180,39 @@ export default function RecuperarSenhaPage() {
                   onChange={e => setConfirmar(e.target.value)}
                 />
                 <button className="btn-rec" type="submit" disabled={carregando}>
-                  {carregando ? "Salvando..." : "Redefinir senha"}
+                  {carregando ? "Confirmando..." : "Confirmar nova senha"}
+                </button>
+              </form>
+              <div style={{ marginTop: 12 }}>
+                <button
+                  onClick={() => { setEtapa("telefone"); setErro(""); setCodigo(""); }}
+                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,.4)" }}
+                >
+                  Usar outro numero
+                </button>
+              </div>
+            </>
+          ) : (
+            <>
+              <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", marginBottom: 24, lineHeight: 1.6 }}>
+                Digite seu WhatsApp para receber um codigo de verificacao.
+              </div>
+              <form onSubmit={solicitarOTP}>
+                {erro && (
+                  <div style={{ background: "rgba(239,68,68,.15)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#f87171", marginBottom: 12 }}>
+                    {erro}
+                  </div>
+                )}
+                <input
+                  className="campo-rec"
+                  type="tel"
+                  placeholder="WhatsApp com DDD (ex: 11999999999)"
+                  value={telefone}
+                  required
+                  onChange={e => setTelefone(e.target.value)}
+                />
+                <button className="btn-rec" type="submit" disabled={carregando}>
+                  {carregando ? "Enviando..." : "Enviar codigo"}
                 </button>
               </form>
             </>

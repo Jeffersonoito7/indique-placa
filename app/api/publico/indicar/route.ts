@@ -5,7 +5,7 @@ import { notificarNovoLead } from "@/lib/whatsapp";
 import { z } from "zod";
 
 const schema = z.object({
-  placa: z.string().min(7).max(7).regex(/^[A-Z0-9]{7}$/, "Placa inválida"),
+  placa: z.string().min(7).max(7).regex(/^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/, "Placa inválida"),
   nome_lead: z.string().min(2).max(100).optional(),
   telefone_lead: z.string().min(10).max(20).optional(),
   consultor_id: z.string().uuid().optional().nullable(),

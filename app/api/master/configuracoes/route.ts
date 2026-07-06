@@ -12,6 +12,7 @@ const schema = z.object({
   endereco: z.string().max(300).optional().nullable(),
   comissao_consultor: z.number().min(0).max(99999).optional().nullable(),
   comissao_indicador: z.number().min(0).max(99999).optional().nullable(),
+  consultor_padrao_id: z.string().uuid().optional().nullable(),
 });
 
 async function autenticar() {

@@ -47,13 +47,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (parsed.data.status === "fechado") {
     const { data: consultor } = await supabaseAdmin
       .from("consultores")
-      .select("nome, telefone")
+      .select("nome, fone")
       .eq("id", consultorId)
       .single();
     if (consultor) {
       notificarLeadFechado({
         nomeConsultor: consultor.nome,
-        telefoneConsultor: consultor.telefone,
+        telefoneConsultor: consultor.fone,
         nomeLead: lead.nome_lead ?? "",
       }).catch(() => {});
     }

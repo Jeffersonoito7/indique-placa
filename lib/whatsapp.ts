@@ -56,6 +56,15 @@ export async function notificarLeadFechado(opts: {
   return enviar(opts.telefoneConsultor, msg);
 }
 
+export async function enviarOTP(opts: {
+  telefone: string;
+  codigo: string;
+  tipo: "consultor" | "indicador";
+}): Promise<boolean> {
+  const msg = `Seu codigo de verificacao para redefinir a senha: *${opts.codigo}*\n\nEle expira em 10 minutos. Nao compartilhe este codigo com ninguem.`;
+  return enviar(opts.telefone, msg);
+}
+
 export async function notificarNovaIndicacao(opts: {
   nomeIndicador: string;
   telefoneIndicador: string;

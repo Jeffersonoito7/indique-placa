@@ -37,13 +37,13 @@ async function getDashboardData() {
     fechamentos30,
     fechamentosPrev,
   ] = await Promise.all([
-    supabaseAdmin.from("consultores").select("id", { count: "exact", head: true }),
+    supabaseAdmin.from("consultores").select("id", { count: "exact", head: true }).eq("status", "ativo"),
     supabaseAdmin.from("indicadores").select("id", { count: "exact", head: true }),
     supabaseAdmin.from("indicacoes").select("id", { count: "exact", head: true }),
     supabaseAdmin.from("indicacoes").select("id", { count: "exact", head: true }).eq("status", "fechado"),
     // ultimos 30 dias
-    supabaseAdmin.from("consultores").select("id", { count: "exact", head: true }).gte("created_at", inicio30),
-    supabaseAdmin.from("consultores").select("id", { count: "exact", head: true }).gte("created_at", inicio60).lt("created_at", inicio30),
+    supabaseAdmin.from("consultores").select("id", { count: "exact", head: true }).eq("status", "ativo").gte("created_at", inicio30),
+    supabaseAdmin.from("consultores").select("id", { count: "exact", head: true }).eq("status", "ativo").gte("created_at", inicio60).lt("created_at", inicio30),
     supabaseAdmin.from("indicadores").select("id", { count: "exact", head: true }).gte("criado_em", inicio30),
     supabaseAdmin.from("indicadores").select("id", { count: "exact", head: true }).gte("criado_em", inicio60).lt("criado_em", inicio30),
     supabaseAdmin.from("indicacoes").select("id", { count: "exact", head: true }).gte("criado_em", inicio30),

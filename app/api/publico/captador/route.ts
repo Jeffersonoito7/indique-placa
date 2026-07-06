@@ -1,11 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit } from "@/lib/rate-limit";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 const schema = z.object({
   nome: z.string().min(2).max(100),
   telefone: z.string().min(10).max(20),
+  senha: z.string().min(6).max(128).optional(),
   consultor_id: z.string().uuid().optional().nullable(),
 });
 
@@ -31,13 +33,23 @@ export async function POST(req: NextRequest) {
     if (!data || data.status !== "ativo") cid = null;
   }
 
+  // Senha: usa a fornecida ou gera uma temporaria de 8 chars alfanumericos
+  const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
+  const senhaPlain = parsed.data.senha ?? Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  const senhaHash = await bcrypt.hash(senhaPlain, 10);
+
   const { error } = await supabaseAdmin.from("indicadores").insert({
     nome,
     telefone: tel,
+    senha: senhaHash,
     consultor_id: cid,
   });
 
   if (error) return NextResponse.json({ error: "Erro ao salvar cadastro" }, { status: 500 });
 
-  return NextResponse.json({ ok: true });
+  // Retorna senha temporaria apenas se nao foi fornecida pelo chamador
+  const resposta: Record<string, unknown> = { ok: true };
+  if (!parsed.data.senha) resposta.senha_temporaria = senhaPlain;
+
+  return NextResponse.json(resposta);
 }

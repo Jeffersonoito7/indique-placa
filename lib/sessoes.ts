@@ -18,9 +18,16 @@ function assinar(payload: string): string {
   return createHmac("sha256", getSecret()).update(payload).digest("hex");
 }
 
+// Blocklist de sessoes revogadas (IDs de sessao).
+// Limitacao: em memoria por instancia — nao persiste entre reinicializacoes nem
+// funciona em multi-instancia (ex: Vercel com multiplas regioes). Para producao
+// de alta disponibilidade, substituir por Upstash Redis ou similar.
+const sessoesBloqueadas = new Set<string>();
+
 export async function criarSessao(usuario_id: string, tipo: "consultor" | "indicador"): Promise<string> {
   const expira = Date.now() + DURACAO_HORAS * 60 * 60 * 1000;
-  const payload = JSON.stringify({ usuario_id, tipo, expira });
+  const id = crypto.randomUUID();
+  const payload = JSON.stringify({ id, usuario_id, tipo, expira });
   const b64 = Buffer.from(payload).toString("base64url");
   const sig = assinar(b64);
   return `${b64}.${sig}`;
@@ -38,12 +45,26 @@ export async function validarSessao(token: string, tipo: "consultor" | "indicado
     if (payload.tipo !== tipo) return null;
     if (Date.now() > payload.expira) return null;
 
+    // Verifica blocklist apenas se a sessao tem id (sessoes antigas sem id sao
+    // aceitas mas nao podem ser individualmente revogadas)
+    if (payload.id && sessoesBloqueadas.has(payload.id)) return null;
+
     return payload.usuario_id;
   } catch {
     return null;
   }
 }
 
-export async function revogarSessao(_token: string): Promise<void> {
-  // Revogacao via limpeza do cookie no cliente
+export async function revogarSessao(token: string): Promise<void> {
+  try {
+    const dot = token.lastIndexOf(".");
+    if (dot === -1) return;
+    const b64 = token.slice(0, dot);
+    const payload = JSON.parse(Buffer.from(b64, "base64url").toString());
+    if (payload.id) {
+      sessoesBloqueadas.add(payload.id);
+    }
+  } catch {
+    // Token malformado; nao ha o que revogar
+  }
 }

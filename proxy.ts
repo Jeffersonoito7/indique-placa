@@ -1,5 +1,22 @@
 import { NextRequest, NextResponse } from "next/server";
 
+// Validacao leve para consultor/indicador: checa formato e expiracao do payload.
+// Nao valida HMAC (crypto.subtle nao esta disponivel em todas as regioes de borda
+// com o plano atual). A validacao completa ocorre em cada API route via validarSessao.
+function validarTokenLeve(token: string): boolean {
+  try {
+    const dot = token.lastIndexOf(".");
+    if (dot === -1) return false;
+    const b64 = token.slice(0, dot);
+    const payload = JSON.parse(Buffer.from(b64, "base64url").toString("utf8"));
+    if (typeof payload.expira !== "number") return false;
+    if (Date.now() > payload.expira) return false;
+    return true;
+  } catch {
+    return false;
+  }
+}
+
 async function verificarTokenMaster(token: string): Promise<boolean> {
   try {
     const secret = process.env.MASTER_TOKEN_SECRET ?? "fallback-insecure-dev-secret";
@@ -55,13 +72,17 @@ export async function proxy(req: NextRequest) {
   const ROTAS_PUBLICAS_CONSULTOR = ["/consultor/login", "/consultor/cadastro", "/consultor/recuperar-senha"];
   if (pathname.startsWith("/consultor") && !ROTAS_PUBLICAS_CONSULTOR.includes(pathname)) {
     const auth = req.cookies.get("consultor_auth")?.value;
-    if (!auth) return NextResponse.redirect(new URL("/consultor/login", req.url));
+    if (!auth || !validarTokenLeve(auth)) {
+      return NextResponse.redirect(new URL("/consultor/login", req.url));
+    }
   }
 
   const ROTAS_PUBLICAS_INDICADOR = ["/indicador/login", "/indicador/cadastro", "/indicador/recuperar-senha"];
   if (pathname.startsWith("/indicador") && !ROTAS_PUBLICAS_INDICADOR.includes(pathname)) {
     const auth = req.cookies.get("indicador_auth")?.value;
-    if (!auth) return NextResponse.redirect(new URL("/indicador/login", req.url));
+    if (!auth || !validarTokenLeve(auth)) {
+      return NextResponse.redirect(new URL("/indicador/login", req.url));
+    }
   }
 
   return NextResponse.next();
