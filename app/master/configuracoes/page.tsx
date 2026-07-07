@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Globe, Phone, Mail, MapPin, Building2, Save, CheckCircle2, DollarSign, User, Image, Palette, Link, Copy, Check } from "lucide-react";
+import { Settings, Globe, Phone, Mail, MapPin, Building2, Save, CheckCircle2, User, Image, Palette, Link, Copy, Check } from "lucide-react";
 
 type Config = {
   nome_plataforma: string;
@@ -14,8 +14,7 @@ type Config = {
   endereco: string;
   logo_url: string;
   cor_primaria: string;
-  comissao_consultor: number;
-  comissao_indicador: number;
+
   consultor_padrao_id: string;
 };
 
@@ -29,8 +28,7 @@ const VAZIO: Config = {
   endereco: "",
   logo_url: "",
   cor_primaria: "#f59e0b",
-  comissao_consultor: 50,
-  comissao_indicador: 20,
+
   consultor_padrao_id: "",
 };
 
@@ -71,8 +69,7 @@ export default function ConfiguracoesPage() {
           endereco: config.endereco ?? "",
           logo_url: config.logo_url ?? "",
           cor_primaria: config.cor_primaria ?? "#f59e0b",
-          comissao_consultor: config.comissao_consultor ?? 50,
-          comissao_indicador: config.comissao_indicador ?? 20,
+
           consultor_padrao_id: config.consultor_padrao_id ?? "",
         });
       })
@@ -85,8 +82,7 @@ export default function ConfiguracoesPage() {
       const body = {
         ...form,
         nome_plataforma: form.nome_plataforma || "Indique Placa",
-        comissao_consultor: Number(form.comissao_consultor) || 50,
-        comissao_indicador: Number(form.comissao_indicador) || 20,
+
         logo_url: form.logo_url || null,
         slogan: form.slogan || null,
         nome_associacao: form.nome_associacao || null,
@@ -345,32 +341,6 @@ export default function ConfiguracoesPage() {
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />Endereço</label>
                   <input type="text" value={form.endereco} onChange={set("endereco")} placeholder="Rua das Flores, 100 - Petrolina/PE"
                     className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Comissoes */}
-            <Card className="shadow-sm">
-              <CardHeader className="pb-3 border-b border-border">
-                <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                  <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  Comissões Padrão por Lead Fechado
-                </CardTitle>
-              </CardHeader>
-              <CardContent className="p-6">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><DollarSign className="h-3.5 w-3.5" />Consultor (R$)</label>
-                    <input type="number" min={0} step={1} value={form.comissao_consultor} onChange={set("comissao_consultor")}
-                      className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
-                    <p className="text-[10px] text-muted-foreground mt-1">Pago ao consultor por lead fechado</p>
-                  </div>
-                  <div>
-                    <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><DollarSign className="h-3.5 w-3.5" />Indicador (R$)</label>
-                    <input type="number" min={0} step={1} value={form.comissao_indicador} onChange={set("comissao_indicador")}
-                      className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
-                    <p className="text-[10px] text-muted-foreground mt-1">Pago ao indicador por lead fechado</p>
-                  </div>
                 </div>
               </CardContent>
             </Card>
