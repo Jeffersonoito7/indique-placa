@@ -34,14 +34,21 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const token = req.cookies.get("master_auth")?.value ?? "";
   if (!verificarToken(token)) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-  const { count } = await supabaseAdmin
-    .from("indicacoes")
-    .select("id", { count: "exact", head: true })
-    .eq("consultor_id", id);
+  const [{ count: countLeads }, { count: countIndicadores }] = await Promise.all([
+    supabaseAdmin.from("indicacoes").select("id", { count: "exact", head: true }).eq("consultor_id", id),
+    supabaseAdmin.from("indicadores").select("id", { count: "exact", head: true }).eq("consultor_id", id),
+  ]);
 
-  if (count && count > 0) {
+  if (countLeads && countLeads > 0) {
     return NextResponse.json(
-      { error: `Este consultor possui ${count} lead(s) vinculado(s). Reatribua ou exclua os leads antes de deletar o consultor.` },
+      { error: `Este consultor possui ${countLeads} lead(s) vinculado(s). Exclua os leads antes de deletar.` },
+      { status: 409 }
+    );
+  }
+
+  if (countIndicadores && countIndicadores > 0) {
+    return NextResponse.json(
+      { error: `Este consultor possui ${countIndicadores} indicador(es) vinculado(s). Exclua os indicadores antes de deletar.` },
       { status: 409 }
     );
   }
