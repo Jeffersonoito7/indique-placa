@@ -35,6 +35,7 @@ export default function IndicadorLayout({ children }: { children: React.ReactNod
       storageKey="indicador-sidebar-collapsed"
       logoutEndpoint="/api/indicador/logout"
       loginRedirect="/indicador/login"
+      accentColor="#f59e0b"
     >
       {children}
     </AppShell>

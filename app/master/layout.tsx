@@ -41,6 +41,7 @@ export default function MasterLayout({ children }: { children: React.ReactNode }
       storageKey="master-sidebar-collapsed"
       logoutEndpoint="/api/master/logout"
       loginRedirect="/master/login"
+      accentColor="#3b82f6"
     >
       {children}
     </AppShell>

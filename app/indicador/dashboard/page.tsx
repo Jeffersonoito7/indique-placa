@@ -1,206 +1,331 @@
-export const dynamic = "force-dynamic";
-import { getIndicadorLogado } from "@/lib/auth";
-import { supabaseAdmin } from "@/lib/supabase-server";
-import { redirect } from "next/navigation";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ClipboardList, CheckCircle2, Clock, Target } from "lucide-react";
+"use client";
+
+import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { ClipboardList, CheckCircle2, Clock, Target, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlacaMercosul } from "@/components/placa-mercosul";
 
-export default async function IndicadorDashboard() {
-  const indicador = await getIndicadorLogado();
-  if (!indicador) redirect("/indicador/login");
+type Lead = {
+  id: string;
+  placa: string | null;
+  nome_lead: string | null;
+  status: string;
+  criado_em: string;
+};
 
-  const [{ data: leads, count }, { count: countFechados }, { data: metasRaw }, { data: indicacoesFechadas }] = await Promise.all([
-    supabaseAdmin
-      .from("indicacoes")
-      .select("id, placa, nome_lead, status, criado_em", { count: "exact" })
-      .eq("indicador_id", indicador.id)
-      .order("criado_em", { ascending: false })
-      .limit(6),
-    supabaseAdmin
-      .from("indicacoes")
-      .select("id", { count: "exact", head: true })
-      .eq("indicador_id", indicador.id)
-      .eq("status", "fechado"),
-    indicador.consultor_id
-      ? supabaseAdmin
-          .from("metas")
-          .select("id, nome, tipo_veiculo, quantidade_indicacoes, bonus_valor")
-          .eq("consultor_id", indicador.consultor_id)
-          .eq("ativo", true)
-      : Promise.resolve({ data: [] }),
-    supabaseAdmin
-      .from("indicacoes")
-      .select("tipo_veiculo")
-      .eq("indicador_id", indicador.id)
-      .eq("status", "fechado"),
-  ]);
+type Meta = {
+  id: string;
+  nome: string;
+  tipo_veiculo: string;
+  quantidade_indicacoes: number;
+  bonus_valor: number;
+  progresso: number;
+};
 
-  const total = count ?? 0;
-  const fechados = countFechados ?? 0;
+type DashboardData = {
+  indicador: { id: string; nome: string };
+  total: number;
+  fechados: number;
+  leads: Lead[];
+  metas: Meta[];
+};
 
-  // Calcular progresso das metas
-  const totalFechados = indicacoesFechadas?.length ?? 0;
-  const fechadosPorTipo: Record<string, number> = {};
-  for (const ind of indicacoesFechadas ?? []) {
-    const t = (ind as any).tipo_veiculo ?? "carro";
-    fechadosPorTipo[t] = (fechadosPorTipo[t] ?? 0) + 1;
+const STATUS_STYLE: Record<string, { bg: string; text: string; label: string }> = {
+  novo: { bg: "rgba(59,130,246,0.12)", text: "#3b82f6", label: "Novo" },
+  contato: { bg: "rgba(245,158,11,0.12)", text: "#f59e0b", label: "Em contato" },
+  fechado: { bg: "rgba(16,185,129,0.12)", text: "#10b981", label: "Fechado" },
+  perdido: { bg: "rgba(239,68,68,0.12)", text: "#ef4444", label: "Perdido" },
+};
+
+function moeda(v: number) {
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+export default function IndicadorDashboard() {
+  const router = useRouter();
+  const [data, setData] = useState<DashboardData | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    fetch("/api/indicador/dashboard")
+      .then((r) => {
+        if (r.status === 401) {
+          router.replace("/indicador/login");
+          return null;
+        }
+        return r.json();
+      })
+      .then((json) => {
+        if (json) setData(json);
+      })
+      .finally(() => setLoading(false));
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          minHeight: 200,
+          color: "rgba(var(--muted-foreground))",
+          fontSize: 14,
+        }}
+      >
+        Carregando...
+      </div>
+    );
   }
 
-  const metas = (metasRaw ?? []).map((m: any) => {
-    const progresso = m.tipo_veiculo === "todos" ? totalFechados : (fechadosPorTipo[m.tipo_veiculo] ?? 0);
-    return { ...m, progresso };
-  });
+  if (!data) return null;
 
-  function moeda(v: number) {
-    return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
-  }
-
-  const statusStyle: Record<string, string> = {
-    novo: "bg-blue-500/10 text-blue-500",
-    contato: "bg-amber-500/10 text-amber-500",
-    fechado: "bg-emerald-500/10 text-emerald-500",
-    perdido: "bg-red-500/10 text-red-500",
-  };
-
-  const statusLabel: Record<string, string> = {
-    novo: "Novo",
-    contato: "Em contato",
-    fechado: "Fechado",
-    perdido: "Perdido",
-  };
+  const { indicador, total, fechados, leads, metas } = data;
+  const emAndamento = total - fechados;
+  const primeiroNome = indicador.nome.split(" ")[0];
 
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Olá, {indicador.nome.split(" ")[0]}</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Suas indicações em destaque</p>
+    <div style={{ minHeight: "100%", background: "var(--background)" }}>
+      {/* Header */}
+      <div style={{ padding: "20px 16px 12px" }}>
+        <div style={{ fontSize: 20, fontWeight: 700, color: "var(--foreground)", lineHeight: 1.2 }}>
+          Ola, {primeiroNome}!
+        </div>
+        <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginTop: 2 }}>
+          Suas indicacoes
+        </div>
       </div>
-      <div className="flex-1 p-8 bg-muted/30">
-        <div className="grid grid-cols-3 gap-4 mb-8">
-          <Card className="border-t-4 border-t-amber-500 shadow-sm">
-            <CardContent className="p-5 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-amber-500/10 flex items-center justify-center flex-shrink-0">
-                <ClipboardList className="h-5 w-5 text-amber-500" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-amber-500">{total}</div>
-                <div className="text-xs text-muted-foreground">Total indicados</div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-t-4 border-t-emerald-500 shadow-sm">
-            <CardContent className="p-5 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-emerald-500/10 flex items-center justify-center flex-shrink-0">
-                <CheckCircle2 className="h-5 w-5 text-emerald-500" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-emerald-500">{fechados}</div>
-                <div className="text-xs text-muted-foreground">Fechados</div>
-              </div>
-            </CardContent>
-          </Card>
-          <Card className="border-t-4 border-t-blue-500 shadow-sm">
-            <CardContent className="p-5 flex items-center gap-4">
-              <div className="w-10 h-10 rounded-xl bg-blue-500/10 flex items-center justify-center flex-shrink-0">
-                <Clock className="h-5 w-5 text-blue-500" />
-              </div>
-              <div>
-                <div className="text-2xl font-bold text-blue-500">{total - fechados}</div>
-                <div className="text-xs text-muted-foreground">Em andamento</div>
-              </div>
-            </CardContent>
-          </Card>
+
+      {/* Cards de stats: 2 por linha */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "1fr 1fr",
+          gap: 12,
+          padding: "0 16px 16px",
+        }}
+      >
+        {/* Total */}
+        <div
+          style={{
+            background: "var(--card)",
+            borderRadius: 16,
+            padding: 16,
+            borderTop: "3px solid #f59e0b",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+          }}
+        >
+          <div style={{ fontSize: 32, fontWeight: 700, color: "#f59e0b", lineHeight: 1 }}>
+            {total}
+          </div>
+          <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 4 }}>
+            Total indicados
+          </div>
         </div>
 
-        {/* Metas do consultor */}
-        {metas.length > 0 && (
-          <Card className="shadow-sm mb-6">
-            <CardHeader className="pb-3 border-b border-border">
-              <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Target className="h-4 w-4 text-amber-500" /> Suas Metas
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 space-y-4">
-              {metas.map((m: any) => {
+        {/* Fechados */}
+        <div
+          style={{
+            background: "var(--card)",
+            borderRadius: 16,
+            padding: 16,
+            borderTop: "3px solid #10b981",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+          }}
+        >
+          <div style={{ fontSize: 32, fontWeight: 700, color: "#10b981", lineHeight: 1 }}>
+            {fechados}
+          </div>
+          <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 4 }}>
+            Fechados
+          </div>
+        </div>
+
+        {/* Em andamento - linha inteira */}
+        <div
+          style={{
+            gridColumn: "1 / -1",
+            background: "var(--card)",
+            borderRadius: 16,
+            padding: 16,
+            borderTop: "3px solid #3b82f6",
+            boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+          }}
+        >
+          <div style={{ fontSize: 32, fontWeight: 700, color: "#3b82f6", lineHeight: 1 }}>
+            {emAndamento}
+          </div>
+          <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 4 }}>
+            Em andamento
+          </div>
+        </div>
+      </div>
+
+      {/* CTA nova indicacao */}
+      <div style={{ padding: "0 16px 16px" }}>
+        <Link
+          href="/indicador/indicar"
+          style={{
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            gap: 8,
+            background: "#10b981",
+            color: "#fff",
+            borderRadius: 16,
+            padding: "16px 0",
+            fontSize: 16,
+            fontWeight: 700,
+            textDecoration: "none",
+            boxShadow: "0 2px 8px rgba(16,185,129,0.3)",
+          }}
+        >
+          <Plus size={20} />
+          Nova Indicacao
+        </Link>
+      </div>
+
+      {/* Metas */}
+      <div style={{ padding: "0 16px 16px" }}>
+        {metas.length === 0 ? (
+          <div
+            style={{
+              background: "rgba(245,158,11,0.08)",
+              border: "1px solid rgba(245,158,11,0.25)",
+              borderRadius: 14,
+              padding: 16,
+              fontSize: 13,
+              color: "#f59e0b",
+              lineHeight: 1.5,
+            }}
+          >
+            <div style={{ fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 6 }}>
+              <Target size={16} />
+              Nenhuma meta ativa
+            </div>
+            <div style={{ color: "var(--muted-foreground)", fontSize: 12 }}>
+              Converse com seu consultor para definir metas e ganhar bonus!
+            </div>
+          </div>
+        ) : (
+          <div
+            style={{
+              background: "var(--card)",
+              borderRadius: 14,
+              padding: "14px 16px",
+              boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+            }}
+          >
+            <div
+              style={{
+                fontSize: 13,
+                fontWeight: 700,
+                color: "var(--foreground)",
+                marginBottom: 12,
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+              }}
+            >
+              <Target size={15} style={{ color: "#f59e0b" }} />
+              Suas Metas
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+              {metas.map((m) => {
                 const pct = Math.min(100, Math.round((m.progresso / m.quantidade_indicacoes) * 100));
                 const batida = m.progresso >= m.quantidade_indicacoes;
                 const quase = !batida && pct >= 80;
+                const barColor = batida ? "#10b981" : quase ? "#f59e0b" : "#3b82f6";
                 return (
                   <div key={m.id}>
-                    <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm font-semibold text-foreground">{m.nome}</span>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--foreground)" }}>{m.nome}</span>
                       {batida ? (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 uppercase tracking-wider">Meta batida</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "rgba(16,185,129,0.12)", color: "#10b981", textTransform: "uppercase" }}>Meta batida</span>
                       ) : quase ? (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 uppercase tracking-wider">Quase la!</span>
+                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "rgba(245,158,11,0.12)", color: "#f59e0b", textTransform: "uppercase" }}>Quase la!</span>
                       ) : null}
                     </div>
-                    <div className="flex items-center gap-3">
-                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
-                        <div
-                          className={cn("h-full rounded-full transition-all", batida ? "bg-emerald-500" : quase ? "bg-amber-500" : "bg-blue-500")}
-                          style={{ width: `${pct}%` }}
-                        />
+                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                      <div style={{ flex: 1, height: 6, background: "var(--muted)", borderRadius: 99, overflow: "hidden" }}>
+                        <div style={{ width: `${pct}%`, height: "100%", background: barColor, borderRadius: 99, transition: "width 0.4s ease" }} />
                       </div>
-                      <span className="text-xs text-muted-foreground font-mono whitespace-nowrap">
+                      <span style={{ fontSize: 11, color: "var(--muted-foreground)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
                         {m.progresso}/{m.quantidade_indicacoes}
                       </span>
                     </div>
-                    <div className="text-xs text-muted-foreground mt-1">
-                      Bonus: <span className="font-bold text-emerald-500">{moeda(m.bonus_valor)}</span>
+                    <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 3 }}>
+                      Bonus: <span style={{ fontWeight: 700, color: "#10b981" }}>{moeda(m.bonus_valor)}</span>
                     </div>
                   </div>
                 );
               })}
-            </CardContent>
-          </Card>
+            </div>
+          </div>
         )}
+      </div>
 
-        <Card className="shadow-sm">
-          <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-sm font-semibold">Últimas Indicações</CardTitle>
-          </CardHeader>
-          <CardContent className="p-0">
-            {!leads?.length ? (
-              <div className="text-center text-muted-foreground text-sm py-12 px-6">
-                Você ainda não fez nenhuma indicação.{" "}
-                <a href="/indicador/indicar" className="text-amber-500 underline font-medium">Indicar agora</a>
-              </div>
-            ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/40">
-                    {["Placa", "Proprietário", "Status", "Data"].map((h) => (
-                      <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {leads.map((lead, i) => (
-                    <tr key={lead.id} className={cn("border-b border-border hover:bg-accent/40 transition-colors", i % 2 !== 0 && "bg-muted/20")}>
-                      <td className="px-6 py-3">
-                        {(lead as any).placa
-                          ? <PlacaMercosul placa={(lead as any).placa} tamanho="sm" />
-                          : <span className="text-xs text-muted-foreground italic">sem placa</span>}
-                      </td>
-                      <td className="px-6 py-3.5 text-sm text-foreground">
-                        {lead.nome_lead ?? <span className="italic text-muted-foreground/50 text-xs">a preencher</span>}
-                      </td>
-                      <td className="px-6 py-3.5">
-                        <span className={cn("text-[11px] font-semibold px-2.5 py-1 rounded-full", statusStyle[lead.status] ?? "bg-muted text-muted-foreground")}>
-                          {statusLabel[lead.status] ?? lead.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-3.5 text-xs text-muted-foreground">{new Date(lead.criado_em).toLocaleDateString("pt-BR")}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            )}
-          </CardContent>
-        </Card>
+      {/* Ultimas indicacoes */}
+      <div style={{ padding: "0 16px 32px" }}>
+        <div style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)", marginBottom: 10 }}>
+          Ultimas Indicacoes
+        </div>
+        {leads.length === 0 ? (
+          <div style={{ fontSize: 13, color: "var(--muted-foreground)", textAlign: "center", padding: "24px 0" }}>
+            Voce ainda nao fez nenhuma indicacao.{" "}
+            <Link href="/indicador/indicar" style={{ color: "#f59e0b", fontWeight: 600 }}>
+              Indicar agora
+            </Link>
+          </div>
+        ) : (
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {leads.map((lead) => {
+              const st = STATUS_STYLE[lead.status] ?? { bg: "rgba(100,100,100,0.1)", text: "var(--muted-foreground)", label: lead.status };
+              const data = new Date(lead.criado_em).toLocaleDateString("pt-BR");
+              return (
+                <div
+                  key={lead.id}
+                  style={{
+                    background: "var(--card)",
+                    borderRadius: 12,
+                    padding: 12,
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.07)",
+                  }}
+                >
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
+                    <div>
+                      {lead.placa ? (
+                        <PlacaMercosul placa={lead.placa} tamanho="sm" />
+                      ) : (
+                        <span style={{ fontSize: 12, color: "var(--muted-foreground)", fontStyle: "italic" }}>sem placa</span>
+                      )}
+                    </div>
+                    <span
+                      style={{
+                        fontSize: 11,
+                        fontWeight: 600,
+                        padding: "3px 10px",
+                        borderRadius: 99,
+                        background: st.bg,
+                        color: st.text,
+                      }}
+                    >
+                      {st.label}
+                    </span>
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                    <span style={{ fontSize: 13, color: lead.nome_lead ? "var(--foreground)" : "var(--muted-foreground)", fontStyle: lead.nome_lead ? "normal" : "italic" }}>
+                      {lead.nome_lead ?? "Proprietario a confirmar"}
+                    </span>
+                    <span style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{data}</span>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

@@ -23,7 +23,15 @@ type AppShellProps = {
   storageKey: string;
   logoutEndpoint: string;
   loginRedirect: string;
+  accentColor?: string;
 };
+
+function hexToRgba(hex: string, alpha: number) {
+  const r = parseInt(hex.slice(1, 3), 16);
+  const g = parseInt(hex.slice(3, 5), 16);
+  const b = parseInt(hex.slice(5, 7), 16);
+  return `rgba(${r},${g},${b},${alpha})`;
+}
 
 // useLayoutEffect seguro para SSR
 const useIsomorphicLayoutEffect =
@@ -41,6 +49,7 @@ export default function AppShell({
   storageKey,
   logoutEndpoint,
   loginRedirect,
+  accentColor = "#3b82f6",
 }: AppShellProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
@@ -243,15 +252,15 @@ export default function AppShell({
                     display: "flex",
                     alignItems: "center",
                     justifyContent: "center",
-                    background: active ? "rgba(59,130,246,0.2)" : "transparent",
-                    border: active ? "1px solid rgba(59,130,246,0.4)" : "1px solid transparent",
+                    background: active ? hexToRgba(accentColor, 0.2) : "transparent",
+                    border: active ? `1px solid ${hexToRgba(accentColor, 0.4)}` : "1px solid transparent",
                     transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
                   }}
                 >
                   <Icon
                     size={active ? 22 : 20}
                     style={{
-                      color: active ? "#93c5fd" : "rgba(255,255,255,0.35)",
+                      color: active ? accentColor : "rgba(255,255,255,0.35)",
                       transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
                       flexShrink: 0,
                     }}
@@ -261,7 +270,7 @@ export default function AppShell({
                   style={{
                     fontSize: 9,
                     fontWeight: active ? 700 : 500,
-                    color: active ? "#93c5fd" : "rgba(255,255,255,0.35)",
+                    color: active ? accentColor : "rgba(255,255,255,0.35)",
                     letterSpacing: 0.2,
                     lineHeight: 1,
                     transition: "color 0.15s ease",
@@ -299,15 +308,15 @@ export default function AppShell({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-                background: drawerOpen ? "rgba(59,130,246,0.2)" : "transparent",
-                border: drawerOpen ? "1px solid rgba(59,130,246,0.4)" : "1px solid transparent",
+                background: drawerOpen ? hexToRgba(accentColor, 0.2) : "transparent",
+                border: drawerOpen ? `1px solid ${hexToRgba(accentColor, 0.4)}` : "1px solid transparent",
                 transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
               }}
             >
               <LayoutGrid
                 size={drawerOpen ? 22 : 20}
                 style={{
-                  color: drawerOpen ? "#93c5fd" : "rgba(255,255,255,0.35)",
+                  color: drawerOpen ? accentColor : "rgba(255,255,255,0.35)",
                   transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
                 }}
               />
@@ -316,7 +325,7 @@ export default function AppShell({
               style={{
                 fontSize: 9,
                 fontWeight: drawerOpen ? 700 : 500,
-                color: drawerOpen ? "#93c5fd" : "rgba(255,255,255,0.35)",
+                color: drawerOpen ? accentColor : "rgba(255,255,255,0.35)",
                 letterSpacing: 0.2,
                 lineHeight: 1,
                 transition: "color 0.15s ease",
@@ -438,16 +447,16 @@ export default function AppShell({
                             gap: 12,
                             padding: "12px 20px",
                             textDecoration: "none",
-                            background: active ? "rgba(59,130,246,0.1)" : "transparent",
+                            background: active ? hexToRgba(accentColor, 0.1) : "transparent",
                             borderLeft: active
-                              ? "3px solid #3b82f6"
+                              ? `3px solid ${accentColor}`
                               : "3px solid transparent",
                           }}
                         >
                           <Icon
                             size={20}
                             style={{
-                              color: active ? "#93c5fd" : "rgba(255,255,255,0.45)",
+                              color: active ? accentColor : "rgba(255,255,255,0.45)",
                               flexShrink: 0,
                             }}
                           />
@@ -455,7 +464,7 @@ export default function AppShell({
                             style={{
                               fontSize: 14,
                               fontWeight: active ? 600 : 500,
-                              color: active ? "#93c5fd" : "rgba(255,255,255,0.72)",
+                              color: active ? accentColor : "rgba(255,255,255,0.72)",
                             }}
                           >
                             {item.label}

@@ -38,6 +38,7 @@ export default function ConsultorLayout({ children }: { children: React.ReactNod
       storageKey="consultor-sidebar-collapsed"
       logoutEndpoint="/api/consultor/logout"
       loginRedirect="/consultor/login"
+      accentColor="#3b82f6"
     >
       {children}
     </AppShell>
