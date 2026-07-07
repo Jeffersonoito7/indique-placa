@@ -330,7 +330,7 @@ function FormIndicador() {
           </h1>
 
           <p className="ind-sub">
-            Se você conhece alguém com carro, já tem tudo que precisa. Indique para proteção veicular, acompanhe pelo painel e ganhe a cada conversão.
+            Se você conhece alguém com carro, moto ou caminhão, já tem tudo que precisa. Indique para proteção veicular, acompanhe pelo painel e ganhe a cada conversão.
           </p>
 
           <button className="ind-cta" onClick={scrollToForm}>
@@ -350,7 +350,7 @@ function FormIndicador() {
           <div className="ind-steps">
             {[
               { n: "01", icon: "📝", title: "Cadastre-se grátis", desc: "Cria sua conta em menos de 1 minuto. Sem taxa, sem mensalidade, sem complicação." },
-              { n: "02", icon: "📲", title: "Indique quem tem carro", desc: "Amigo, vizinho, familiar — qualquer pessoa com carro é uma indicação em potencial. Basta registrar no painel." },
+              { n: "02", icon: "📲", title: "Indique carros, motos e caminhões", desc: "Amigo, vizinho, familiar. Qualquer pessoa com veículo é uma indicação em potencial. Basta registrar a placa no painel." },
               { n: "03", icon: "💰", title: "Acompanhe e ganhe", desc: "Você vê em tempo real quando sua indicação vira cliente. E quando vira, você ganha. Simples assim." },
             ].map((s) => (
               <div key={s.n} className="ind-step">
@@ -475,7 +475,7 @@ function FormIndicador() {
         </section>
 
         <footer className="lp-footer">
-          © {new Date().getFullYear()} Indique Placa — Todos os direitos reservados
+          © {new Date().getFullYear()} Indique Placa. Todos os direitos reservados.
         </footer>
       </div>
     </>
