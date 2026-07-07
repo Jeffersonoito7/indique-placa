@@ -27,7 +27,8 @@ const CSS = `
 .pwa-btn-instalar { padding:10px 18px; border-radius:10px; border:none; background:linear-gradient(135deg,#16a34a,#22c55e); color:#fff; font-size:13px; font-weight:700; cursor:pointer; font-family:inherit; white-space:nowrap; }
 .pwa-ios-cabecalho { display:flex; align-items:center; gap:14px; }
 .pwa-ios-fechar { background:none; border:none; color:rgba(255,255,255,.4); font-size:26px; cursor:pointer; line-height:1; padding:0; flex-shrink:0; }
-.pwa-ios-inst { font-size:14px; color:rgba(255,255,255,.65); line-height:1.8; margin-top:14px; padding-top:14px; border-top:1px solid rgba(255,255,255,.1); text-align:center; }
+.pwa-ios-btn { display:flex; align-items:center; justify-content:center; gap:10px; width:100%; margin-top:14px; padding:14px; border-radius:12px; border:none; background:linear-gradient(135deg,#16a34a,#22c55e); color:#fff; font-size:15px; font-weight:700; cursor:default; font-family:inherit; box-shadow:0 4px 20px rgba(22,163,74,.3); }
+.pwa-ios-hint { font-size:12px; color:rgba(255,255,255,.35); margin-top:10px; text-align:center; line-height:1.6; }
 `;
 
 export function PwaInstall() {
@@ -46,9 +47,7 @@ export function PwaInstall() {
     setIsStandalone(standalone);
 
     const saved = localStorage.getItem("pwa-dismissed");
-    if (saved && Date.now() - Number(saved) < 7 * 24 * 60 * 60 * 1000) {
-      setDismissed(true);
-    }
+    if (saved) setDismissed(true);
 
     const handler = (e: Event) => {
       e.preventDefault();
@@ -69,7 +68,7 @@ export function PwaInstall() {
 
   const fechar = () => {
     setDismissed(true);
-    localStorage.setItem("pwa-dismissed", String(Date.now()));
+    localStorage.setItem("pwa-dismissed", "permanent");
   };
 
   if (isStandalone || dismissed) return null;
@@ -103,21 +102,23 @@ export function PwaInstall() {
           <div className="pwa-ios-cabecalho">
             <img src="/icon-192.png" className="pwa-icon" alt="" />
             <div className="pwa-txt">
-              <div className="pwa-titulo">Instalar no iPhone</div>
-              <div className="pwa-sub">Adicione na tela inicial</div>
+              <div className="pwa-titulo">Instalar o app</div>
+              <div className="pwa-sub">Acesso rápido pela tela inicial</div>
             </div>
             <button onClick={fechar} className="pwa-ios-fechar">×</button>
           </div>
-          <div className="pwa-ios-inst">
+          <div className="pwa-ios-btn">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5">
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+            Adicionar à Tela de Início
+          </div>
+          <div className="pwa-ios-hint">
             Toque em{" "}
-            <span style={{ color:"#38bdf8", fontWeight:700 }}>
-              <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ verticalAlign:"middle", marginRight:3 }}>
-                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
-              </svg>
-              Compartilhar
-            </span>
-            {" "}e depois em{" "}
-            <span style={{ color:"#4ade80", fontWeight:700 }}>"Adicionar à Tela de Início"</span>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" style={{ verticalAlign:"middle" }}>
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+            {" "}na barra do Safari e depois em "Adicionar à Tela de Início"
           </div>
         </div>
       </>
