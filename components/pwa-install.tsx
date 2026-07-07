@@ -71,7 +71,7 @@ export function PwaInstall() {
     localStorage.setItem("pwa-dismissed", "permanent");
   };
 
-  if (isStandalone || dismissed) return null;
+  if (isStandalone || dismissed || isIos) return null;
 
   if (prompt) {
     return (
