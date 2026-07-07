@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCheck } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { IndicadoresTable } from "./indicadores-table";
 
 export default async function ConsultorIndicadoresPage() {
   const consultor = await getConsultorLogado();
@@ -12,7 +12,7 @@ export default async function ConsultorIndicadoresPage() {
 
   const { data: indicadores, count } = await supabaseAdmin
     .from("indicadores")
-    .select("id, nome, telefone, criado_em", { count: "exact" })
+    .select("id, nome, telefone, chave_pix, criado_em", { count: "exact" })
     .eq("consultor_id", consultor.id)
     .order("criado_em", { ascending: false });
 
@@ -43,24 +43,7 @@ export default async function ConsultorIndicadoresPage() {
             {!indicadores?.length ? (
               <div className="text-center text-muted-foreground text-sm py-16">Nenhum indicador vinculado ainda</div>
             ) : (
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-border bg-muted/40">
-                    {["Nome", "Telefone", "Cadastrado em"].map((h) => (
-                      <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {indicadores.map((ind, i) => (
-                    <tr key={ind.id} className={cn("border-b border-border hover:bg-accent/40 transition-colors", i % 2 !== 0 && "bg-muted/20")}>
-                      <td className="px-6 py-3.5 text-sm font-medium text-foreground">{ind.nome}</td>
-                      <td className="px-6 py-3.5 text-sm text-muted-foreground font-mono">{ind.telefone ?? "-"}</td>
-                      <td className="px-6 py-3.5 text-xs text-muted-foreground">{new Date(ind.criado_em).toLocaleDateString("pt-BR")}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              <IndicadoresTable indicadores={indicadores as any} />
             )}
           </CardContent>
         </Card>

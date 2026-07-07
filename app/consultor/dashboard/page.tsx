@@ -3,7 +3,7 @@ import { getConsultorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ClipboardList, UserCheck, CheckCircle2, TrendingUp, Trophy, Star, AlertCircle, Users } from "lucide-react";
+import { ClipboardList, UserCheck, CheckCircle2, TrendingUp, Trophy, Star, AlertCircle, Users, BarChart2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlacaMercosul } from "@/components/placa-mercosul";
 import CopiarLink from "@/app/consultor/perfil/copiar-link";
@@ -212,6 +212,108 @@ export default async function ConsultorDashboard() {
             )}
           </CardContent>
         </Card>
+
+        {/* Grafico comparativo de indicadores */}
+        {ranking.length > 0 && (() => {
+          const top8 = ranking.slice(0, 8);
+          const maxTotal = Math.max(...top8.map((r) => r.total), 1);
+          const ROW_H = 36;
+          const ROW_GAP = 8;
+          const LABEL_W = 120;
+          const BAR_AREA_W = 360;
+          const NUM_W = 36;
+          const PADDING_X = 16;
+          const PADDING_Y = 12;
+          const svgW = PADDING_X + LABEL_W + 8 + BAR_AREA_W + 8 + NUM_W + PADDING_X;
+          const svgH = PADDING_Y + top8.length * (ROW_H + ROW_GAP) - ROW_GAP + PADDING_Y;
+
+          return (
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <BarChart2 className="h-4 w-4 text-blue-500" />
+                  Comparativo de Indicadores
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="pt-4 pb-4 overflow-x-auto">
+                <svg
+                  viewBox={`0 0 ${svgW} ${svgH}`}
+                  style={{ width: "100%", maxWidth: svgW, display: "block" }}
+                >
+                  {top8.map((ind, i) => {
+                    const y = PADDING_Y + i * (ROW_H + ROW_GAP);
+                    const centerY = y + ROW_H / 2;
+                    const totalBarW = Math.round((ind.total / maxTotal) * BAR_AREA_W);
+                    const fechadosBarW = Math.round((ind.fechados / maxTotal) * BAR_AREA_W);
+                    const barX = PADDING_X + LABEL_W + 8;
+                    const label = ind.nome.length > 14 ? ind.nome.slice(0, 13) + "…" : ind.nome;
+
+                    return (
+                      <g key={ind.id}>
+                        {/* fundo da linha */}
+                        <rect x={0} y={y} width={svgW} height={ROW_H} rx={4} fill={i % 2 === 0 ? "transparent" : "rgba(128,128,128,0.04)"} />
+                        {/* label */}
+                        <text
+                          x={PADDING_X + LABEL_W}
+                          y={centerY + 4}
+                          textAnchor="end"
+                          fontSize={11}
+                          fill="currentColor"
+                          className="fill-muted-foreground"
+                        >
+                          {label}
+                        </text>
+                        {/* barra total (azul) */}
+                        <rect
+                          x={barX}
+                          y={y + 10}
+                          width={totalBarW}
+                          height={16}
+                          rx={3}
+                          fill="#3b82f6"
+                          opacity={0.25}
+                        />
+                        {/* barra fechados (verde sobreposta) */}
+                        {fechadosBarW > 0 && (
+                          <rect
+                            x={barX}
+                            y={y + 10}
+                            width={fechadosBarW}
+                            height={16}
+                            rx={3}
+                            fill="#10b981"
+                            opacity={0.85}
+                          />
+                        )}
+                        {/* valor */}
+                        <text
+                          x={barX + BAR_AREA_W + 8}
+                          y={centerY + 4}
+                          fontSize={11}
+                          fill="currentColor"
+                          className="fill-muted-foreground"
+                        >
+                          {ind.total}
+                        </text>
+                      </g>
+                    );
+                  })}
+                </svg>
+                {/* Legenda */}
+                <div className="flex items-center gap-5 mt-3 px-1">
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-sm bg-blue-500 opacity-50" />
+                    <span className="text-[11px] text-muted-foreground">Indicadas</span>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <div className="w-3 h-3 rounded-sm bg-emerald-500" />
+                    <span className="text-[11px] text-muted-foreground">Fechadas</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          );
+        })()}
 
         {/* Indicadores sem nenhuma indicacao */}
         {semIndicacao.length > 0 && (
