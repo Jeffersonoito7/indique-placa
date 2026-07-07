@@ -7,18 +7,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const token = req.cookies.get("master_auth")?.value ?? "";
   if (!verificarToken(token)) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-  // Verificar se tem indicacoes vinculadas
-  const { count } = await supabaseAdmin
+  // Desvincular indicacoes antes de deletar (evita violacao de FK)
+  await supabaseAdmin
     .from("indicacoes")
-    .select("id", { count: "exact", head: true })
+    .update({ indicador_id: null })
     .eq("indicador_id", id);
-
-  if (count && count > 0) {
-    return NextResponse.json(
-      { error: `Este indicador possui ${count} indicação(ões) vinculada(s). Exclua as indicações antes.` },
-      { status: 409 }
-    );
-  }
 
   const { error } = await supabaseAdmin.from("indicadores").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });

@@ -34,24 +34,23 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const token = req.cookies.get("master_auth")?.value ?? "";
   if (!verificarToken(token)) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-  const [{ count: countLeads }, { count: countIndicadores }] = await Promise.all([
-    supabaseAdmin.from("indicacoes").select("id", { count: "exact", head: true }).eq("consultor_id", id),
-    supabaseAdmin.from("indicadores").select("id", { count: "exact", head: true }).eq("consultor_id", id),
-  ]);
+  const { count: countLeads } = await supabaseAdmin
+    .from("indicacoes")
+    .select("id", { count: "exact", head: true })
+    .eq("consultor_id", id);
 
   if (countLeads && countLeads > 0) {
     return NextResponse.json(
-      { error: `Este consultor possui ${countLeads} lead(s) vinculado(s). Exclua os leads antes de deletar.` },
+      { error: `Este consultor possui ${countLeads} lead(s). Exclua os leads antes de deletar.` },
       { status: 409 }
     );
   }
 
-  if (countIndicadores && countIndicadores > 0) {
-    return NextResponse.json(
-      { error: `Este consultor possui ${countIndicadores} indicador(es) vinculado(s). Exclua os indicadores antes de deletar.` },
-      { status: 409 }
-    );
-  }
+  // Desvincular indicadores antes de deletar (evita violacao de FK)
+  await supabaseAdmin
+    .from("indicadores")
+    .update({ consultor_id: null })
+    .eq("consultor_id", id);
 
   const { error } = await supabaseAdmin.from("consultores").delete().eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
