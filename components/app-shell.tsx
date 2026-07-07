@@ -502,7 +502,7 @@ export default function AppShell({
           {!collapsed && (
             <div className="flex flex-col gap-2 flex-1 min-w-0 py-1">
               <img
-                src="/logo-indique.png"
+                src="/logo-sidebar.png"
                 alt="Indique Placa"
                 style={{ width: "100%", maxWidth: 140, height: 40, objectFit: "contain" }}
               />
