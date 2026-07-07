@@ -82,14 +82,95 @@ const STATUS_COR: Record<StatusLead, string> = {
 // Componente Card de Lead
 // ---------------------------------------------------------------------------
 
+function moeda(v: number) {
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
+function PainelPagamento({ lead, onPago }: { lead: Lead; onPago: (leadId: string, valorPago: number | null, comprovanteUrl: string | null) => void }) {
+  const [aberto, setAberto] = useState(false);
+  const [valor, setValor] = useState(lead.valor_pago?.toString() ?? "");
+  const [arquivo, setArquivo] = useState<File | null>(null);
+  const [enviando, setEnviando] = useState(false);
+  const [erro, setErro] = useState("");
+  const pago = !!lead.pago_em;
+
+  if (!lead.indicadores?.nome) return null;
+
+  if (pago) {
+    return (
+      <div className="mt-2 pt-2 border-t border-border flex items-center gap-2">
+        <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Pago</span>
+        {lead.valor_pago && <span className="text-[10px] text-muted-foreground">{moeda(lead.valor_pago)}</span>}
+        {lead.comprovante_url && (
+          <a href={lead.comprovante_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 underline ml-auto">ver comprovante</a>
+        )}
+      </div>
+    );
+  }
+
+  const enviar = async () => {
+    if (!arquivo) { setErro("Selecione o comprovante"); return; }
+    setEnviando(true);
+    setErro("");
+    const form = new FormData();
+    form.append("comprovante", arquivo);
+    if (valor) form.append("valor", valor);
+    try {
+      const res = await fetch(`/api/consultor/lead/${lead.id}/pagamento`, { method: "POST", body: form });
+      const json = await res.json();
+      if (!res.ok) { setErro(json.error ?? "Erro ao registrar"); return; }
+      onPago(lead.id, valor ? Number(valor) : null, json.comprovante_url);
+      setAberto(false);
+    } catch { setErro("Erro de conexao"); }
+    finally { setEnviando(false); }
+  };
+
+  return (
+    <div className="mt-2 pt-2 border-t border-border">
+      {!aberto ? (
+        <button
+          onClick={() => setAberto(true)}
+          className="w-full text-[11px] font-bold py-1.5 rounded-lg bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400 transition-colors"
+        >
+          Confirmar pagamento ao indicador
+        </button>
+      ) : (
+        <div className="space-y-2">
+          <div className="text-[10px] font-bold text-muted-foreground uppercase">Pix: {lead.indicadores.chave_pix ?? "nao cadastrado"}</div>
+          <input
+            type="number"
+            placeholder="Valor pago (R$)"
+            value={valor}
+            onChange={(e) => setValor(e.target.value)}
+            className="w-full text-xs px-2 py-1.5 border border-border rounded-lg bg-background focus:outline-none focus:ring-1 focus:ring-emerald-500"
+          />
+          <label className="block w-full text-center text-[11px] font-semibold py-1.5 rounded-lg border border-border bg-muted cursor-pointer hover:bg-muted/80">
+            {arquivo ? arquivo.name : "Anexar comprovante"}
+            <input type="file" accept="image/*,.pdf" className="hidden" onChange={(e) => setArquivo(e.target.files?.[0] ?? null)} />
+          </label>
+          {erro && <div className="text-[10px] text-red-500">{erro}</div>}
+          <div className="flex gap-1.5">
+            <button onClick={() => setAberto(false)} className="flex-1 text-[11px] py-1.5 rounded-lg border border-border text-muted-foreground hover:bg-muted">Cancelar</button>
+            <button onClick={enviar} disabled={enviando} className="flex-1 text-[11px] font-bold py-1.5 rounded-lg bg-emerald-500 hover:bg-emerald-600 text-white disabled:opacity-50">
+              {enviando ? "Enviando..." : "Confirmar"}
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function LeadCard({
   lead,
   atualizando,
   onMudarStatus,
+  onPago,
 }: {
   lead: Lead;
   atualizando: boolean;
   onMudarStatus: (id: string, status: StatusLead) => void;
+  onPago: (leadId: string, valorPago: number | null, comprovanteUrl: string | null) => void;
 }) {
   const coluna = COLUNAS.find((c) => c.key === lead.status)!;
   const data = new Date(lead.criado_em).toLocaleDateString("pt-BR");
@@ -157,6 +238,9 @@ function LeadCard({
           </button>
         ))}
       </div>
+
+      {/* Pagamento ao indicador (so quando fechado e tem indicador) */}
+      {lead.status === "fechado" && <PainelPagamento lead={lead} onPago={onPago} />}
     </div>
   );
 }
@@ -195,6 +279,12 @@ export default function ConsultorLeadsPage() {
       return placa.includes(q) || nome.includes(q) || ind.includes(q);
     });
   }, [leads, busca]);
+
+  function registrarPagamento(leadId: string, valorPago: number | null, comprovanteUrl: string | null) {
+    setLeads((prev) => prev.map((l) =>
+      l.id === leadId ? { ...l, pago_em: new Date().toISOString(), valor_pago: valorPago, comprovante_url: comprovanteUrl } : l
+    ));
+  }
 
   async function mudarStatus(id: string, status: StatusLead) {
     setAtualizando((prev) => new Set(prev).add(id));
@@ -399,6 +489,7 @@ export default function ConsultorLeadsPage() {
                           lead={lead}
                           atualizando={atualizando.has(lead.id)}
                           onMudarStatus={mudarStatus}
+                          onPago={registrarPagamento}
                         />
                       ))
                     )}
