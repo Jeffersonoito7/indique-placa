@@ -3,8 +3,8 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
-import { LogOut, ChevronLeft, ChevronRight } from "lucide-react";
-import { useState, useEffect } from "react";
+import { LogOut, ChevronLeft, ChevronRight, LayoutGrid } from "lucide-react";
+import { useState, useEffect, useLayoutEffect } from "react";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 export type NavItem = { href: string; label: string; icon: React.ElementType };
@@ -25,6 +25,10 @@ type AppShellProps = {
   loginRedirect: string;
 };
 
+// useLayoutEffect seguro para SSR
+const useIsomorphicLayoutEffect =
+  typeof window !== "undefined" ? useLayoutEffect : useEffect;
+
 export default function AppShell({
   children,
   navItems,
@@ -40,9 +44,14 @@ export default function AppShell({
 }: AppShellProps) {
   const pathname = usePathname();
   const [collapsed, setCollapsed] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
+  // mobile-first: default true evita flash no SSR
+  const [isMobile, setIsMobile] = useState(true);
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [drawerMounted, setDrawerMounted] = useState(false);
+  const [drawerVisible, setDrawerVisible] = useState(false);
 
-  useEffect(() => {
+  // Detecta tamanho real assim que o DOM estiver disponivel
+  useIsomorphicLayoutEffect(() => {
     const check = () => setIsMobile(window.innerWidth < 768);
     check();
     window.addEventListener("resize", check);
@@ -52,6 +61,26 @@ export default function AppShell({
   useEffect(() => {
     if (!isMobile && localStorage.getItem(storageKey) === "1") setCollapsed(true);
   }, [storageKey, isMobile]);
+
+  // Controle de animacao do drawer
+  useEffect(() => {
+    if (drawerOpen) {
+      setDrawerMounted(true);
+      // dispara animacao no proximo frame
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setDrawerVisible(true));
+      });
+    } else {
+      setDrawerVisible(false);
+      const t = setTimeout(() => setDrawerMounted(false), 280);
+      return () => clearTimeout(t);
+    }
+  }, [drawerOpen]);
+
+  // Fecha drawer ao navegar
+  useEffect(() => {
+    setDrawerOpen(false);
+  }, [pathname]);
 
   const toggleCollapse = () => {
     setCollapsed((v) => {
@@ -65,8 +94,6 @@ export default function AppShell({
     window.location.href = loginRedirect;
   };
 
-  const [drawerOpen, setDrawerOpen] = useState(false);
-
   const allItems = navItems.flatMap((g) => g.items);
   const currentPage = allItems.find(
     (i) => pathname === i.href || pathname.startsWith(i.href + "/")
@@ -74,81 +101,363 @@ export default function AppShell({
 
   const sidebarW = collapsed ? 64 : 232;
 
-  // Bottom nav: 4 primeiros + botao Menu
+  // Bottom nav: 4 primeiros itens + botao Mais
   const bottomItems = allItems.slice(0, 4);
 
+  // ---- LAYOUT MOBILE ----
   if (isMobile) {
     return (
-      <div className="flex flex-col min-h-screen bg-background">
+      <div
+        suppressHydrationWarning
+        style={{
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100dvh",
+          background: "var(--background)",
+          position: "relative",
+        }}
+      >
         {/* Topbar mobile */}
         <header
-          className="h-14 flex items-center px-4 gap-3 flex-shrink-0 sticky top-0 z-40 bg-background/95 backdrop-blur"
-          style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}
+          suppressHydrationWarning
+          style={{
+            height: 56,
+            display: "flex",
+            alignItems: "center",
+            position: "sticky",
+            top: 0,
+            zIndex: 40,
+            backgroundColor: "#070f1a",
+            borderBottom: "1px solid rgba(255,255,255,0.06)",
+            flexShrink: 0,
+            paddingLeft: 16,
+            paddingRight: 8,
+          }}
         >
-          <img src="/favicon-indique.png" alt="Indique Placa" style={{ width: 30, height: 30, objectFit: "contain", borderRadius: 6 }} />
-          <div className="flex-1 min-w-0">
+          {/* Logo */}
+          <img
+            src="/favicon-indique.png"
+            alt="Indique Placa"
+            style={{ width: 28, height: 28, objectFit: "contain", borderRadius: 6, flexShrink: 0 }}
+          />
+
+          {/* Nome da pagina centralizado */}
+          <div
+            style={{
+              flex: 1,
+              display: "flex",
+              justifyContent: "center",
+              alignItems: "center",
+            }}
+          >
             {currentPage && (
-              <span className="text-sm font-semibold text-foreground">{currentPage.label}</span>
+              <span
+                style={{
+                  fontSize: 15,
+                  fontWeight: 700,
+                  color: "rgba(255,255,255,0.92)",
+                  letterSpacing: -0.2,
+                }}
+              >
+                {currentPage.label}
+              </span>
             )}
           </div>
-          <ThemeToggle />
+
+          {/* Botao sair discreto */}
           <button
             onClick={sair}
-            className="p-2 rounded-lg"
-            style={{ color: "rgba(255,255,255,0.35)" }}
+            aria-label="Sair"
+            style={{
+              width: 40,
+              height: 40,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              flexShrink: 0,
+            }}
           >
-            <LogOut className="h-4 w-4" />
+            <LogOut size={18} style={{ color: "rgba(255,255,255,0.3)" }} />
           </button>
         </header>
 
-        {/* Conteudo com padding bottom para nav */}
-        <div className="flex-1 overflow-y-auto pb-24">
+        {/* Conteudo */}
+        <div
+          style={{
+            flex: 1,
+            overflowY: "auto",
+            WebkitOverflowScrolling: "touch",
+            paddingBottom: 72,
+          }}
+        >
           {children}
         </div>
 
-        {/* Drawer de menu completo */}
-        {drawerOpen && (
-          <>
+        {/* Bottom navigation - tab bar nativa */}
+        <nav
+          style={{
+            position: "fixed",
+            bottom: 0,
+            left: 0,
+            right: 0,
+            zIndex: 40,
+            backgroundColor: "#070f1a",
+            borderTop: "1px solid rgba(255,255,255,0.08)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "space-around",
+            height: "calc(56px + env(safe-area-inset-bottom))",
+            paddingBottom: "env(safe-area-inset-bottom)",
+            paddingLeft: 4,
+            paddingRight: 4,
+          }}
+        >
+          {bottomItems.map((item) => {
+            const Icon = item.icon;
+            const active = pathname === item.href || pathname.startsWith(item.href + "/");
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  gap: 3,
+                  textDecoration: "none",
+                  paddingTop: 6,
+                  paddingBottom: 4,
+                }}
+              >
+                {/* Pill ativa atras do icone */}
+                <div
+                  style={{
+                    width: 40,
+                    height: 28,
+                    borderRadius: 14,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: active ? "rgba(59,130,246,0.2)" : "transparent",
+                    border: active ? "1px solid rgba(59,130,246,0.4)" : "1px solid transparent",
+                    transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                  }}
+                >
+                  <Icon
+                    size={active ? 22 : 20}
+                    style={{
+                      color: active ? "#93c5fd" : "rgba(255,255,255,0.35)",
+                      transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                      flexShrink: 0,
+                    }}
+                  />
+                </div>
+                <span
+                  style={{
+                    fontSize: 9,
+                    fontWeight: active ? 700 : 500,
+                    color: active ? "#93c5fd" : "rgba(255,255,255,0.35)",
+                    letterSpacing: 0.2,
+                    lineHeight: 1,
+                    transition: "color 0.15s ease",
+                  }}
+                >
+                  {item.label}
+                </span>
+              </Link>
+            );
+          })}
+
+          {/* Botao Mais */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            aria-label="Mais opções"
+            style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 3,
+              background: "transparent",
+              border: "none",
+              cursor: "pointer",
+              paddingTop: 6,
+              paddingBottom: 4,
+            }}
+          >
             <div
-              className="fixed inset-0 z-50 bg-black/60"
-              onClick={() => setDrawerOpen(false)}
-            />
-            <div
-              className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl overflow-hidden"
-              style={{ background: "linear-gradient(180deg, #0f1e33 0%, #081320 100%)", borderTop: "1px solid rgba(255,255,255,0.1)" }}
+              style={{
+                width: 40,
+                height: 28,
+                borderRadius: 14,
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                background: drawerOpen ? "rgba(59,130,246,0.2)" : "transparent",
+                border: drawerOpen ? "1px solid rgba(59,130,246,0.4)" : "1px solid transparent",
+                transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+              }}
             >
-              <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
-                <span className="text-sm font-bold text-white">Menu</span>
+              <LayoutGrid
+                size={drawerOpen ? 22 : 20}
+                style={{
+                  color: drawerOpen ? "#93c5fd" : "rgba(255,255,255,0.35)",
+                  transition: "all 0.2s cubic-bezier(0.34, 1.56, 0.64, 1)",
+                }}
+              />
+            </div>
+            <span
+              style={{
+                fontSize: 9,
+                fontWeight: drawerOpen ? 700 : 500,
+                color: drawerOpen ? "#93c5fd" : "rgba(255,255,255,0.35)",
+                letterSpacing: 0.2,
+                lineHeight: 1,
+                transition: "color 0.15s ease",
+              }}
+            >
+              Mais
+            </span>
+          </button>
+        </nav>
+
+        {/* Drawer lateral - slide da direita */}
+        {drawerMounted && (
+          <>
+            {/* Overlay */}
+            <div
+              onClick={() => setDrawerOpen(false)}
+              style={{
+                position: "fixed",
+                inset: 0,
+                zIndex: 50,
+                backgroundColor: "rgba(0,0,0,0.6)",
+                backdropFilter: "blur(2px)",
+                WebkitBackdropFilter: "blur(2px)",
+                opacity: drawerVisible ? 1 : 0,
+                transition: "opacity 0.25s ease-out",
+              }}
+            />
+
+            {/* Painel */}
+            <div
+              style={{
+                position: "fixed",
+                top: 0,
+                right: 0,
+                bottom: 0,
+                zIndex: 51,
+                width: 280,
+                backgroundColor: "#0a1628",
+                borderLeft: "1px solid rgba(255,255,255,0.08)",
+                display: "flex",
+                flexDirection: "column",
+                transform: drawerVisible ? "translateX(0)" : "translateX(100%)",
+                transition: "transform 0.25s ease-out",
+                willChange: "transform",
+              }}
+            >
+              {/* Header drawer */}
+              <div
+                style={{
+                  height: 56,
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingLeft: 20,
+                  paddingRight: 12,
+                  borderBottom: "1px solid rgba(255,255,255,0.07)",
+                  flexShrink: 0,
+                }}
+              >
+                <span style={{ fontSize: 15, fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>
+                  Menu
+                </span>
                 <button
                   onClick={() => setDrawerOpen(false)}
-                  className="text-2xl leading-none"
-                  style={{ color: "rgba(255,255,255,0.4)" }}
+                  aria-label="Fechar menu"
+                  style={{
+                    width: 36,
+                    height: 36,
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    background: "rgba(255,255,255,0.06)",
+                    border: "none",
+                    borderRadius: 10,
+                    cursor: "pointer",
+                    color: "rgba(255,255,255,0.5)",
+                    fontSize: 20,
+                    lineHeight: 1,
+                  }}
                 >
                   ×
                 </button>
               </div>
-              <div className="overflow-y-auto" style={{ maxHeight: "70vh", paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}>
+
+              {/* Itens do menu */}
+              <div
+                style={{
+                  flex: 1,
+                  overflowY: "auto",
+                  WebkitOverflowScrolling: "touch",
+                  paddingBottom: "calc(16px + env(safe-area-inset-bottom))",
+                }}
+              >
                 {navItems.map((group) => (
                   <div key={group.group}>
-                    <div className="px-5 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.25)" }}>
+                    <div
+                      style={{
+                        padding: "16px 20px 4px",
+                        fontSize: 10,
+                        fontWeight: 700,
+                        textTransform: "uppercase",
+                        letterSpacing: "0.12em",
+                        color: "rgba(255,255,255,0.25)",
+                      }}
+                    >
                       {group.group}
                     </div>
                     {group.items.map((item) => {
                       const Icon = item.icon;
-                      const active = pathname === item.href || pathname.startsWith(item.href + "/");
+                      const active =
+                        pathname === item.href || pathname.startsWith(item.href + "/");
                       return (
                         <Link
                           key={item.href}
                           href={item.href}
-                          onClick={() => setDrawerOpen(false)}
-                          className="flex items-center gap-3 px-5 py-3.5"
                           style={{
-                            background: active ? "rgba(59,130,246,0.12)" : "transparent",
-                            borderLeft: active ? "3px solid #3b82f6" : "3px solid transparent",
+                            display: "flex",
+                            alignItems: "center",
+                            gap: 12,
+                            padding: "12px 20px",
+                            textDecoration: "none",
+                            background: active ? "rgba(59,130,246,0.1)" : "transparent",
+                            borderLeft: active
+                              ? "3px solid #3b82f6"
+                              : "3px solid transparent",
                           }}
                         >
-                          <Icon className="h-5 w-5 flex-shrink-0" style={{ color: active ? "#93c5fd" : "rgba(255,255,255,0.5)" }} />
-                          <span className="text-sm font-medium" style={{ color: active ? "#93c5fd" : "rgba(255,255,255,0.75)" }}>
+                          <Icon
+                            size={20}
+                            style={{
+                              color: active ? "#93c5fd" : "rgba(255,255,255,0.45)",
+                              flexShrink: 0,
+                            }}
+                          />
+                          <span
+                            style={{
+                              fontSize: 14,
+                              fontWeight: active ? 600 : 500,
+                              color: active ? "#93c5fd" : "rgba(255,255,255,0.72)",
+                            }}
+                          >
                             {item.label}
                           </span>
                         </Link>
@@ -160,57 +469,11 @@ export default function AppShell({
             </div>
           </>
         )}
-
-        {/* Bottom navigation */}
-        <nav
-          className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-2"
-          style={{
-            background: "linear-gradient(180deg, #0c1929 0%, #081320 100%)",
-            borderTop: "1px solid rgba(255,255,255,0.08)",
-            paddingTop: 8,
-            paddingBottom: "calc(8px + env(safe-area-inset-bottom))",
-          }}
-        >
-          {bottomItems.map((item) => {
-            const Icon = item.icon;
-            const active = pathname === item.href || pathname.startsWith(item.href + "/");
-            return (
-              <Link key={item.href} href={item.href} className="flex flex-col items-center gap-1 flex-1">
-                <div
-                  className="flex items-center justify-center w-10 h-8 rounded-xl transition-colors"
-                  style={{ background: active ? "rgba(59,130,246,0.18)" : "transparent" }}
-                >
-                  <Icon className="h-5 w-5" style={{ color: active ? "#93c5fd" : "rgba(255,255,255,0.38)" }} />
-                </div>
-                <span className="text-[10px] font-medium" style={{ color: active ? "#93c5fd" : "rgba(255,255,255,0.38)" }}>
-                  {item.label}
-                </span>
-              </Link>
-            );
-          })}
-          {/* Botao menu - acesso a todos os itens */}
-          <button
-            onClick={() => setDrawerOpen(true)}
-            className="flex flex-col items-center gap-1 flex-1"
-          >
-            <div
-              className="flex items-center justify-center w-10 h-8 rounded-xl transition-colors"
-              style={{ background: drawerOpen ? "rgba(59,130,246,0.18)" : "transparent" }}
-            >
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: drawerOpen ? "#93c5fd" : "rgba(255,255,255,0.38)" }}>
-                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
-              </svg>
-            </div>
-            <span className="text-[10px] font-medium" style={{ color: drawerOpen ? "#93c5fd" : "rgba(255,255,255,0.38)" }}>
-              Menu
-            </span>
-          </button>
-        </nav>
       </div>
     );
   }
 
-  // Layout desktop com sidebar
+  // ---- LAYOUT DESKTOP (sem alteracoes) ----
   return (
     <div className="flex min-h-screen bg-background">
       {/* Sidebar */}
@@ -327,7 +590,7 @@ export default function AppShell({
         </div>
       </aside>
 
-      {/* Conteudo */}
+      {/* Conteudo desktop */}
       <div
         className="flex-1 flex flex-col transition-all duration-200"
         style={{ marginLeft: sidebarW }}
@@ -349,17 +612,38 @@ export default function AppShell({
   );
 }
 
-function NavBtn({ active, collapsed, icon, label }: { active: boolean; collapsed: boolean; icon: React.ReactNode; label: string }) {
+function NavBtn({
+  active,
+  collapsed,
+  icon,
+  label,
+}: {
+  active: boolean;
+  collapsed: boolean;
+  icon: React.ReactNode;
+  label: string;
+}) {
   const [hovered, setHovered] = useState(false);
 
   return (
     <div
       onMouseEnter={() => setHovered(true)}
       onMouseLeave={() => setHovered(false)}
-      className={cn("flex items-center rounded-xl py-2.5 text-sm font-medium transition-colors duration-100 mb-0.5", collapsed ? "justify-center px-2" : "gap-3 px-3")}
+      className={cn(
+        "flex items-center rounded-xl py-2.5 text-sm font-medium transition-colors duration-100 mb-0.5",
+        collapsed ? "justify-center px-2" : "gap-3 px-3"
+      )}
       style={{
-        background: active ? "rgba(59,130,246,0.18)" : hovered ? "rgba(255,255,255,0.06)" : "transparent",
-        color: active ? "#93c5fd" : hovered ? "rgba(255,255,255,0.85)" : "rgba(255,255,255,0.42)",
+        background: active
+          ? "rgba(59,130,246,0.18)"
+          : hovered
+          ? "rgba(255,255,255,0.06)"
+          : "transparent",
+        color: active
+          ? "#93c5fd"
+          : hovered
+          ? "rgba(255,255,255,0.85)"
+          : "rgba(255,255,255,0.42)",
         borderLeft: active ? "2px solid #3b82f6" : "2px solid transparent",
       }}
     >
