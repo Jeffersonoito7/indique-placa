@@ -85,7 +85,7 @@ const STYLES = `
     animation: fadeUp .5s ease both;
   }
   .ind-badge-dot { width: 6px; height: 6px; border-radius: 50%; background: #f59e0b; animation: pulse 2s ease infinite; }
-  .ind-logo { animation: floatLogo 4s ease-in-out infinite; margin-bottom: 20px; }
+  .ind-logo { animation: floatLogo 4s ease-in-out infinite; margin-bottom: 20px; display: flex; justify-content: center; align-items: center; }
   .ind-headline {
     font-size: clamp(32px, 5.5vw, 64px); font-weight: 900; line-height: 1.05;
     letter-spacing: -1.5px; animation: fadeUp .6s .1s ease both; margin-bottom: 14px;
@@ -320,7 +320,7 @@ function FormIndicador() {
           </div>
 
           <div className="ind-logo">
-            <img src="/logo-indique.png" alt="Logo" style={{ width: 80, height: 80, objectFit: "contain" }} />
+            <img src="/logo-indique.png" alt="Logo" style={{ width: 160, height: 160, objectFit: "contain" }} />
           </div>
 
           <h1 className="ind-headline">
