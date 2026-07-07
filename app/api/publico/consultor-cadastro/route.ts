@@ -7,6 +7,7 @@ import bcrypt from "bcryptjs";
 const schema = z.object({
   nome: z.string().min(2).max(100),
   telefone: z.string().min(10).max(20),
+  email: z.string().email().max(200),
   cidade: z.string().min(2).max(100),
   associacao: z.string().min(2).max(100),
   senha: z.string().min(6).max(128),
@@ -30,17 +31,27 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Preencha todos os campos corretamente" }, { status: 400 });
   }
 
-  const { nome, telefone, cidade, associacao, senha } = parsed.data;
+  const { nome, telefone, email, cidade, associacao, senha } = parsed.data;
   const tel = telefone.replace(/\D/g, "");
 
-  const { data: existente } = await supabaseAdmin
+  const { data: existenteFone } = await supabaseAdmin
     .from("consultores")
     .select("id")
     .eq("fone", tel)
     .single();
 
-  if (existente) {
+  if (existenteFone) {
     return NextResponse.json({ error: "Este WhatsApp já está cadastrado" }, { status: 409 });
+  }
+
+  const { data: existenteEmail } = await supabaseAdmin
+    .from("consultores")
+    .select("id")
+    .eq("email", email.toLowerCase())
+    .single();
+
+  if (existenteEmail) {
+    return NextResponse.json({ error: "Este email já está cadastrado" }, { status: 409 });
   }
 
   const senha_hash = await bcrypt.hash(senha, 10);
@@ -48,6 +59,7 @@ export async function POST(req: NextRequest) {
   const { error } = await supabaseAdmin.from("consultores").insert({
     nome,
     fone: tel,
+    email: email.toLowerCase(),
     cidade,
     associacao,
     senha: senha_hash,

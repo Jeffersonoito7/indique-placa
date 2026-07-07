@@ -452,6 +452,7 @@ export default function ConsultorCadastroPage() {
   /* form */
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [email, setEmail] = useState("");
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
   const [associacao, setAssociacao] = useState("");
@@ -520,7 +521,7 @@ export default function ConsultorCadastroPage() {
     try {
       const res = await fetch("/api/publico/consultor-cadastro", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, telefone, cidade: `${cidade} - ${estado}`, associacao: nomeAssoc, senha }),
+        body: JSON.stringify({ nome, telefone, email, cidade: `${cidade} - ${estado}`, associacao: nomeAssoc, senha }),
       });
       const json = await res.json();
       if (!res.ok) setErro(json.error ?? "Erro ao cadastrar");
@@ -846,6 +847,10 @@ export default function ConsultorCadastroPage() {
                   <div className="campo-group">
                     <label className="campo-label">WhatsApp (com DDD)</label>
                     <input className="campo" type="tel" placeholder="(11) 99999-9999" value={telefone} required onChange={e => setTelefone(fmtTelBR(e.target.value))} />
+                  </div>
+                  <div className="campo-group">
+                    <label className="campo-label">Email (para recuperar sua senha)</label>
+                    <input className="campo" type="email" placeholder="seu@email.com" value={email} required onChange={e => setEmail(e.target.value)} />
                   </div>
                   <div className="campo-group">
                     <label className="campo-label">Estado</label>
