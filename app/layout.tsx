@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SwRegister } from "@/components/sw-register";
 import { PwaInstall } from "@/components/pwa-install";
+import { AppFeel } from "@/components/app-feel";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -51,6 +52,7 @@ export default function RootLayout({
       <body className={`${inter.className} min-h-full`}>
         <SwRegister />
         <PwaInstall />
+        <AppFeel />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>

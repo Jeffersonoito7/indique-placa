@@ -150,3 +150,66 @@
   --ip-text: #E8E8F5;
   --ip-muted: #6B7280;
 }
+
+/* ── APP NATIVO: previne comportamentos de browser ───────────────────── */
+
+/* Sem zoom no duplo toque e sem highlight azul ao tocar */
+* {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+/* Sem selecao de texto em elementos de UI */
+button, a, nav, [role="button"], label {
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+/* Scroll suave e sem bounce lateral */
+html {
+  scroll-behavior: smooth;
+  overscroll-behavior-x: none;
+}
+
+/* ── FEEDBACK DE TOQUE ───────────────────────────────────────────────── */
+
+/* Botoes e links: escala ao pressionar */
+button:active:not(:disabled),
+a:active {
+  transform: scale(0.96);
+  transition: transform 0.08s ease;
+}
+
+/* Links do bottom nav e drawer: feedback mais suave */
+nav a:active {
+  transform: scale(0.92);
+  opacity: 0.75;
+  transition: transform 0.08s ease, opacity 0.08s ease;
+}
+
+/* Cards clicaveis */
+.card-tap:active {
+  transform: scale(0.98);
+  transition: transform 0.1s ease;
+}
+
+/* ── TRANSICOES DE PAGINA ────────────────────────────────────────────── */
+@keyframes pageIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+main, .page-content {
+  animation: pageIn 0.18s ease both;
+}
+
+/* ── INPUTS: sem zoom no iOS (font-size >= 16px evita o zoom automatico) */
+input, select, textarea {
+  font-size: max(16px, 1em);
+}
+
+/* ── SCROLLBAR INVISIVEL em mobile ───────────────────────────────────── */
+@media (max-width: 768px) {
+  ::-webkit-scrollbar { display: none; }
+  * { scrollbar-width: none; }
+}
