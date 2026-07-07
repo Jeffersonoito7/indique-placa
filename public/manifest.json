@@ -1,13 +1,16 @@
 {
   "name": "Indique Placa",
   "short_name": "IndiquePlaca",
-  "description": "Plataforma de indicacoes para protecao veicular",
+  "description": "Indique uma placa e ganhe dinheiro",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
-  "background_color": "#031a2e",
-  "theme_color": "#0a2a4a",
-  "orientation": "portrait",
+  "display_override": ["standalone", "minimal-ui"],
+  "background_color": "#000000",
+  "theme_color": "#16a34a",
+  "orientation": "portrait-primary",
+  "lang": "pt-BR",
+  "categories": ["business", "finance"],
   "icons": [
     {
       "src": "/icon-192.png",

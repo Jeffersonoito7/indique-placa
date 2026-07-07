@@ -3,6 +3,7 @@ import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
 import { SwRegister } from "@/components/sw-register";
+import { PwaInstall } from "@/components/pwa-install";
 
 const inter = Inter({ subsets: ["latin"] });
 
@@ -16,8 +17,14 @@ export const metadata: Metadata = {
   manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Indique Placa" },
   icons: {
-    icon: "/favicon-indique.png",
-    apple: "/favicon-indique.png",
+    icon: [
+      { url: "/favicon-indique.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
   },
   openGraph: {
     title: "Indique Placa",
@@ -43,6 +50,7 @@ export default function RootLayout({
     <html lang="pt-BR" className="h-full antialiased" suppressHydrationWarning>
       <body className={`${inter.className} min-h-full`}>
         <SwRegister />
+        <PwaInstall />
         <ThemeProvider>{children}</ThemeProvider>
       </body>
     </html>
