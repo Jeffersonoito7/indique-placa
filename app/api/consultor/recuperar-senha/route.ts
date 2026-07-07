@@ -1,73 +1,46 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { enviarOTP } from "@/lib/whatsapp";
+import { enviarEmailOTP } from "@/lib/email";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
-// OTP em memoria. Limitacao: nao persiste entre reinicializacoes nem funciona em
-// ambientes multi-instancia. Para producao de alta escala, usar Upstash Redis.
 const otpStore = new Map<string, { codigo: string; expira: number }>();
 
-const schemaEtapa1 = z.object({
-  telefone: z.string().min(10).max(20),
-});
-
+const schemaEtapa1 = z.object({ email: z.string().email() });
 const schemaEtapa2 = z.object({
-  telefone: z.string().min(10).max(20),
+  email: z.string().email(),
   codigo: z.string().length(6),
   novaSenha: z.string().min(6).max(128),
 });
 
 export async function POST(req: NextRequest) {
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
-  // Etapa 2: validar OTP + trocar senha
   const etapa2 = schemaEtapa2.safeParse(body);
   if (etapa2.success) {
-    const tel = etapa2.data.telefone.replace(/\D/g, "");
-    const entrada = otpStore.get(tel);
-
-    if (!entrada || Date.now() > entrada.expira || entrada.codigo !== etapa2.data.codigo) {
-      return NextResponse.json({ error: "Codigo invalido ou expirado" }, { status: 400 });
+    const { email, codigo, novaSenha } = etapa2.data;
+    const entrada = otpStore.get(email);
+    if (!entrada || Date.now() > entrada.expira || entrada.codigo !== codigo) {
+      return NextResponse.json({ error: "Código inválido ou expirado" }, { status: 400 });
     }
-
-    const { data: consultor } = await supabaseAdmin
-      .from("consultores")
-      .select("id")
-      .eq("fone", tel)
-      .single();
-
-    if (!consultor) {
-      otpStore.delete(tel);
-      return NextResponse.json({ error: "Conta nao encontrada" }, { status: 404 });
-    }
-
-    const hash = await bcrypt.hash(etapa2.data.novaSenha, 10);
+    const { data: consultor } = await supabaseAdmin.from("consultores").select("id").eq("email", email).single();
+    if (!consultor) { otpStore.delete(email); return NextResponse.json({ error: "Conta não encontrada" }, { status: 404 }); }
+    const hash = await bcrypt.hash(novaSenha, 10);
     await supabaseAdmin.from("consultores").update({ senha: hash }).eq("id", consultor.id);
-    otpStore.delete(tel);
-
+    otpStore.delete(email);
     return NextResponse.json({ ok: true });
   }
 
-  // Etapa 1: solicitar OTP
   const etapa1 = schemaEtapa1.safeParse(body);
-  if (!etapa1.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!etapa1.success) return NextResponse.json({ error: "Email inválido" }, { status: 400 });
 
-  const tel = etapa1.data.telefone.replace(/\D/g, "");
-
-  // Sempre retorna ok para nao enumerar usuarios
-  const { data: consultor } = await supabaseAdmin
-    .from("consultores")
-    .select("fone")
-    .eq("fone", tel)
-    .single();
-
+  const { email } = etapa1.data;
+  const { data: consultor } = await supabaseAdmin.from("consultores").select("nome, email").eq("email", email).single();
   if (consultor) {
     const codigo = String(Math.floor(100000 + Math.random() * 900000));
-    otpStore.set(tel, { codigo, expira: Date.now() + 10 * 60 * 1000 });
-    enviarOTP({ telefone: tel, codigo, tipo: "consultor" }).catch(() => {});
+    otpStore.set(email, { codigo, expira: Date.now() + 10 * 60 * 1000 });
+    enviarEmailOTP({ email, codigo, nome: consultor.nome }).catch(() => {});
   }
-
   return NextResponse.json({ ok: true });
 }

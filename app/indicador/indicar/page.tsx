@@ -29,12 +29,7 @@ function fmtTelBR(v: string): string {
 interface TipoVeiculo {
   tipo: string;
   label: string;
-}
-
-interface Comissao {
-  tipo: string;
-  comissao_indicador: number;
-  ativo: boolean;
+  comissao_indicador?: number;
 }
 
 function moeda(v: number) {
@@ -42,10 +37,16 @@ function moeda(v: number) {
 }
 
 const TIPOS_PADRAO: TipoVeiculo[] = [
-  { tipo: "moto", label: "Moto" },
-  { tipo: "carro", label: "Carro" },
-  { tipo: "caminhao", label: "Caminhão" },
+  { tipo: "moto",    label: "Moto",    comissao_indicador: 50  },
+  { tipo: "carro",   label: "Carro",   comissao_indicador: 100 },
+  { tipo: "caminhao",label: "Caminhão",comissao_indicador: 500 },
 ];
+
+function vibrar() {
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) {
+    navigator.vibrate(40);
+  }
+}
 
 export default function IndicarPage() {
   const [tipoVeiculo, setTipoVeiculo] = useState("carro");
@@ -57,20 +58,15 @@ export default function IndicarPage() {
   const [duplicado, setDuplicado] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(false);
-  const [comissoes, setComissoes] = useState<Comissao[]>([]);
 
   useEffect(() => {
     fetch("/api/indicador/tipos-veiculo")
       .then((r) => r.json())
       .then((d: TipoVeiculo[]) => { if (Array.isArray(d) && d.length > 0) setTipos(d); })
       .catch(() => {});
-    fetch("/api/consultor/comissoes")
-      .then((r) => r.json())
-      .then((d: Comissao[]) => setComissoes(d))
-      .catch(() => {});
   }, []);
 
-  const comissaoAtual = comissoes.find((c) => c.tipo === tipoVeiculo && c.ativo);
+  const tipoAtual = tipos.find((t) => t.tipo === tipoVeiculo);
 
   const handlePlaca = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPlaca(formatarPlaca(e.target.value));
@@ -98,6 +94,7 @@ export default function IndicarPage() {
       const json = await res.json();
       if (res.status === 409) { setDuplicado(true); return; }
       if (!res.ok) { setErro(json.error ?? "Erro ao enviar"); return; }
+      vibrar();
       setSucesso(true);
       setPlaca("");
       setNome("");
@@ -128,7 +125,7 @@ export default function IndicarPage() {
             <p className="text-sm text-muted-foreground mt-1">O consultor vai entrar em contato com o dono do veículo.</p>
           </div>
           <button
-            onClick={novaSugestao}
+            onClick={() => { vibrar(); novaSugestao(); }}
             className="w-full py-3 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-colors"
           >
             Indicar outra placa
@@ -158,7 +155,7 @@ export default function IndicarPage() {
                 <button
                   key={tipo}
                   type="button"
-                  onClick={() => setTipoVeiculo(tipo)}
+                  onClick={() => { vibrar(); setTipoVeiculo(tipo); }}
                   className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 font-semibold text-sm transition-all ${
                     tipoVeiculo === tipo
                       ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400"
@@ -170,9 +167,9 @@ export default function IndicarPage() {
                 </button>
               ))}
             </div>
-            {comissaoAtual && (
+            {tipoAtual?.comissao_indicador && (
               <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-2">
-                Você ganha {moeda(comissaoAtual.comissao_indicador)} se esta indicação fechar
+                Você ganha {moeda(tipoAtual.comissao_indicador)} se esta indicação fechar
               </p>
             )}
           </div>

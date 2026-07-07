@@ -7,6 +7,7 @@ import { z } from "zod";
 const schema = z.object({
   nome: z.string().min(2).max(100),
   telefone: z.string().min(10).max(20),
+  email: z.string().email().max(200),
   senha: z.string().min(6).max(128),
   consultor_id: z.string().uuid().optional().nullable(),
 });
@@ -27,7 +28,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Preencha todos os campos corretamente" }, { status: 400 });
   }
 
-  const { nome, telefone, senha, consultor_id } = parsed.data;
+  const { nome, telefone, email, senha, consultor_id } = parsed.data;
   const tel = telefone.replace(/\D/g, "");
 
   const { data: existente } = await supabaseAdmin
@@ -55,6 +56,7 @@ export async function POST(req: NextRequest) {
   const { error } = await supabaseAdmin.from("indicadores").insert({
     nome,
     telefone: tel,
+    email: email.toLowerCase(),
     senha: senha_hash,
     consultor_id: cid,
     status: "ativo",

@@ -68,21 +68,13 @@ type Etapa = "telefone" | "otp" | "sucesso";
 export default function IndicadorRecuperarSenhaPage() {
   const router = useRouter();
   const [etapa, setEtapa] = useState<Etapa>("telefone");
-  const [telefone, setTelefone] = useState("");
+  const [email, setEmail] = useState("");
   const [codigo, setCodigo] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmar, setConfirmar] = useState("");
   const [verSenha, setVerSenha] = useState(false);
   const [carregando, setCarregando] = useState(false);
   const [erro, setErro] = useState("");
-
-  const fmtTel = (v: string) => {
-    const n = v.replace(/\D/g, "").slice(0, 11);
-    if (n.length <= 2) return n.length ? `(${n}` : "";
-    if (n.length <= 6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
-    if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
-    return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
-  };
 
   const solicitarOTP = async (e: React.FormEvent) => {
     e.preventDefault(); setErro(""); vibrar();
@@ -91,7 +83,7 @@ export default function IndicadorRecuperarSenhaPage() {
       const res = await fetch("/api/indicador/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telefone: telefone.replace(/\D/g, "") }),
+        body: JSON.stringify({ email }),
       });
       if (!res.ok) { setErro("Erro ao enviar código. Tente novamente."); return; }
       setEtapa("otp");
@@ -109,7 +101,7 @@ export default function IndicadorRecuperarSenhaPage() {
       const res = await fetch("/api/indicador/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telefone: telefone.replace(/\D/g, ""), codigo, novaSenha }),
+        body: JSON.stringify({ email, codigo, novaSenha }),
       });
       const json = await res.json();
       if (!res.ok) { setErro(json.error ?? "Código inválido ou expirado."); return; }
@@ -152,8 +144,8 @@ export default function IndicadorRecuperarSenhaPage() {
               <div className="rp-titulo">Digite o código</div>
               <div className="rp-info">
                 Um código de 6 dígitos foi enviado para o seu<br />
-                <strong>WhatsApp {telefone}</strong>.<br />
-                Pode demorar até 1 minuto. Verifique também a aba de mensagens do WhatsApp.
+                <strong>email {email}</strong>.<br />
+                Pode demorar até 2 minutos. Verifique também a caixa de spam.
               </div>
               <form onSubmit={confirmarOTP}>
                 {erro && <div className="rp-erro">{erro}</div>}
@@ -192,7 +184,7 @@ export default function IndicadorRecuperarSenhaPage() {
                 </button>
               </form>
               <div style={{ marginTop: 16, textAlign: "center" }}>
-                <button className="rp-link" onClick={() => { setEtapa("telefone"); setErro(""); setCodigo(""); }}>
+                <button className="rp-link" onClick={() => { setEtapa("telefone"); setErro(""); setCodigo(""); setEmail(""); }}>
                   Usar outro número
                 </button>
               </div>
@@ -202,17 +194,17 @@ export default function IndicadorRecuperarSenhaPage() {
           {etapa === "telefone" && (
             <>
               <div className="rp-titulo">Esqueceu a senha?</div>
-              <p className="rp-sub">Digite seu WhatsApp. Vamos enviar um código de verificação.</p>
+              <p className="rp-sub">Digite seu email. Vamos enviar um código de verificação.</p>
               <form onSubmit={solicitarOTP}>
                 {erro && <div className="rp-erro">{erro}</div>}
                 <input
                   className="rp-campo"
-                  type="tel"
-                  placeholder="(87) 99999-9999"
-                  value={telefone}
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
                   required
                   autoFocus
-                  onChange={e => setTelefone(fmtTel(e.target.value))}
+                  onChange={e => setEmail(e.target.value)}
                 />
                 <button className="rp-btn" type="submit" disabled={carregando}>
                   {carregando ? "Enviando..." : "Enviar código pelo WhatsApp"}

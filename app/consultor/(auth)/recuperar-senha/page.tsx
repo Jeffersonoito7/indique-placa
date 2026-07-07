@@ -63,20 +63,13 @@ function vibrar() {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(40);
 }
 
-function fmtTel(v: string) {
-  const n = v.replace(/\D/g, "").slice(0, 11);
-  if (n.length <= 2) return n.length ? `(${n}` : "";
-  if (n.length <= 6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
-  if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
-  return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
-}
 
 type Etapa = "telefone" | "otp" | "sucesso";
 
 export default function RecuperarSenhaConsultorPage() {
   const router = useRouter();
   const [etapa, setEtapa] = useState<Etapa>("telefone");
-  const [telefone, setTelefone] = useState("");
+  const [email, setEmail] = useState("");
   const [codigo, setCodigo] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmar, setConfirmar] = useState("");
@@ -91,7 +84,7 @@ export default function RecuperarSenhaConsultorPage() {
       const res = await fetch("/api/consultor/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telefone: telefone.replace(/\D/g, "") }),
+        body: JSON.stringify({ email }),
       });
       if (!res.ok) { setErro("Erro ao enviar código. Tente novamente."); return; }
       setEtapa("otp");
@@ -109,7 +102,7 @@ export default function RecuperarSenhaConsultorPage() {
       const res = await fetch("/api/consultor/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telefone: telefone.replace(/\D/g, ""), codigo, novaSenha }),
+        body: JSON.stringify({ email, codigo, novaSenha }),
       });
       const json = await res.json();
       if (!res.ok) { setErro(json.error ?? "Código inválido ou expirado."); return; }
@@ -152,8 +145,8 @@ export default function RecuperarSenhaConsultorPage() {
               <div className="crp-titulo">Digite o código</div>
               <div className="crp-info">
                 Um código de 6 dígitos foi enviado para o seu<br />
-                <strong>WhatsApp {telefone}</strong>.<br />
-                Pode demorar até 1 minuto. Verifique também a aba de mensagens do WhatsApp.
+                <strong>email {email}</strong>.<br />
+                Pode demorar até 2 minutos. Verifique também a caixa de spam.
               </div>
               <form onSubmit={confirmarOTP}>
                 {erro && <div className="crp-erro">{erro}</div>}
@@ -192,7 +185,7 @@ export default function RecuperarSenhaConsultorPage() {
                 </button>
               </form>
               <div style={{ marginTop: 16, textAlign: "center" }}>
-                <button className="crp-link" onClick={() => { setEtapa("telefone"); setErro(""); setCodigo(""); }}>
+                <button className="crp-link" onClick={() => { setEtapa("telefone"); setErro(""); setCodigo(""); setEmail(""); }}>
                   Usar outro número
                 </button>
               </div>
@@ -202,17 +195,17 @@ export default function RecuperarSenhaConsultorPage() {
           {etapa === "telefone" && (
             <>
               <div className="crp-titulo">Esqueceu a senha?</div>
-              <p className="crp-sub">Digite seu WhatsApp. Vamos enviar um código de verificação.</p>
+              <p className="crp-sub">Digite seu email. Vamos enviar um código de verificação.</p>
               <form onSubmit={solicitarOTP}>
                 {erro && <div className="crp-erro">{erro}</div>}
                 <input
                   className="crp-campo"
-                  type="tel"
-                  placeholder="(87) 99999-9999"
-                  value={telefone}
+                  type="email"
+                  placeholder="seu@email.com"
+                  value={email}
                   required
                   autoFocus
-                  onChange={e => setTelefone(fmtTel(e.target.value))}
+                  onChange={e => setEmail(e.target.value)}
                 />
                 <button className="crp-btn" type="submit" disabled={carregando}>
                   {carregando ? "Enviando..." : "Enviar código pelo WhatsApp"}

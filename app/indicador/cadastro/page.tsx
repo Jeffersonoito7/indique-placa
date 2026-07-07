@@ -248,6 +248,7 @@ function FormIndicador() {
   const formRef = useRef<HTMLDivElement>(null);
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
+  const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [verSenha, setVerSenha] = useState(false);
   const [erro, setErro] = useState("");
@@ -272,7 +273,7 @@ function FormIndicador() {
     try {
       const res = await fetch("/api/publico/indicador-cadastro",{
         method:"POST", headers:{"Content-Type":"application/json"},
-        body:JSON.stringify({ nome, telefone, senha, consultor_id:consultorId }),
+        body:JSON.stringify({ nome, telefone, email, senha, consultor_id:consultorId }),
       });
       const json = await res.json();
       if(!res.ok) setErro(json.error??"Erro ao cadastrar");
@@ -436,6 +437,10 @@ function FormIndicador() {
                     <div className="campo-g">
                       <label className="campo-l">WhatsApp (com DDD)</label>
                       <input className="campo" type="tel" placeholder="(87) 99999-9999" value={telefone} required onChange={e=>setTelefone(fmtTel(e.target.value))} />
+                    </div>
+                    <div className="campo-g">
+                      <label className="campo-l">Email (para recuperar senha)</label>
+                      <input className="campo" type="email" placeholder="seu@email.com" value={email} required onChange={e=>setEmail(e.target.value)} />
                     </div>
                     <div className="campo-g">
                       <label className="campo-l">Crie uma senha</label>

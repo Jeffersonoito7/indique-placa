@@ -3,9 +3,9 @@ import { getIndicadorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
 const DEFAULTS = [
-  { tipo: "moto", label: "Moto" },
-  { tipo: "carro", label: "Carro" },
-  { tipo: "caminhao", label: "Caminhão" },
+  { tipo: "moto",    label: "Moto",    comissao_indicador: 50  },
+  { tipo: "carro",   label: "Carro",   comissao_indicador: 100 },
+  { tipo: "caminhao",label: "Caminhão",comissao_indicador: 500 },
 ];
 
 export async function GET() {
@@ -14,7 +14,7 @@ export async function GET() {
 
   const { data } = await supabaseAdmin
     .from("comissoes_tipos")
-    .select("tipo, label")
+    .select("tipo, label, comissao_indicador")
     .eq("consultor_id", indicador.consultor_id)
     .eq("ativo", true)
     .order("created_at", { ascending: true });
