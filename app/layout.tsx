@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "@/components/theme-provider";
@@ -6,12 +6,15 @@ import { SwRegister } from "@/components/sw-register";
 
 const inter = Inter({ subsets: ["latin"] });
 
+export const viewport: Viewport = {
+  themeColor: "#0a2a4a",
+};
+
 export const metadata: Metadata = {
   title: "Indique Placa",
   description: "Monte seu time de indicadores e venda muito mais em proteção veicular",
   manifest: "/manifest.json",
   appleWebApp: { capable: true, statusBarStyle: "black-translucent", title: "Indique Placa" },
-  themeColor: "#0a2a4a",
   icons: {
     icon: "/favicon-indique.png",
     apple: "/favicon-indique.png",
