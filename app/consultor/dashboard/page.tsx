@@ -3,9 +3,10 @@ import { getConsultorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ClipboardList, UserCheck, CheckCircle2, TrendingUp, Trophy, Star, AlertCircle } from "lucide-react";
+import { ClipboardList, UserCheck, CheckCircle2, TrendingUp, Trophy, Star, AlertCircle, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlacaMercosul } from "@/components/placa-mercosul";
+import CopiarLink from "@/app/consultor/perfil/copiar-link";
 
 function moeda(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -62,6 +63,8 @@ export default async function ConsultorDashboard() {
   const semIndicacao = indicadores.filter((i) => !idsComLead.has(i.id));
 
   const ultimasPlacas = leads.slice(0, 6);
+  const base = process.env.NEXT_PUBLIC_BASE_URL ?? "https://indiqueplaca.com.br";
+  const linkIndicador = `${base}/indicador/cadastro?c=${consultor.id}`;
 
   const statusStyle: Record<string, string> = {
     novo: "bg-blue-500/10 text-blue-500",
@@ -89,6 +92,21 @@ export default async function ConsultorDashboard() {
       </div>
 
       <div className="flex-1 p-8 bg-muted/30 space-y-6">
+
+        {/* Link de Indicadores */}
+        <Card className="border border-emerald-500/30 bg-emerald-500/5 shadow-sm">
+          <CardHeader className="pb-2">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <Users className="h-4 w-4 text-emerald-500" /> Seu Link de Indicadores
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-0">
+            <p className="text-xs text-muted-foreground mb-3">
+              Compartilhe este link com quem voce quer cadastrar como indicador. Ele ficara automaticamente vinculado a sua carteira.
+            </p>
+            <CopiarLink titulo="Link de Cadastro de Indicadores" descricao={`/indicador/cadastro?c=${consultor.id}`} url={linkIndicador} cor="blue" />
+          </CardContent>
+        </Card>
 
         {/* KPIs */}
         <div className="grid grid-cols-4 gap-4">

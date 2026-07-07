@@ -10,7 +10,7 @@ import { PlacaMercosul } from "@/components/placa-mercosul";
 async function getLeads() {
   const { data, count } = await supabaseAdmin
     .from("indicacoes")
-    .select("id, placa, nome_lead, telefone_lead, status, criado_em, consultores(nome)", { count: "exact" })
+    .select("id, placa, nome_lead, telefone_lead, status, criado_em, tipo_veiculo, consultores(nome)", { count: "exact" })
     .order("criado_em", { ascending: false });
 
   const novos = data?.filter((l) => l.status === "novo").length ?? 0;
@@ -70,7 +70,7 @@ export default async function LeadsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Placa", "Proprietário", "Consultor", "Status", "Data", ""].map((h) => (
+                    {["Placa", "Tipo", "Proprietário", "Consultor", "Status", "Data", ""].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
                     ))}
                   </tr>
@@ -84,6 +84,9 @@ export default async function LeadsPage() {
                         ) : (
                           <span className="text-xs text-muted-foreground italic">sem placa</span>
                         )}
+                      </td>
+                      <td className="px-6 py-3.5">
+                        <span className="text-xs font-medium text-muted-foreground capitalize">{(lead as any).tipo_veiculo ?? "carro"}</span>
                       </td>
                       <td className="px-6 py-3">
                         <div className="text-sm font-medium text-foreground">{lead.nome_lead ?? <span className="italic text-muted-foreground/50 text-xs">a preencher</span>}</div>

@@ -3,7 +3,7 @@ import { getIndicadorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ClipboardList, CheckCircle2, Clock } from "lucide-react";
+import { ClipboardList, CheckCircle2, Clock, Target } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlacaMercosul } from "@/components/placa-mercosul";
 
@@ -11,7 +11,7 @@ export default async function IndicadorDashboard() {
   const indicador = await getIndicadorLogado();
   if (!indicador) redirect("/indicador/login");
 
-  const [{ data: leads, count }, { count: countFechados }] = await Promise.all([
+  const [{ data: leads, count }, { count: countFechados }, { data: metasRaw }, { data: indicacoesFechadas }] = await Promise.all([
     supabaseAdmin
       .from("indicacoes")
       .select("id, placa, nome_lead, status, criado_em", { count: "exact" })
@@ -23,10 +23,39 @@ export default async function IndicadorDashboard() {
       .select("id", { count: "exact", head: true })
       .eq("indicador_id", indicador.id)
       .eq("status", "fechado"),
+    indicador.consultor_id
+      ? supabaseAdmin
+          .from("metas")
+          .select("id, nome, tipo_veiculo, quantidade_indicacoes, bonus_valor")
+          .eq("consultor_id", indicador.consultor_id)
+          .eq("ativo", true)
+      : Promise.resolve({ data: [] }),
+    supabaseAdmin
+      .from("indicacoes")
+      .select("tipo_veiculo")
+      .eq("indicador_id", indicador.id)
+      .eq("status", "fechado"),
   ]);
 
   const total = count ?? 0;
   const fechados = countFechados ?? 0;
+
+  // Calcular progresso das metas
+  const totalFechados = indicacoesFechadas?.length ?? 0;
+  const fechadosPorTipo: Record<string, number> = {};
+  for (const ind of indicacoesFechadas ?? []) {
+    const t = (ind as any).tipo_veiculo ?? "carro";
+    fechadosPorTipo[t] = (fechadosPorTipo[t] ?? 0) + 1;
+  }
+
+  const metas = (metasRaw ?? []).map((m: any) => {
+    const progresso = m.tipo_veiculo === "todos" ? totalFechados : (fechadosPorTipo[m.tipo_veiculo] ?? 0);
+    return { ...m, progresso };
+  });
+
+  function moeda(v: number) {
+    return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  }
 
   const statusStyle: Record<string, string> = {
     novo: "bg-blue-500/10 text-blue-500",
@@ -84,6 +113,50 @@ export default async function IndicadorDashboard() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Metas do consultor */}
+        {metas.length > 0 && (
+          <Card className="shadow-sm mb-6">
+            <CardHeader className="pb-3 border-b border-border">
+              <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                <Target className="h-4 w-4 text-amber-500" /> Suas Metas
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="p-4 space-y-4">
+              {metas.map((m: any) => {
+                const pct = Math.min(100, Math.round((m.progresso / m.quantidade_indicacoes) * 100));
+                const batida = m.progresso >= m.quantidade_indicacoes;
+                const quase = !batida && pct >= 80;
+                return (
+                  <div key={m.id}>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm font-semibold text-foreground">{m.nome}</span>
+                      {batida ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-500 uppercase tracking-wider">Meta batida</span>
+                      ) : quase ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-amber-500/15 text-amber-500 uppercase tracking-wider">Quase la!</span>
+                      ) : null}
+                    </div>
+                    <div className="flex items-center gap-3">
+                      <div className="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                        <div
+                          className={cn("h-full rounded-full transition-all", batida ? "bg-emerald-500" : quase ? "bg-amber-500" : "bg-blue-500")}
+                          style={{ width: `${pct}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground font-mono whitespace-nowrap">
+                        {m.progresso}/{m.quantidade_indicacoes}
+                      </span>
+                    </div>
+                    <div className="text-xs text-muted-foreground mt-1">
+                      Bonus: <span className="font-bold text-emerald-500">{moeda(m.bonus_valor)}</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </CardContent>
+          </Card>
+        )}
 
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">

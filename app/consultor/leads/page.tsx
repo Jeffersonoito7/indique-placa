@@ -14,7 +14,7 @@ export default async function ConsultorLeadsPage() {
 
   const { data: leads } = await supabaseAdmin
     .from("indicacoes")
-    .select("id, placa, nome_lead, telefone_lead, status, criado_em, indicadores(nome)")
+    .select("id, placa, nome_lead, telefone_lead, status, criado_em, tipo_veiculo, indicadores(nome)")
     .eq("consultor_id", consultor.id)
     .order("criado_em", { ascending: false });
 
@@ -54,7 +54,7 @@ export default async function ConsultorLeadsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Placa", "Proprietário", "Indicado por", "Status", "Data", ""].map((h) => (
+                    {["Placa", "Tipo", "Proprietário", "Indicado por", "Status", "Data", ""].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
                     ))}
                   </tr>
@@ -68,6 +68,9 @@ export default async function ConsultorLeadsPage() {
                         ) : (
                           <span className="text-xs text-muted-foreground italic">sem placa</span>
                         )}
+                      </td>
+                      <td className="px-6 py-3.5">
+                        <span className="text-xs font-medium text-muted-foreground capitalize">{(lead as any).tipo_veiculo ?? "carro"}</span>
                       </td>
                       <td className="px-6 py-3">
                         <div className="text-sm font-medium text-foreground">{lead.nome_lead ?? <span className="italic text-muted-foreground/50 text-xs">a preencher</span>}</div>

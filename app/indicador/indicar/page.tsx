@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { PlacaMercosul } from "@/components/placa-mercosul";
 import { CheckCircle2, AlertCircle, Car } from "lucide-react";
 
@@ -26,7 +26,26 @@ function fmtTelBR(v: string): string {
   return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
 }
 
+type TipoVeiculo = "moto" | "carro" | "caminhao";
+
+const TIPOS: { tipo: TipoVeiculo; label: string }[] = [
+  { tipo: "moto", label: "Moto" },
+  { tipo: "carro", label: "Carro" },
+  { tipo: "caminhao", label: "Caminhao" },
+];
+
+interface Comissao {
+  tipo: TipoVeiculo;
+  comissao_indicador: number;
+  ativo: boolean;
+}
+
+function moeda(v: number) {
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
+
 export default function IndicarPage() {
+  const [tipoVeiculo, setTipoVeiculo] = useState<TipoVeiculo>("carro");
   const [placa, setPlaca] = useState("");
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -34,6 +53,16 @@ export default function IndicarPage() {
   const [duplicado, setDuplicado] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(false);
+  const [comissoes, setComissoes] = useState<Comissao[]>([]);
+
+  useEffect(() => {
+    fetch("/api/consultor/comissoes")
+      .then((r) => r.json())
+      .then((d: Comissao[]) => setComissoes(d))
+      .catch(() => {});
+  }, []);
+
+  const comissaoAtual = comissoes.find((c) => c.tipo === tipoVeiculo && c.ativo);
 
   const handlePlaca = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPlaca(formatarPlaca(e.target.value));
@@ -56,7 +85,7 @@ export default function IndicarPage() {
       const res = await fetch("/api/indicador/nova-indicacao", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ placa: placaLimpa, nome_lead: nome.trim(), telefone_lead: telefone }),
+        body: JSON.stringify({ placa: placaLimpa, nome_lead: nome.trim(), telefone_lead: telefone, tipo_veiculo: tipoVeiculo }),
       });
       const json = await res.json();
       if (res.status === 409) { setDuplicado(true); return; }
@@ -110,6 +139,35 @@ export default function IndicarPage() {
 
       <div className="flex-1 overflow-y-auto p-6 bg-muted/30">
         <div className="max-w-md mx-auto space-y-6">
+
+          {/* Tipo de veiculo */}
+          <div>
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
+              Tipo de veiculo
+            </label>
+            <div className="grid grid-cols-3 gap-3">
+              {TIPOS.map(({ tipo, label }) => (
+                <button
+                  key={tipo}
+                  type="button"
+                  onClick={() => setTipoVeiculo(tipo)}
+                  className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 font-semibold text-sm transition-all ${
+                    tipoVeiculo === tipo
+                      ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                      : "border-border bg-background text-muted-foreground hover:border-amber-500/40"
+                  }`}
+                >
+                  <Car className="h-5 w-5" />
+                  {label}
+                </button>
+              ))}
+            </div>
+            {comissaoAtual && (
+              <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-2">
+                Voce ganha {moeda(comissaoAtual.comissao_indicador)} se esta indicacao fechar
+              </p>
+            )}
+          </div>
 
           {/* Preview da placa */}
           <div className="flex flex-col items-center gap-3">

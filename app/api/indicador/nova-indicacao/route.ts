@@ -8,6 +8,7 @@ const schema = z.object({
   placa: z.string().min(7).max(7).regex(/^[A-Z]{3}[0-9][A-Z0-9][0-9]{2}$/, "Placa inválida"),
   nome_lead: z.string().min(2).max(100),
   telefone_lead: z.string().min(10).max(20),
+  tipo_veiculo: z.enum(["moto", "carro", "caminhao"]).default("carro"),
 });
 
 export async function POST(req: NextRequest) {
@@ -20,7 +21,7 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
-  const { placa, nome_lead, telefone_lead } = parsed.data;
+  const { placa, nome_lead, telefone_lead, tipo_veiculo } = parsed.data;
 
   if (!indicador.consultor_id) return NextResponse.json({ error: "Indicador sem consultor vinculado" }, { status: 400 });
 
@@ -43,6 +44,7 @@ export async function POST(req: NextRequest) {
     telefone_lead: tel,
     consultor_id: indicador.consultor_id,
     indicador_id: indicador.id,
+    tipo_veiculo: tipo_veiculo ?? "carro",
     status: "novo",
   });
 

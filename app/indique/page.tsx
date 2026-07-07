@@ -26,9 +26,17 @@ function fmtTelBR(v: string): string {
   return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
 }
 
+type TipoVeiculo = "moto" | "carro" | "caminhao";
+const TIPOS: { tipo: TipoVeiculo; label: string }[] = [
+  { tipo: "moto", label: "Moto" },
+  { tipo: "carro", label: "Carro" },
+  { tipo: "caminhao", label: "Caminhao" },
+];
+
 function FormIndicacao() {
   const params = useSearchParams();
   const consultorId = params.get("c") ?? "";
+  const [tipoVeiculo, setTipoVeiculo] = useState<TipoVeiculo>("carro");
   const [placa, setPlaca] = useState("");
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -60,6 +68,7 @@ function FormIndicacao() {
           nome_lead: nome.trim(),
           telefone_lead: telefone,
           consultor_id: consultorId || undefined,
+          tipo_veiculo: tipoVeiculo,
         }),
       });
       const json = await res.json();
@@ -88,6 +97,36 @@ function FormIndicacao() {
           {erro}
         </div>
       )}
+
+      {/* Tipo de veiculo */}
+      <div>
+        <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
+          Tipo de veiculo
+        </label>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+          {TIPOS.map(({ tipo, label }) => (
+            <button
+              key={tipo}
+              type="button"
+              onClick={() => setTipoVeiculo(tipo)}
+              style={{
+                padding: "12px 8px",
+                borderRadius: 10,
+                border: tipoVeiculo === tipo ? "2px solid #F59E0B" : "2px solid #1A1A2E",
+                background: tipoVeiculo === tipo ? "rgba(245,158,11,0.1)" : "#111318",
+                color: tipoVeiculo === tipo ? "#F59E0B" : "#9CA3AF",
+                fontSize: 13,
+                fontWeight: 700,
+                cursor: "pointer",
+                fontFamily: "inherit",
+                transition: "all 0.15s",
+              }}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
 
       {/* Preview placa */}
       <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 8 }}>

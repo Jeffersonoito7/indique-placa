@@ -9,6 +9,7 @@ const schema = z.object({
   nome_lead: z.string().min(2).max(100),
   telefone_lead: z.string().min(10).max(20),
   consultor_id: z.string().uuid().optional().nullable(),
+  tipo_veiculo: z.enum(["moto", "carro", "caminhao"]).default("carro"),
 });
 
 export async function POST(req: NextRequest) {
@@ -23,7 +24,7 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
-  const { placa, nome_lead, telefone_lead, consultor_id } = parsed.data;
+  const { placa, nome_lead, telefone_lead, consultor_id, tipo_veiculo } = parsed.data;
   const tel = telefone_lead?.replace(/\D/g, "") ?? null;
 
   let cid = consultor_id ?? null;
@@ -63,6 +64,7 @@ export async function POST(req: NextRequest) {
     nome_lead: nome_lead ?? null,
     telefone_lead: tel,
     consultor_id: cid,
+    tipo_veiculo: tipo_veiculo ?? "carro",
     status: "novo",
   });
 
