@@ -50,31 +50,31 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: "Erro ao salvar indicação" }, { status: 500 });
 
-  // Notificacoes em background
-  supabaseAdmin
+  // Buscar consultor e notificar com await (fire-and-forget mata no Vercel serverless)
+  const { data: consultor } = await supabaseAdmin
     .from("consultores")
     .select("nome, fone")
     .eq("id", indicador.consultor_id)
-    .single()
-    .then(({ data }) => {
-      if (data) {
-        notificarNovoLead({
-          nomeConsultor: data.nome,
-          telefoneConsultor: data.fone,
+    .single();
+
+  await Promise.all([
+    consultor
+      ? notificarNovoLead({
+          nomeConsultor: consultor.nome,
+          telefoneConsultor: consultor.fone,
           placa,
           nomeLead: nome_lead ?? null,
           telefoneLead: tel,
           viaIndicador: indicador.nome,
-        }).catch(() => {});
-      }
-    });
-
-  notificarNovaIndicacao({
-    nomeIndicador: indicador.nome,
-    telefoneIndicador: indicador.telefone,
-    placa,
-    nomeLead: nome_lead ?? null,
-  }).catch(() => {});
+        })
+      : Promise.resolve(),
+    notificarNovaIndicacao({
+      nomeIndicador: indicador.nome,
+      telefoneIndicador: indicador.telefone,
+      placa,
+      nomeLead: nome_lead ?? null,
+    }),
+  ]);
 
   return NextResponse.json({ ok: true });
 }

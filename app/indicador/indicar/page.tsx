@@ -174,11 +174,17 @@ export default function IndicarPage() {
             )}
           </div>
 
-          {/* Preview da placa */}
-          <div className="flex flex-col items-center gap-3">
-            <div className="overflow-x-auto w-full flex justify-center">
-              <PlacaMercosul placa={placaLimpa} tamanho="md" />
-            </div>
+          {/* Placa editavel diretamente */}
+          <div className="flex flex-col items-center gap-2">
+            <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground self-start">
+              Toque na placa e digite
+            </label>
+            <PlacaMercosul
+              placa={placaLimpa}
+              tamanho="md"
+              editavel
+              onChange={(v) => { setPlaca(v); setDuplicado(false); setErro(""); }}
+            />
             {placaLimpa.length === 7 && !valida && (
               <p className="text-xs text-red-500 font-medium">Formato inválido. Use ABC-1234 ou ABC-1D23</p>
             )}
@@ -203,24 +209,6 @@ export default function IndicarPage() {
             {erro && (
               <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-xs text-red-500">{erro}</div>
             )}
-
-            {/* Campo placa */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
-                Placa do veículo
-              </label>
-              <input
-                type="text"
-                value={placa}
-                onChange={handlePlaca}
-                placeholder="ABC-1234"
-                maxLength={8}
-                autoComplete="off"
-                autoCapitalize="characters"
-                className="w-full text-center text-3xl font-black tracking-[0.3em] uppercase px-4 py-4 rounded-xl border-2 border-border bg-background focus:outline-none focus:ring-2 focus:ring-amber-500/40 focus:border-amber-500 transition-all"
-                style={{ fontFamily: "'Arial Black', Arial, sans-serif" }}
-              />
-            </div>
 
             {/* Dados opcionais */}
             <div className="border-t border-border pt-4 space-y-3">
