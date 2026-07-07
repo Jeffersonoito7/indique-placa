@@ -63,8 +63,13 @@ export default function ConsultoresPage() {
   const excluir = async (id: string, nome: string) => {
     if (!confirm(`Excluir o consultor "${nome}"? Esta ação não pode ser desfeita.`)) return;
     setExcluindo(id);
-    await fetch(`/api/master/consultor/${id}`, { method: "DELETE" });
+    const res = await fetch(`/api/master/consultor/${id}`, { method: "DELETE" });
     setExcluindo(null);
+    if (!res.ok) {
+      const json = await res.json();
+      alert(json.error ?? "Erro ao excluir consultor.");
+      return;
+    }
     carregar();
   };
 
