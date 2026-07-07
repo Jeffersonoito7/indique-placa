@@ -6,10 +6,14 @@ import { z } from "zod";
 
 const schema = z.object({
   nome_plataforma: z.string().min(1).max(100),
+  nome_associacao: z.string().max(100).optional().nullable(),
+  slogan: z.string().max(200).optional().nullable(),
   site: z.string().max(200).optional().nullable(),
   email: z.string().email().max(200).optional().nullable(),
   telefone: z.string().max(30).optional().nullable(),
   endereco: z.string().max(300).optional().nullable(),
+  logo_url: z.string().url().max(500).optional().nullable(),
+  cor_primaria: z.string().regex(/^#[0-9a-fA-F]{6}$/).optional().nullable(),
   comissao_consultor: z.number().min(0).max(99999).optional().nullable(),
   comissao_indicador: z.number().min(0).max(99999).optional().nullable(),
   consultor_padrao_id: z.string().uuid().optional().nullable(),
