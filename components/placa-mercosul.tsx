@@ -43,23 +43,18 @@ export function PlacaMercosul({ placa, tamanho = "md" }: PlacaMercosulProps) {
       {/* Faixa azul topo (Mercosul) */}
       <rect x="7" y="7" width="386" height="28" rx="4" ry="4" fill="#003399" />
 
-      {/* Bandeira do Brasil simplificada */}
-      <rect x="16" y="10" width="32" height="22" rx="2" fill="#009c3b" />
-      <polygon points="16,21 32,12 48,21 32,30" fill="#fedf00" />
-      <circle cx="32" cy="21" r="6" fill="#003399" />
-
-      {/* BRASIL */}
+      {/* Marca */}
       <text
         x="200"
         y="27"
         fontFamily="Arial Black, Arial, sans-serif"
-        fontSize="14"
+        fontSize="13"
         fontWeight="900"
         fill="#ffffff"
         textAnchor="middle"
-        letterSpacing="4"
+        letterSpacing="3"
       >
-        BRASIL
+        INDIQUE PLACA
       </text>
 
       {/* Caracteres da placa */}

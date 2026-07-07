@@ -26,16 +26,13 @@ function fmtTelBR(v: string): string {
   return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
 }
 
-type TipoVeiculo = "moto" | "carro" | "caminhao";
-
-const TIPOS: { tipo: TipoVeiculo; label: string }[] = [
-  { tipo: "moto", label: "Moto" },
-  { tipo: "carro", label: "Carro" },
-  { tipo: "caminhao", label: "Caminhao" },
-];
+interface TipoVeiculo {
+  tipo: string;
+  label: string;
+}
 
 interface Comissao {
-  tipo: TipoVeiculo;
+  tipo: string;
   comissao_indicador: number;
   ativo: boolean;
 }
@@ -44,8 +41,15 @@ function moeda(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+const TIPOS_PADRAO: TipoVeiculo[] = [
+  { tipo: "moto", label: "Moto" },
+  { tipo: "carro", label: "Carro" },
+  { tipo: "caminhao", label: "Caminhão" },
+];
+
 export default function IndicarPage() {
-  const [tipoVeiculo, setTipoVeiculo] = useState<TipoVeiculo>("carro");
+  const [tipoVeiculo, setTipoVeiculo] = useState("carro");
+  const [tipos, setTipos] = useState<TipoVeiculo[]>(TIPOS_PADRAO);
   const [placa, setPlaca] = useState("");
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -56,6 +60,10 @@ export default function IndicarPage() {
   const [comissoes, setComissoes] = useState<Comissao[]>([]);
 
   useEffect(() => {
+    fetch("/api/indicador/tipos-veiculo")
+      .then((r) => r.json())
+      .then((d: TipoVeiculo[]) => { if (Array.isArray(d) && d.length > 0) setTipos(d); })
+      .catch(() => {});
     fetch("/api/consultor/comissoes")
       .then((r) => r.json())
       .then((d: Comissao[]) => setComissoes(d))
@@ -140,13 +148,13 @@ export default function IndicarPage() {
       <div className="flex-1 overflow-y-auto p-6 bg-muted/30">
         <div className="max-w-md mx-auto space-y-6">
 
-          {/* Tipo de veiculo */}
+          {/* Tipo de veículo */}
           <div>
             <label className="block text-[11px] font-bold uppercase tracking-wider text-muted-foreground mb-2">
-              Tipo de veiculo
+              Tipo de veículo
             </label>
             <div className="grid grid-cols-3 gap-3">
-              {TIPOS.map(({ tipo, label }) => (
+              {tipos.map(({ tipo, label }) => (
                 <button
                   key={tipo}
                   type="button"
@@ -164,7 +172,7 @@ export default function IndicarPage() {
             </div>
             {comissaoAtual && (
               <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-2">
-                Voce ganha {moeda(comissaoAtual.comissao_indicador)} se esta indicacao fechar
+                Você ganha {moeda(comissaoAtual.comissao_indicador)} se esta indicação fechar
               </p>
             )}
           </div>

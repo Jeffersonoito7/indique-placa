@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CheckCircle2 } from "lucide-react";
 import { useSearchParams } from "next/navigation";
 import { Suspense } from "react";
@@ -26,17 +26,27 @@ function fmtTelBR(v: string): string {
   return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
 }
 
-type TipoVeiculo = "moto" | "carro" | "caminhao";
-const TIPOS: { tipo: TipoVeiculo; label: string }[] = [
+interface TipoVeiculo { tipo: string; label: string; }
+
+const TIPOS_PADRAO: TipoVeiculo[] = [
   { tipo: "moto", label: "Moto" },
   { tipo: "carro", label: "Carro" },
-  { tipo: "caminhao", label: "Caminhao" },
+  { tipo: "caminhao", label: "Caminhão" },
 ];
 
 function FormIndicacao() {
   const params = useSearchParams();
   const consultorId = params.get("c") ?? "";
-  const [tipoVeiculo, setTipoVeiculo] = useState<TipoVeiculo>("carro");
+  const [tipoVeiculo, setTipoVeiculo] = useState("carro");
+  const [tipos, setTipos] = useState<TipoVeiculo[]>(TIPOS_PADRAO);
+
+  useEffect(() => {
+    if (!consultorId) return;
+    fetch(`/api/publico/tipos-veiculo?consultor_id=${encodeURIComponent(consultorId)}`)
+      .then((r) => r.json())
+      .then((d: TipoVeiculo[]) => { if (Array.isArray(d) && d.length > 0) setTipos(d); })
+      .catch(() => {});
+  }, [consultorId]);
   const [placa, setPlaca] = useState("");
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
@@ -98,13 +108,13 @@ function FormIndicacao() {
         </div>
       )}
 
-      {/* Tipo de veiculo */}
+      {/* Tipo de veículo */}
       <div>
         <label style={{ display: "block", fontSize: 11, fontWeight: 700, color: "#9CA3AF", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>
-          Tipo de veiculo
+          Tipo de veículo
         </label>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
-          {TIPOS.map(({ tipo, label }) => (
+        <div style={{ display: "grid", gridTemplateColumns: tipos.length <= 3 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 8 }}>
+          {tipos.map(({ tipo, label }) => (
             <button
               key={tipo}
               type="button"
@@ -201,7 +211,7 @@ export default function IndiquePage() {
       <div style={{ width: "100%", maxWidth: 440 }}>
         <div style={{ textAlign: "center", marginBottom: 28 }}>
           <div style={{ fontSize: 26, fontWeight: 900, color: "#F59E0B", letterSpacing: 1, marginBottom: 6 }}>INDIQUE PLACA</div>
-          <div style={{ fontSize: 14, color: "#9CA3AF" }}>Viu um carro sem proteção? Indique a placa.</div>
+          <div style={{ fontSize: 14, color: "#9CA3AF" }}>Viu um veículo sem proteção? Indique a placa.</div>
         </div>
         <div style={{ background: "#0D0D18", border: "1px solid #1A1A2E", borderRadius: 20, padding: "28px 24px" }}>
           <h2 style={{ fontSize: 15, fontWeight: 800, color: "#fff", marginBottom: 4, marginTop: 0 }}>Indicar veículo</h2>
