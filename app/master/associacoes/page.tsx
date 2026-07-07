@@ -1,19 +1,17 @@
-export const dynamic = "force-dynamic";
-import { supabaseAdmin } from "@/lib/supabase-server";
+"use client";
+
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Building2, Globe, CheckCircle2, Clock } from "lucide-react";
+import { Building2, Globe, CheckCircle2, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-async function getAssociacoes() {
-  const { data, count } = await supabaseAdmin
-    .from("associacoes")
-    .select("id, nome, dominio, status, plano, criado_em", { count: "exact" })
-    .order("criado_em", { ascending: false });
-
-  const ativas = data?.filter((a) => a.status === "ativo").length ?? 0;
-
-  return { lista: data ?? [], total: count ?? 0, ativas };
+interface Associacao {
+  id: string;
+  nome: string;
+  dominio: string | null;
+  status: string | null;
+  plano: string | null;
+  criado_em: string;
 }
 
 const statusStyle: Record<string, string> = {
@@ -28,8 +26,31 @@ const planoStyle: Record<string, string> = {
   enterprise: "bg-violet-500/10 text-violet-500",
 };
 
-export default async function AssociacoesPage() {
-  const { lista, total, ativas } = await getAssociacoes();
+export default function AssociacoesPage() {
+  const [lista, setLista] = useState<Associacao[]>([]);
+  const [excluindo, setExcluindo] = useState<string | null>(null);
+
+  const carregar = async () => {
+    const res = await fetch("/api/master/associacoes");
+    if (res.ok) setLista(await res.json());
+  };
+
+  useEffect(() => { carregar(); }, []);
+
+  const ativas = lista.filter((a) => a.status === "ativo").length;
+
+  const excluir = async (id: string, nome: string) => {
+    if (!confirm(`Excluir a associação "${nome}"? Esta ação não pode ser desfeita.`)) return;
+    setExcluindo(id);
+    const res = await fetch(`/api/master/associacao/${id}`, { method: "DELETE" });
+    setExcluindo(null);
+    if (!res.ok) {
+      const json = await res.json();
+      alert(json.error ?? "Erro ao excluir associação.");
+      return;
+    }
+    carregar();
+  };
 
   return (
     <div className="flex-1 flex flex-col">
@@ -39,7 +60,6 @@ export default async function AssociacoesPage() {
       </div>
 
       <div className="flex-1 p-8 bg-muted/30">
-        {/* Resumo */}
         <div className="grid grid-cols-2 gap-4 mb-8 max-w-xs">
           <Card className="border-t-4 border-t-blue-500">
             <CardContent className="p-5 flex items-center gap-3">
@@ -47,7 +67,7 @@ export default async function AssociacoesPage() {
                 <Building2 className="h-4 w-4 text-blue-500" />
               </div>
               <div>
-                <div className="text-2xl font-bold text-blue-500">{total}</div>
+                <div className="text-2xl font-bold text-blue-500">{lista.length}</div>
                 <div className="text-[10px] text-muted-foreground">Total</div>
               </div>
             </CardContent>
@@ -65,7 +85,6 @@ export default async function AssociacoesPage() {
           </Card>
         </div>
 
-        {/* Tabela */}
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-semibold">Lista de Associações</CardTitle>
@@ -77,8 +96,8 @@ export default async function AssociacoesPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Nome", "Dominio", "Plano", "Status", "Desde"].map((h) => (
-                      <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">
+                    {["Nome", "Domínio", "Plano", "Status", "Desde", ""].map((h, i) => (
+                      <th key={i} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">
                         {h}
                       </th>
                     ))}
@@ -99,17 +118,27 @@ export default async function AssociacoesPage() {
                         )}
                       </td>
                       <td className="px-6 py-3.5">
-                        <span className={cn("text-[11px] font-semibold px-2.5 py-1 rounded-full", planoStyle[a.plano] ?? "bg-muted text-muted-foreground")}>
+                        <span className={cn("text-[11px] font-semibold px-2.5 py-1 rounded-full", planoStyle[a.plano ?? ""] ?? "bg-muted text-muted-foreground")}>
                           {a.plano ?? "basico"}
                         </span>
                       </td>
                       <td className="px-6 py-3.5">
-                        <span className={cn("text-[11px] font-semibold px-2.5 py-1 rounded-full", statusStyle[a.status] ?? "bg-muted text-muted-foreground")}>
-                          {a.status}
+                        <span className={cn("text-[11px] font-semibold px-2.5 py-1 rounded-full", statusStyle[a.status ?? ""] ?? "bg-muted text-muted-foreground")}>
+                          {a.status ?? "pendente"}
                         </span>
                       </td>
                       <td className="px-6 py-3.5 text-xs text-muted-foreground">
                         {new Date(a.criado_em).toLocaleDateString("pt-BR")}
+                      </td>
+                      <td className="px-6 py-3.5">
+                        <button
+                          onClick={() => excluir(a.id, a.nome)}
+                          disabled={excluindo === a.id}
+                          className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-40"
+                          title="Excluir associação"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </button>
                       </td>
                     </tr>
                   ))}

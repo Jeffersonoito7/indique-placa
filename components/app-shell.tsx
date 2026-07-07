@@ -65,6 +65,8 @@ export default function AppShell({
     window.location.href = loginRedirect;
   };
 
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   const allItems = navItems.flatMap((g) => g.items);
   const currentPage = allItems.find(
     (i) => pathname === i.href || pathname.startsWith(i.href + "/")
@@ -72,8 +74,8 @@ export default function AppShell({
 
   const sidebarW = collapsed ? 64 : 232;
 
-  // Bottom nav para mobile: no max 5 itens
-  const bottomItems = allItems.slice(0, 5);
+  // Bottom nav: 4 primeiros + botao Menu
+  const bottomItems = allItems.slice(0, 4);
 
   if (isMobile) {
     return (
@@ -100,16 +102,72 @@ export default function AppShell({
         </header>
 
         {/* Conteudo com padding bottom para nav */}
-        <div className="flex-1 overflow-y-auto pb-20">
+        <div className="flex-1 overflow-y-auto pb-24">
           {children}
         </div>
 
+        {/* Drawer de menu completo */}
+        {drawerOpen && (
+          <>
+            <div
+              className="fixed inset-0 z-50 bg-black/60"
+              onClick={() => setDrawerOpen(false)}
+            />
+            <div
+              className="fixed bottom-0 left-0 right-0 z-50 rounded-t-2xl overflow-hidden"
+              style={{ background: "linear-gradient(180deg, #0f1e33 0%, #081320 100%)", borderTop: "1px solid rgba(255,255,255,0.1)" }}
+            >
+              <div className="flex items-center justify-between px-5 py-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.07)" }}>
+                <span className="text-sm font-bold text-white">Menu</span>
+                <button
+                  onClick={() => setDrawerOpen(false)}
+                  className="text-2xl leading-none"
+                  style={{ color: "rgba(255,255,255,0.4)" }}
+                >
+                  ×
+                </button>
+              </div>
+              <div className="overflow-y-auto" style={{ maxHeight: "70vh", paddingBottom: "calc(16px + env(safe-area-inset-bottom))" }}>
+                {navItems.map((group) => (
+                  <div key={group.group}>
+                    <div className="px-5 pt-4 pb-1 text-[10px] font-bold uppercase tracking-widest" style={{ color: "rgba(255,255,255,0.25)" }}>
+                      {group.group}
+                    </div>
+                    {group.items.map((item) => {
+                      const Icon = item.icon;
+                      const active = pathname === item.href || pathname.startsWith(item.href + "/");
+                      return (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setDrawerOpen(false)}
+                          className="flex items-center gap-3 px-5 py-3.5"
+                          style={{
+                            background: active ? "rgba(59,130,246,0.12)" : "transparent",
+                            borderLeft: active ? "3px solid #3b82f6" : "3px solid transparent",
+                          }}
+                        >
+                          <Icon className="h-5 w-5 flex-shrink-0" style={{ color: active ? "#93c5fd" : "rgba(255,255,255,0.5)" }} />
+                          <span className="text-sm font-medium" style={{ color: active ? "#93c5fd" : "rgba(255,255,255,0.75)" }}>
+                            {item.label}
+                          </span>
+                        </Link>
+                      );
+                    })}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </>
+        )}
+
         {/* Bottom navigation */}
         <nav
-          className="fixed bottom-0 left-0 right-0 z-50 flex items-center justify-around px-2 py-2"
+          className="fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-2"
           style={{
             background: "linear-gradient(180deg, #0c1929 0%, #081320 100%)",
             borderTop: "1px solid rgba(255,255,255,0.08)",
+            paddingTop: 8,
             paddingBottom: "calc(8px + env(safe-area-inset-bottom))",
           }}
         >
@@ -122,20 +180,31 @@ export default function AppShell({
                   className="flex items-center justify-center w-10 h-8 rounded-xl transition-colors"
                   style={{ background: active ? "rgba(59,130,246,0.18)" : "transparent" }}
                 >
-                  <Icon
-                    className="h-5 w-5"
-                    style={{ color: active ? "#93c5fd" : "rgba(255,255,255,0.38)" }}
-                  />
+                  <Icon className="h-5 w-5" style={{ color: active ? "#93c5fd" : "rgba(255,255,255,0.38)" }} />
                 </div>
-                <span
-                  className="text-[10px] font-medium"
-                  style={{ color: active ? "#93c5fd" : "rgba(255,255,255,0.38)" }}
-                >
+                <span className="text-[10px] font-medium" style={{ color: active ? "#93c5fd" : "rgba(255,255,255,0.38)" }}>
                   {item.label}
                 </span>
               </Link>
             );
           })}
+          {/* Botao menu - acesso a todos os itens */}
+          <button
+            onClick={() => setDrawerOpen(true)}
+            className="flex flex-col items-center gap-1 flex-1"
+          >
+            <div
+              className="flex items-center justify-center w-10 h-8 rounded-xl transition-colors"
+              style={{ background: drawerOpen ? "rgba(59,130,246,0.18)" : "transparent" }}
+            >
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" style={{ color: drawerOpen ? "#93c5fd" : "rgba(255,255,255,0.38)" }}>
+                <line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/>
+              </svg>
+            </div>
+            <span className="text-[10px] font-medium" style={{ color: drawerOpen ? "#93c5fd" : "rgba(255,255,255,0.38)" }}>
+              Menu
+            </span>
+          </button>
         </nav>
       </div>
     );
