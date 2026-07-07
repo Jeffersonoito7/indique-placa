@@ -3,70 +3,77 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const STYLES = `
-  @keyframes gradientShift {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  @keyframes glowPulse {
-    0%, 100% { opacity: 0.4; transform: scale(1); }
-    50%       { opacity: 0.8; transform: scale(1.08); }
-  }
-  .rec-page {
-    min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    padding: 20px; position: relative; overflow: hidden;
-    background: linear-gradient(135deg, #020c1b, #0a1f3d, #0d2a5e, #0a1f3d, #061428, #020c1b);
-    background-size: 400% 400%;
-    animation: gradientShift 12s ease infinite;
-    font-family: Inter, system-ui, sans-serif;
-  }
-  .rec-glow {
-    position: absolute; width: 500px; height: 500px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(59,130,246,.22) 0%, transparent 70%);
-    top: -100px; left: -100px;
-    animation: glowPulse 6s ease-in-out infinite;
-    pointer-events: none;
-  }
-  .rec-card {
-    position: relative; width: 100%; max-width: 380px; text-align: center;
-    background: rgba(255,255,255,.07); backdrop-filter: blur(24px);
-    border: 1px solid rgba(255,255,255,.13); border-radius: 28px;
-    padding: 40px 32px 36px; box-shadow: 0 24px 80px rgba(0,0,0,.6);
-    animation: fadeUp .6s ease both;
-  }
-  .campo-rec {
-    width: 100%; padding: 12px 14px; margin-bottom: 12px; box-sizing: border-box;
-    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
-    border-radius: 10px; font-size: 14px; color: #fff; outline: none;
-    font-family: inherit; transition: border-color .2s;
-  }
-  .campo-rec:focus { border-color: rgba(255,255,255,.45); }
-  .campo-rec::placeholder { color: rgba(255,255,255,.38); }
-  .senha-wrap { position: relative; margin-bottom: 16px; }
-  .senha-wrap .campo-rec { margin-bottom: 0; padding-right: 44px; }
-  .olho-btn {
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; cursor: pointer; color: rgba(255,255,255,.45);
-    display: flex; align-items: center; padding: 4px;
-  }
-  .btn-rec {
-    width: 100%; padding: 14px; border: none; border-radius: 10px;
-    background: linear-gradient(135deg, #1d4ed8, #3b82f6);
-    color: #fff; font-size: 14px; font-weight: 800; letter-spacing: 1px;
-    cursor: pointer; font-family: inherit; transition: opacity .15s, transform .1s;
-  }
-  .btn-rec:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
-  .btn-rec:disabled { opacity: .6; cursor: not-allowed; }
+const CSS = `
+@keyframes fadeUp  { from { opacity:0; transform:translateY(20px) } to { opacity:1; transform:translateY(0) } }
+@keyframes pulse   { 0%,100% { opacity:.3; transform:scale(1) } 50% { opacity:.65; transform:scale(1.08) } }
+@keyframes shimmer { 0% { background-position:200% 0 } 100% { background-position:-200% 0 } }
+@keyframes popIn   { 0% { transform:scale(0) } 60% { transform:scale(1.18) } 100% { transform:scale(1) } }
+
+.crp-page {
+  min-height:100vh; min-height:100dvh;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  padding:20px; background:linear-gradient(160deg,#020c1b 0%,#061428 50%,#0a1f3d 100%);
+  font-family:Inter,system-ui,sans-serif; color:#fff;
+  position:relative; overflow:hidden;
+}
+.crp-glow { position:absolute; width:600px; height:600px; border-radius:50%; background:radial-gradient(circle, rgba(59,130,246,.1) 0%, transparent 65%); top:-200px; left:50%; transform:translateX(-50%); animation:pulse 8s ease-in-out infinite; pointer-events:none; }
+
+.crp-card {
+  position:relative; width:100%; max-width:380px;
+  background:rgba(255,255,255,.06); backdrop-filter:blur(20px);
+  border:1px solid rgba(255,255,255,.1); border-radius:24px;
+  padding:36px 28px; box-shadow:0 24px 80px rgba(0,0,0,.6);
+  animation:fadeUp .5s ease both;
+}
+.crp-logo { display:flex; justify-content:center; margin-bottom:24px; }
+.crp-titulo { font-size:20px; font-weight:900; letter-spacing:-.5px; margin-bottom:6px; text-align:center; }
+.crp-sub { font-size:13px; color:rgba(255,255,255,.4); line-height:1.6; text-align:center; margin-bottom:24px; }
+
+.crp-campo { width:100%; padding:13px 15px; background:rgba(255,255,255,.07); border:1px solid rgba(255,255,255,.1); border-radius:12px; font-size:15px; color:#fff; outline:none; font-family:inherit; transition:all .2s; box-sizing:border-box; margin-bottom:12px; }
+.crp-campo:focus { border-color:rgba(59,130,246,.5); background:rgba(59,130,246,.04); box-shadow:0 0 0 3px rgba(59,130,246,.1); }
+.crp-campo::placeholder { color:rgba(255,255,255,.25); }
+.crp-campo-otp { text-align:center; font-size:26px; font-weight:900; letter-spacing:8px; font-variant-numeric:tabular-nums; }
+
+.crp-pw-wrap { position:relative; margin-bottom:12px; }
+.crp-pw-wrap .crp-campo { margin-bottom:0; padding-right:46px; }
+.crp-pw-btn { position:absolute; right:12px; top:50%; transform:translateY(-50%); background:none; border:none; cursor:pointer; color:rgba(255,255,255,.35); padding:4px; }
+
+.crp-btn {
+  width:100%; padding:15px; border:none; border-radius:12px;
+  background:linear-gradient(135deg, #1e3a8a, #1d4ed8, #3b82f6, #1d4ed8, #1e3a8a);
+  background-size:300% 300%; animation:shimmer 4s linear infinite;
+  color:#fff; font-size:15px; font-weight:900; letter-spacing:.4px;
+  cursor:pointer; font-family:inherit; transition:transform .15s, box-shadow .15s;
+  box-shadow:0 4px 20px rgba(59,130,246,.3); margin-top:4px;
+}
+.crp-btn:hover:not(:disabled) { transform:translateY(-2px); box-shadow:0 8px 32px rgba(59,130,246,.5); }
+.crp-btn:disabled { opacity:.5; cursor:not-allowed; }
+
+.crp-erro { background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.25); border-radius:10px; padding:10px 14px; font-size:13px; color:#f87171; margin-bottom:12px; text-align:center; }
+.crp-info { background:rgba(59,130,246,.08); border:1px solid rgba(59,130,246,.2); border-radius:10px; padding:12px 14px; font-size:12px; color:rgba(255,255,255,.6); line-height:1.6; margin-bottom:16px; }
+.crp-info strong { color:#93c5fd; }
+
+.crp-sucesso-icon { width:64px; height:64px; border-radius:50%; background:linear-gradient(135deg,rgba(16,185,129,.2),rgba(16,185,129,.05)); border:2px solid rgba(16,185,129,.4); display:flex; align-items:center; justify-content:center; margin:0 auto 16px; animation:popIn .6s cubic-bezier(.34,1.56,.64,1) both; }
+
+.crp-link { background:none; border:none; cursor:pointer; font-size:13px; color:rgba(255,255,255,.35); font-family:inherit; text-decoration:underline; text-underline-offset:3px; }
+.crp-link:hover { color:rgba(255,255,255,.6); }
 `;
+
+function vibrar() {
+  if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(40);
+}
+
+function fmtTel(v: string) {
+  const n = v.replace(/\D/g, "").slice(0, 11);
+  if (n.length <= 2) return n.length ? `(${n}` : "";
+  if (n.length <= 6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
+  if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+  return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
+}
 
 type Etapa = "telefone" | "otp" | "sucesso";
 
-export default function RecuperarSenhaPage() {
+export default function RecuperarSenhaConsultorPage() {
   const router = useRouter();
   const [etapa, setEtapa] = useState<Etapa>("telefone");
   const [telefone, setTelefone] = useState("");
@@ -78,148 +85,144 @@ export default function RecuperarSenhaPage() {
   const [erro, setErro] = useState("");
 
   const solicitarOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErro("");
+    e.preventDefault(); setErro(""); vibrar();
     setCarregando(true);
     try {
       const res = await fetch("/api/consultor/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telefone }),
+        body: JSON.stringify({ telefone: telefone.replace(/\D/g, "") }),
       });
-      if (!res.ok) { setErro("Erro ao enviar codigo. Tente novamente."); return; }
+      if (!res.ok) { setErro("Erro ao enviar código. Tente novamente."); return; }
       setEtapa("otp");
-    } catch { setErro("Erro de conexao. Tente novamente."); }
+    } catch { setErro("Erro de conexão. Tente novamente."); }
     finally { setCarregando(false); }
   };
 
   const confirmarOTP = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErro("");
-    if (novaSenha.length < 6) { setErro("A senha precisa ter no minimo 6 caracteres"); return; }
-    if (novaSenha !== confirmar) { setErro("As senhas nao coincidem"); return; }
+    e.preventDefault(); setErro("");
+    if (novaSenha.length < 6) { setErro("A senha precisa ter pelo menos 6 caracteres"); return; }
+    if (novaSenha !== confirmar) { setErro("As senhas não coincidem"); return; }
+    vibrar();
     setCarregando(true);
     try {
       const res = await fetch("/api/consultor/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telefone, codigo, novaSenha }),
+        body: JSON.stringify({ telefone: telefone.replace(/\D/g, ""), codigo, novaSenha }),
       });
       const json = await res.json();
-      if (!res.ok) { setErro(json.error ?? "Codigo invalido ou expirado."); return; }
+      if (!res.ok) { setErro(json.error ?? "Código inválido ou expirado."); return; }
+      vibrar();
       setEtapa("sucesso");
-    } catch { setErro("Erro de conexao. Tente novamente."); }
+    } catch { setErro("Erro de conexão. Tente novamente."); }
     finally { setCarregando(false); }
   };
 
+  const olhoIcon = (ver: boolean) => ver
+    ? <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+    : <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>;
+
   return (
     <>
-      <style>{STYLES}</style>
-      <div className="rec-page">
-        <div className="rec-glow" />
-        <div className="rec-card">
-          <div style={{ marginBottom: 20, display: "flex", justifyContent: "center" }}>
-            <img src="/logo-indique.png" alt="Indique Placa" style={{ height: 60, objectFit: "contain" }} />
+      <style>{CSS}</style>
+      <div className="crp-page">
+        <div className="crp-glow" />
+        <div className="crp-card">
+
+          <div className="crp-logo">
+            <img src="/logo-indique.png" alt="Indique Placa" style={{ height: 56, objectFit: "contain" }} />
           </div>
 
-          <div style={{ fontSize: 18, fontWeight: 900, color: "#fff", marginBottom: 6 }}>Redefinir senha</div>
-
-          {etapa === "sucesso" ? (
+          {etapa === "sucesso" && (
             <>
-              <div style={{ background: "rgba(59,130,246,.1)", border: "1px solid rgba(59,130,246,.3)", borderRadius: 12, padding: "20px 16px", marginBottom: 20 }}>
-                <div style={{ fontSize: 36 }}>Ok</div>
-                <div style={{ fontSize: 15, fontWeight: 700, color: "#93c5fd", marginTop: 8 }}>Senha alterada!</div>
-                <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", marginTop: 6 }}>Entre com o WhatsApp e a nova senha.</div>
+              <div className="crp-sucesso-icon">
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
-              <button className="btn-rec" onClick={() => router.push("/consultor/login")}>
+              <div className="crp-titulo">Senha alterada!</div>
+              <p className="crp-sub">Entre com seu WhatsApp e a nova senha.</p>
+              <button className="crp-btn" onClick={() => { vibrar(); router.push("/consultor/login"); }}>
                 Ir para o login
               </button>
             </>
-          ) : etapa === "otp" ? (
+          )}
+
+          {etapa === "otp" && (
             <>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", marginBottom: 24, lineHeight: 1.6 }}>
-                Um codigo de 6 digitos foi enviado para o seu WhatsApp. Digite o codigo e escolha uma nova senha.
+              <div className="crp-titulo">Digite o código</div>
+              <div className="crp-info">
+                Um código de 6 dígitos foi enviado para o seu<br />
+                <strong>WhatsApp {telefone}</strong>.<br />
+                Pode demorar até 1 minuto. Verifique também a aba de mensagens do WhatsApp.
               </div>
               <form onSubmit={confirmarOTP}>
-                {erro && (
-                  <div style={{ background: "rgba(239,68,68,.15)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#f87171", marginBottom: 12 }}>
-                    {erro}
-                  </div>
-                )}
+                {erro && <div className="crp-erro">{erro}</div>}
                 <input
-                  className="campo-rec"
+                  className="crp-campo crp-campo-otp"
                   type="text"
                   inputMode="numeric"
-                  placeholder="Codigo de 6 digitos"
+                  placeholder="000000"
                   value={codigo}
                   required
                   maxLength={6}
+                  autoFocus
                   onChange={e => setCodigo(e.target.value.replace(/\D/g, ""))}
                 />
-                <div className="senha-wrap">
+                <div className="crp-pw-wrap">
                   <input
-                    className="campo-rec"
+                    className="crp-campo"
                     type={verSenha ? "text" : "password"}
-                    placeholder="Nova senha (minimo 6 caracteres)"
+                    placeholder="Nova senha (mínimo 6 caracteres)"
                     value={novaSenha}
                     required
                     onChange={e => setNovaSenha(e.target.value)}
                   />
-                  <button type="button" className="olho-btn" onClick={() => setVerSenha(v => !v)} tabIndex={-1}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                      {verSenha ? <><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></> : <><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></>}
-                    </svg>
-                  </button>
+                  <button type="button" className="crp-pw-btn" onClick={() => setVerSenha(v => !v)} tabIndex={-1}>{olhoIcon(verSenha)}</button>
                 </div>
                 <input
-                  className="campo-rec"
+                  className="crp-campo"
                   type="password"
                   placeholder="Confirme a nova senha"
                   value={confirmar}
                   required
                   onChange={e => setConfirmar(e.target.value)}
                 />
-                <button className="btn-rec" type="submit" disabled={carregando}>
+                <button className="crp-btn" type="submit" disabled={carregando || codigo.length < 6}>
                   {carregando ? "Confirmando..." : "Confirmar nova senha"}
                 </button>
               </form>
-              <div style={{ marginTop: 12 }}>
-                <button
-                  onClick={() => { setEtapa("telefone"); setErro(""); setCodigo(""); }}
-                  style={{ background: "none", border: "none", cursor: "pointer", fontSize: 12, color: "rgba(255,255,255,.4)" }}
-                >
-                  Usar outro numero
+              <div style={{ marginTop: 16, textAlign: "center" }}>
+                <button className="crp-link" onClick={() => { setEtapa("telefone"); setErro(""); setCodigo(""); }}>
+                  Usar outro número
                 </button>
               </div>
             </>
-          ) : (
+          )}
+
+          {etapa === "telefone" && (
             <>
-              <div style={{ fontSize: 12, color: "rgba(255,255,255,.4)", marginBottom: 24, lineHeight: 1.6 }}>
-                Digite seu WhatsApp para receber um codigo de verificacao.
-              </div>
+              <div className="crp-titulo">Esqueceu a senha?</div>
+              <p className="crp-sub">Digite seu WhatsApp. Vamos enviar um código de verificação.</p>
               <form onSubmit={solicitarOTP}>
-                {erro && (
-                  <div style={{ background: "rgba(239,68,68,.15)", border: "1px solid rgba(239,68,68,.3)", borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#f87171", marginBottom: 12 }}>
-                    {erro}
-                  </div>
-                )}
+                {erro && <div className="crp-erro">{erro}</div>}
                 <input
-                  className="campo-rec"
+                  className="crp-campo"
                   type="tel"
-                  placeholder="WhatsApp com DDD (ex: 11999999999)"
+                  placeholder="(87) 99999-9999"
                   value={telefone}
                   required
-                  onChange={e => setTelefone(e.target.value)}
+                  autoFocus
+                  onChange={e => setTelefone(fmtTel(e.target.value))}
                 />
-                <button className="btn-rec" type="submit" disabled={carregando}>
-                  {carregando ? "Enviando..." : "Enviar codigo"}
+                <button className="crp-btn" type="submit" disabled={carregando}>
+                  {carregando ? "Enviando..." : "Enviar código pelo WhatsApp"}
                 </button>
               </form>
             </>
           )}
 
-          <div style={{ marginTop: 20, fontSize: 12, color: "rgba(255,255,255,.3)" }}>
-            <a href="/consultor/login" style={{ color: "rgba(255,255,255,.45)", textDecoration: "none" }}>
+          <div style={{ marginTop: 20, textAlign: "center" }}>
+            <a href="/consultor/login" style={{ fontSize: 13, color: "rgba(255,255,255,.35)", textDecoration: "none" }}>
               Voltar ao login
             </a>
           </div>
