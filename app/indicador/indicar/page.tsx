@@ -39,6 +39,8 @@ export default function IndicarPage() {
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!valida) { setErro("Digite uma placa válida (ex: ABC-1D23 ou ABC-1234)"); return; }
+    if (!nome.trim()) { setErro("Informe o nome do dono do veículo"); return; }
+    if (telefone.replace(/\D/g, "").length < 10) { setErro("Informe o WhatsApp do dono do veículo com DDD"); return; }
     setErro("");
     setDuplicado(false);
     setCarregando(true);
@@ -46,7 +48,7 @@ export default function IndicarPage() {
       const res = await fetch("/api/indicador/nova-indicacao", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ placa: placaLimpa, nome_lead: nome || undefined, telefone_lead: telefone || undefined }),
+        body: JSON.stringify({ placa: placaLimpa, nome_lead: nome.trim(), telefone_lead: telefone }),
       });
       const json = await res.json();
       if (res.status === 409) { setDuplicado(true); return; }
@@ -153,7 +155,7 @@ export default function IndicarPage() {
             <div className="border-t border-border pt-4 space-y-3">
               <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
                 <Car className="h-3 w-3" />
-                Dados do dono (opcional)
+                Dados do dono do veículo
               </p>
               <div>
                 <label className="block text-[11px] font-semibold text-muted-foreground mb-1.5 uppercase tracking-wider">Nome</label>

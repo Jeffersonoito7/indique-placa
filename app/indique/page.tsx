@@ -39,6 +39,8 @@ function FormIndicacao() {
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!valida) { setErro("Digite uma placa válida (ex: ABC-1D23 ou ABC-1234)"); return; }
+    if (!nome.trim()) { setErro("Informe o nome do dono do veículo"); return; }
+    if (telefone.replace(/\D/g, "").length < 10) { setErro("Informe o WhatsApp do dono com DDD"); return; }
     setErro("");
     setCarregando(true);
     try {
@@ -47,8 +49,8 @@ function FormIndicacao() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           placa: placaLimpa,
-          nome_lead: nome || undefined,
-          telefone_lead: telefone || undefined,
+          nome_lead: nome.trim(),
+          telefone_lead: telefone,
           consultor_id: consultorId || undefined,
         }),
       });
@@ -107,7 +109,7 @@ function FormIndicacao() {
       {/* Dados opcionais */}
       <div style={{ borderTop: "1px solid #1A1A2E", paddingTop: 16, display: "flex", flexDirection: "column", gap: 12 }}>
         <p style={{ fontSize: 11, fontWeight: 700, color: "#6B7280", letterSpacing: "0.08em", textTransform: "uppercase", margin: 0 }}>
-          Dados do dono (opcional)
+          Dados do dono do veículo
         </p>
         <div>
           <label style={{ display: "block", fontSize: 11, fontWeight: 600, color: "#9CA3AF", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.08em" }}>Nome</label>
