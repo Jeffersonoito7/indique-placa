@@ -18,6 +18,14 @@ function placaValida(placa: string): boolean {
   return mercosul || antiga;
 }
 
+function fmtTelBR(v: string): string {
+  const n = v.replace(/\D/g, "").slice(0, 11);
+  if (n.length <= 2) return n.length ? `(${n}` : "";
+  if (n.length <= 6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
+  if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+  return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
+}
+
 export default function IndicarPage() {
   const [placa, setPlaca] = useState("");
   const [nome, setNome] = useState("");
@@ -172,8 +180,8 @@ export default function IndicarPage() {
                 <input
                   type="tel"
                   value={telefone}
-                  onChange={(e) => setTelefone(e.target.value)}
-                  placeholder="Ex: 11999999999"
+                  onChange={(e) => setTelefone(fmtTelBR(e.target.value))}
+                  placeholder="(87) 99999-9999"
                   className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
                 />
               </div>

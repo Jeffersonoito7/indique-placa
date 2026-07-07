@@ -18,6 +18,14 @@ function placaValida(placa: string): boolean {
   return /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/.test(limpo) || /^[A-Z]{3}[0-9]{4}$/.test(limpo);
 }
 
+function fmtTelBR(v: string): string {
+  const n = v.replace(/\D/g, "").slice(0, 11);
+  if (n.length <= 2) return n.length ? `(${n}` : "";
+  if (n.length <= 6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
+  if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+  return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
+}
+
 function FormIndicacao() {
   const params = useSearchParams();
   const consultorId = params.get("c") ?? "";
@@ -128,8 +136,8 @@ function FormIndicacao() {
           <input
             type="tel"
             value={telefone}
-            onChange={(e) => setTelefone(e.target.value)}
-            placeholder="Ex: 11999999999"
+            onChange={(e) => setTelefone(fmtTelBR(e.target.value))}
+            placeholder="(87) 99999-9999"
             style={{ width: "100%", padding: "12px 14px", background: "#111318", border: "1px solid #1A1A2E", borderRadius: 10, fontSize: 14, color: "#fff", fontFamily: "inherit", boxSizing: "border-box", outline: "none" }}
             onFocus={(e) => (e.target.style.borderColor = "#F59E0B")}
             onBlur={(e) => (e.target.style.borderColor = "#1A1A2E")}

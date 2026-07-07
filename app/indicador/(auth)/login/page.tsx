@@ -97,6 +97,14 @@ const STYLES = `
   .btn-entrar:disabled { opacity: .6; cursor: not-allowed; }
 `;
 
+function fmtTelBR(v: string): string {
+  const n = v.replace(/\D/g, "").slice(0, 11);
+  if (n.length <= 2) return n.length ? `(${n}` : "";
+  if (n.length <= 6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
+  if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+  return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
+}
+
 export default function IndicadorLoginPage() {
   const router = useRouter();
   const [telefone, setTelefone] = useState("");
@@ -162,8 +170,8 @@ export default function IndicadorLoginPage() {
           )}
 
           <form onSubmit={entrar}>
-            <input className="campo-login" type="tel" placeholder="WhatsApp (somente números)" value={telefone} required
-              onChange={(e) => setTelefone(e.target.value)} />
+            <input className="campo-login" type="tel" placeholder="(87) 99999-9999" value={telefone} required
+              onChange={(e) => setTelefone(fmtTelBR(e.target.value))} />
             <div className="senha-wrap">
               <input className="campo-login" type={verSenha ? "text" : "password"} placeholder="Senha" value={senha} required
                 onChange={(e) => setSenha(e.target.value)} />

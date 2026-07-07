@@ -270,11 +270,12 @@ function FormIndicador() {
 
   const scrollToForm = () => formRef.current?.scrollIntoView({ behavior: "smooth", block: "center" });
 
-  const fmtTel = (v: string) => {
+  const fmtTelBR = (v: string): string => {
     const n = v.replace(/\D/g, "").slice(0, 11);
-    if (n.length <= 2) return n;
-    if (n.length <= 7) return `(${n.slice(0, 2)}) ${n.slice(2)}`;
-    return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`;
+    if (n.length <= 2) return n.length ? `(${n}` : "";
+    if (n.length <= 6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
+    if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+    return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
   };
 
   const cadastrar = async (e: React.FormEvent) => {
@@ -439,7 +440,7 @@ function FormIndicador() {
                     </div>
                     <div className="campo-group">
                       <label className="campo-label">WhatsApp (com DDD)</label>
-                      <input className="campo" type="tel" placeholder="(11) 99999-9999" value={telefone} required onChange={(e) => setTelefone(fmtTel(e.target.value))} />
+                      <input className="campo" type="tel" placeholder="(11) 99999-9999" value={telefone} required onChange={(e) => setTelefone(fmtTelBR(e.target.value))} />
                     </div>
                     <div className="campo-group">
                       <label className="campo-label">Crie uma senha</label>

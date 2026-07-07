@@ -89,13 +89,23 @@ const STYLES = `
   .olho-btn:hover { color: rgba(255,255,255,.8); }
   .btn-entrar {
     width: 100%; padding: 14px; border: none; border-radius: 10px;
-    background: linear-gradient(135deg,#15803d,#16a34a,#22c55e);
+    background: linear-gradient(135deg, #16a34a 0%, #22c55e 50%, #4ade80 100%);
+    box-shadow: 0 4px 20px rgba(34,197,94,.45);
     color: #fff; font-size: 14px; font-weight: 800; letter-spacing: 1px;
+    text-shadow: 0 1px 2px rgba(0,0,0,.3);
     cursor: pointer; font-family: inherit; transition: opacity .15s, transform .1s;
   }
   .btn-entrar:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
   .btn-entrar:disabled { opacity: .6; cursor: not-allowed; }
 `;
+
+function fmtTelBR(v: string): string {
+  const n = v.replace(/\D/g, "").slice(0, 11);
+  if (n.length <= 2) return n.length ? `(${n}` : "";
+  if (n.length <= 6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
+  if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
+  return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
+}
 
 export default function ConsultorLoginPage() {
   const router = useRouter();
@@ -162,8 +172,8 @@ export default function ConsultorLoginPage() {
           )}
 
           <form onSubmit={entrar}>
-            <input className="campo-login" type="text" inputMode="numeric" placeholder="WhatsApp com DDD" value={telefone} required
-              onChange={(e) => setTelefone(e.target.value)} />
+            <input className="campo-login" type="tel" inputMode="numeric" placeholder="(87) 99999-9999" value={telefone} required
+              onChange={(e) => setTelefone(fmtTelBR(e.target.value))} />
             <div className="senha-wrap">
               <input className="campo-login" type={verSenha ? "text" : "password"} placeholder="Senha" value={senha} required
                 onChange={(e) => setSenha(e.target.value)} />
