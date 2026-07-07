@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   if (consultor) {
     const codigo = String(Math.floor(100000 + Math.random() * 900000));
     otpStore.set(email, { codigo, expira: Date.now() + 10 * 60 * 1000 });
-    enviarEmailOTP({ email, codigo, nome: consultor.nome }).catch(() => {});
+    await enviarEmailOTP({ email, codigo, nome: consultor.nome });
   }
   return NextResponse.json({ ok: true });
 }
