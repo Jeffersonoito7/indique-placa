@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { StatusLead } from "@/components/status-lead";
 import { AbrirWhatsApp } from "@/components/abrir-whatsapp";
 import { PlacaMercosul } from "@/components/placa-mercosul";
+import { BotaoPagamento } from "@/components/botao-pagamento";
 
 export default async function ConsultorLeadsPage() {
   const consultor = await getConsultorLogado();
@@ -14,7 +15,7 @@ export default async function ConsultorLeadsPage() {
 
   const { data: leads } = await supabaseAdmin
     .from("indicacoes")
-    .select("id, placa, nome_lead, telefone_lead, status, criado_em, tipo_veiculo, indicadores(nome)")
+    .select("id, placa, nome_lead, telefone_lead, status, criado_em, tipo_veiculo, pago_em, comprovante_url, valor_pago, indicadores(nome, chave_pix)")
     .eq("consultor_id", consultor.id)
     .order("criado_em", { ascending: false });
 
@@ -54,7 +55,7 @@ export default async function ConsultorLeadsPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Placa", "Tipo", "Proprietário", "Indicado por", "Status", "Data", ""].map((h) => (
+                    {["Placa", "Tipo", "Proprietário", "Indicado por", "Status", "Data", "Pagamento", ""].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
                     ))}
                   </tr>
@@ -81,6 +82,17 @@ export default async function ConsultorLeadsPage() {
                         <StatusLead leadId={lead.id} statusInicial={lead.status as any} endpoint="/api/consultor/lead" />
                       </td>
                       <td className="px-6 py-3.5 text-xs text-muted-foreground">{new Date(lead.criado_em).toLocaleDateString("pt-BR")}</td>
+                      <td className="px-6 py-3.5">
+                        <BotaoPagamento
+                          leadId={lead.id}
+                          status={lead.status}
+                          chavePix={(lead.indicadores as any)?.chave_pix ?? null}
+                          pagoEm={(lead as any).pago_em ?? null}
+                          comprovante={(lead as any).comprovante_url ?? null}
+                          valorPago={(lead as any).valor_pago ?? null}
+                          nomeIndicador={(lead.indicadores as any)?.nome ?? null}
+                        />
+                      </td>
                       <td className="px-6 py-3.5">
                         {lead.telefone_lead && <AbrirWhatsApp telefone={lead.telefone_lead} nome={lead.nome_lead ?? (lead as any).placa ?? ""} />}
                       </td>
