@@ -28,9 +28,9 @@ export function OnboardingIndicador({ totalIndicacoes }: OnboardingIndicadorProp
   };
 
   const passos = [
-    { numero: 1, icone: <Car size={16} />, texto: "Viu um carro, moto ou caminhao? Anote a placa e os dados do dono" },
-    { numero: 2, icone: <Hash size={16} />, texto: "Cadastre a placa e o contato do prospecto no painel" },
-    { numero: 3, icone: <Send size={16} />, texto: "Avise ao prospecto que um consultor vai entrar em contato" },
+    { numero: 1, icone: <Car size={16} />, texto: "Viu um veiculo na rua? Anota a placa e o contato do dono" },
+    { numero: 2, icone: <Hash size={16} />, texto: "Cadastra aqui. Avisa o dono que um consultor vai ligar" },
+    { numero: 3, icone: <Send size={16} />, texto: "Quando ele fechar, o PIX cai direto na sua conta" },
   ];
 
   return (
@@ -44,10 +44,10 @@ export function OnboardingIndicador({ totalIndicacoes }: OnboardingIndicadorProp
       }}
     >
       <div style={{ fontSize: 15, fontWeight: 700, color: "var(--foreground)", marginBottom: 4 }}>
-        Bem-vindo! Faca sua primeira indicacao
+        Sua primeira indicacao pode cair hoje
       </div>
       <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginBottom: 16 }}>
-        E simples. Siga os 3 passos:
+        So 3 passos e o PIX e seu:
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>

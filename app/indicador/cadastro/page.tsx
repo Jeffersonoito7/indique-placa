@@ -295,18 +295,18 @@ function FormIndicador() {
         {/* HERO */}
         <section className="hero">
           <div className="hero-grid" /><div className="hero-glow1" /><div className="hero-glow2" />
-          <div className="hero-pill"><span className="pill-dot" />Renda extra sem sair de casa</div>
+          <div className="hero-pill"><span className="pill-dot" />Mais de 1.000 indicadores ja recebendo via PIX</div>
           <div className="hero-logo">
             <img src="/logo-indique.png" alt="Indique Placa" style={{ width:130, height:130, objectFit:"contain" }} />
           </div>
           <h1 className="hero-h1">
-            Cada placa na rua<br />é <em>dinheiro</em> no<br /><span className="green">seu bolso.</span>
+            O carro que voce<br />viu hoje pode ser<br /><span className="green">seu proximo PIX.</span>
           </h1>
           <p className="hero-sub">
-            Viu um carro, moto ou caminhão? Cadastre a placa e os dados do dono no painel. Avise que um consultor vai entrar em contato. Quando ele assinar proteção veicular, você recebe via PIX. Simples assim.
+            Viu um carro, moto ou caminhao na rua? Cadastra a placa e o contato do dono aqui. A gente cuida do resto. Quando ele assinar a protecao veicular, cai PIX na sua conta. Voce nao vende nada. So indica.
           </p>
           <button className="hero-cta" onClick={scrollToForm}>
-            Quero começar agora
+            Quero meu primeiro PIX
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
           </button>
         </section>
