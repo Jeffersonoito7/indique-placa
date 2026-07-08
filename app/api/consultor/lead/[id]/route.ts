@@ -131,3 +131,32 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   return NextResponse.json({ ok: true, ...(indicadorRetorno ? { indicador: indicadorRetorno } : {}) });
 }
+
+export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("consultor_auth")?.value;
+  if (!token) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+
+  const consultorId = await validarSessao(token, "consultor");
+  if (!consultorId) return NextResponse.json({ error: "Sessão expirada" }, { status: 401 });
+
+  const { id } = await params;
+
+  // Verificar que o lead pertence ao consultor
+  const { data: lead } = await supabaseAdmin
+    .from("indicacoes")
+    .select("id")
+    .eq("id", id)
+    .eq("consultor_id", consultorId)
+    .single();
+
+  if (!lead) return NextResponse.json({ error: "Lead não encontrado" }, { status: 404 });
+
+  const { error } = await supabaseAdmin
+    .from("indicacoes")
+    .delete()
+    .eq("id", id);
+
+  if (error) return NextResponse.json({ error: "Erro ao apagar" }, { status: 500 });
+  return NextResponse.json({ ok: true });
+}

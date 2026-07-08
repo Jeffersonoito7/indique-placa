@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { Trash2 } from "lucide-react";
 import { PlacaMercosul } from "@/components/placa-mercosul";
 import { AbrirWhatsApp } from "@/components/abrir-whatsapp";
 
@@ -223,13 +224,17 @@ function PainelPagamento({ lead, onPago }: { lead: Lead; onPago: (leadId: string
 function LeadCard({
   lead,
   atualizando,
+  apagando,
   onMudarStatus,
   onPago,
+  onApagar,
 }: {
   lead: Lead;
   atualizando: boolean;
+  apagando: boolean;
   onMudarStatus: (id: string, status: StatusLead) => void;
   onPago: (leadId: string, valorPago: number | null, comprovanteUrl: string | null) => void;
+  onApagar: (id: string) => void;
 }) {
   const coluna = COLUNAS.find((c) => c.key === lead.status)!;
   const data = new Date(lead.criado_em).toLocaleDateString("pt-BR");
@@ -237,10 +242,20 @@ function LeadCard({
 
   return (
     <div
-      className={`bg-white dark:bg-zinc-900 rounded-lg border border-border border-l-4 ${coluna.borda} p-3 shadow-sm opacity-${atualizando ? "60" : "100"} transition-opacity`}
+      className={`relative bg-white dark:bg-zinc-900 rounded-lg border border-border border-l-4 ${coluna.borda} p-3 shadow-sm opacity-${atualizando || apagando ? "60" : "100"} transition-opacity`}
     >
+      {/* Botao apagar */}
+      <button
+        onClick={() => onApagar(lead.id)}
+        disabled={apagando || atualizando}
+        className="absolute top-2 right-2 p-1 rounded text-muted-foreground hover:text-red-500 transition-colors disabled:opacity-40"
+        title="Apagar lead"
+      >
+        <Trash2 size={14} />
+      </button>
+
       {/* Linha 1: Placa */}
-      <div className="mb-2">
+      <div className="mb-2 pr-6">
         {lead.placa ? (
           <PlacaMercosul placa={lead.placa} tamanho="sm" />
         ) : (
@@ -337,6 +352,7 @@ export default function ConsultorLeadsPage() {
   const [visao, setVisao] = useState<"kanban" | "lista">("kanban");
   const [abaAtiva, setAbaAtiva] = useState<StatusLead>("novo");
   const [atualizando, setAtualizando] = useState<Set<string>>(new Set());
+  const [apagando, setApagando] = useState<Set<string>>(new Set());
 
   // --- Filtros da lista ---
   const [busca, setBusca] = useState("");
@@ -467,6 +483,31 @@ export default function ConsultorLeadsPage() {
       // falha silenciosa; usuario pode tentar novamente
     } finally {
       setAtualizando((prev) => {
+        const next = new Set(prev);
+        next.delete(id);
+        return next;
+      });
+    }
+  }
+
+  async function apagarLead(id: string) {
+    const confirmado = window.confirm("Apagar este lead? Esta acao nao pode ser desfeita.");
+    if (!confirmado) return;
+    setApagando((prev) => new Set(prev).add(id));
+    try {
+      const res = await fetch(`/api/consultor/lead/${id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const json = await res.json() as { error?: string };
+        alert(json.error ?? "Erro ao apagar lead");
+        return;
+      }
+      setLeadsKanban((prev) => prev.filter((l) => l.id !== id));
+      setLeadsLista((prev) => prev.filter((l) => l.id !== id));
+      setTotalLista((prev) => Math.max(0, prev - 1));
+    } catch {
+      alert("Erro de conexao");
+    } finally {
+      setApagando((prev) => {
         const next = new Set(prev);
         next.delete(id);
         return next;
@@ -645,6 +686,14 @@ export default function ConsultorLeadsPage() {
                                   }} />
                                 )
                               )}
+                              <button
+                                onClick={() => void apagarLead(lead.id)}
+                                disabled={apagando.has(lead.id)}
+                                className="p-1 rounded text-muted-foreground hover:text-red-500 transition-colors disabled:opacity-40"
+                                title="Apagar lead"
+                              >
+                                <Trash2 size={14} />
+                              </button>
                             </div>
                           </td>
                         </tr>
@@ -743,8 +792,10 @@ export default function ConsultorLeadsPage() {
                           key={lead.id}
                           lead={lead}
                           atualizando={atualizando.has(lead.id)}
+                          apagando={apagando.has(lead.id)}
                           onMudarStatus={mudarStatus}
                           onPago={registrarPagamento}
+                          onApagar={apagarLead}
                         />
                       ))
                     )}
