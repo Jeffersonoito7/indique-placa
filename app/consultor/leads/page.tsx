@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo, useCallback, useRef } from "react";
 import { PlacaMercosul } from "@/components/placa-mercosul";
 import { AbrirWhatsApp } from "@/components/abrir-whatsapp";
 
@@ -77,6 +77,20 @@ const STATUS_COR: Record<StatusLead, string> = {
   fechado: "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
   perdido: "bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400",
 };
+
+// ---------------------------------------------------------------------------
+// Skeleton de linha (lista paginada)
+// ---------------------------------------------------------------------------
+
+function LeadSkeleton() {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3 border-b border-border/50 animate-pulse">
+      <div className="h-4 w-20 bg-muted rounded" />
+      <div className="h-4 w-32 bg-muted rounded flex-1" />
+      <div className="h-6 w-16 bg-muted rounded-full" />
+    </div>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Componente Card de Lead
@@ -249,41 +263,114 @@ function LeadCard({
 // Componente principal
 // ---------------------------------------------------------------------------
 
+const LIMIT = 20;
+
 export default function ConsultorLeadsPage() {
-  const [leads, setLeads] = useState<Lead[]>([]);
-  const [carregando, setCarregando] = useState(true);
-  const [erro, setErro] = useState<string | null>(null);
-  const [busca, setBusca] = useState("");
+  // --- Estado kanban (carrega tudo de uma vez, sem paginacao) ---
+  const [leadsKanban, setLeadsKanban] = useState<Lead[]>([]);
+  const [carregandoKanban, setCarregandoKanban] = useState(true);
+  const [erroKanban, setErroKanban] = useState<string | null>(null);
+
+  // --- Estado lista (paginado, server-side) ---
+  const [leadsLista, setLeadsLista] = useState<Lead[]>([]);
+  const [totalLista, setTotalLista] = useState(0);
+  const [carregandoLista, setCarregandoLista] = useState(false);
+  const [erroLista, setErroLista] = useState<string | null>(null);
+
+  // --- Estado compartilhado ---
   const [visao, setVisao] = useState<"kanban" | "lista">("kanban");
   const [abaAtiva, setAbaAtiva] = useState<StatusLead>("novo");
   const [atualizando, setAtualizando] = useState<Set<string>>(new Set());
 
+  // --- Filtros da lista ---
+  const [busca, setBusca] = useState("");
+  const [buscaDebounced, setBuscaDebounced] = useState("");
+  const [statusFiltro, setStatusFiltro] = useState<StatusLead | "todos">("todos");
+  const [page, setPage] = useState(1);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // ---------------------------------------------------------------------------
+  // Carrega kanban (uma unica vez)
+  // ---------------------------------------------------------------------------
   useEffect(() => {
     fetch("/api/consultor/leads")
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao carregar leads");
         return r.json() as Promise<Lead[]>;
       })
-      .then((data) => setLeads(data))
-      .catch((e: Error) => setErro(e.message))
-      .finally(() => setCarregando(false));
+      .then((data) => setLeadsKanban(data))
+      .catch((e: Error) => setErroKanban(e.message))
+      .finally(() => setCarregandoKanban(false));
   }, []);
 
-  const leadsFiltrados = useMemo(() => {
+  // ---------------------------------------------------------------------------
+  // Debounce da busca na lista
+  // ---------------------------------------------------------------------------
+  useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(() => {
+      setBuscaDebounced(busca);
+      setPage(1); // volta p/ pagina 1 ao mudar busca
+    }, 400);
+    return () => {
+      if (debounceRef.current) clearTimeout(debounceRef.current);
+    };
+  }, [busca]);
+
+  // ---------------------------------------------------------------------------
+  // Carrega lista paginada
+  // ---------------------------------------------------------------------------
+  const carregarLista = useCallback(async () => {
+    setCarregandoLista(true);
+    setErroLista(null);
+    const params = new URLSearchParams({
+      page: String(page),
+      limit: String(LIMIT),
+    });
+    if (statusFiltro !== "todos") params.set("status", statusFiltro);
+    if (buscaDebounced) params.set("busca", buscaDebounced);
+
+    try {
+      const res = await fetch(`/api/consultor/leads?${params.toString()}`);
+      if (!res.ok) throw new Error("Erro ao carregar leads");
+      const json = await res.json() as { leads: Lead[]; total: number; page: number; limit: number };
+      setLeadsLista(json.leads);
+      setTotalLista(json.total);
+    } catch (e: unknown) {
+      setErroLista(e instanceof Error ? e.message : "Erro desconhecido");
+    } finally {
+      setCarregandoLista(false);
+    }
+  }, [page, statusFiltro, buscaDebounced]);
+
+  useEffect(() => {
+    if (visao === "lista") {
+      void carregarLista();
+    }
+  }, [visao, carregarLista]);
+
+  // ---------------------------------------------------------------------------
+  // Filtro kanban (client-side, sem busca server)
+  // ---------------------------------------------------------------------------
+  const leadsKanbanFiltrados = useMemo(() => {
     const q = busca.toLowerCase().trim();
-    if (!q) return leads;
-    return leads.filter((l) => {
+    if (!q) return leadsKanban;
+    return leadsKanban.filter((l) => {
       const placa = (l.placa ?? "").toLowerCase();
       const nome = (l.nome_lead ?? "").toLowerCase();
       const ind = (l.indicadores?.nome ?? "").toLowerCase();
       return placa.includes(q) || nome.includes(q) || ind.includes(q);
     });
-  }, [leads, busca]);
+  }, [leadsKanban, busca]);
 
+  // ---------------------------------------------------------------------------
+  // Mutacoes
+  // ---------------------------------------------------------------------------
   function registrarPagamento(leadId: string, valorPago: number | null, comprovanteUrl: string | null) {
-    setLeads((prev) => prev.map((l) =>
-      l.id === leadId ? { ...l, pago_em: new Date().toISOString(), valor_pago: valorPago, comprovante_url: comprovanteUrl } : l
-    ));
+    const patch = (l: Lead) =>
+      l.id === leadId ? { ...l, pago_em: new Date().toISOString(), valor_pago: valorPago, comprovante_url: comprovanteUrl } : l;
+    setLeadsKanban((prev) => prev.map(patch));
+    setLeadsLista((prev) => prev.map(patch));
   }
 
   async function mudarStatus(id: string, status: StatusLead) {
@@ -301,11 +388,13 @@ export default function ConsultorLeadsPage() {
         indicador?: { nome: string; telefone: string | null; chave_pix: string | null; comissao: number | null };
       };
 
-      setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
+      const patch = (l: Lead) => (l.id === id ? { ...l, status } : l);
+      setLeadsKanban((prev) => prev.map(patch));
+      setLeadsLista((prev) => prev.map(patch));
 
       // Abre WhatsApp para o indicador quando venda e fechada
       if (status === "fechado" && json.indicador?.telefone) {
-        const lead = leads.find((l) => l.id === id);
+        const lead = leadsKanban.find((l) => l.id === id) ?? leadsLista.find((l) => l.id === id);
         const { nome, telefone, chave_pix, comissao } = json.indicador;
         const placa = lead?.placa ?? "";
         const comissaoTexto = comissao
@@ -319,7 +408,7 @@ export default function ConsultorLeadsPage() {
         window.open(`https://wa.me/55${tel}?text=${texto}`, "_blank");
       }
     } catch {
-      // falha silenciosa no estado local; usuario pode tentar novamente
+      // falha silenciosa; usuario pode tentar novamente
     } finally {
       setAtualizando((prev) => {
         const next = new Set(prev);
@@ -329,11 +418,22 @@ export default function ConsultorLeadsPage() {
     }
   }
 
-  const total = leadsFiltrados.length;
+  // ---------------------------------------------------------------------------
+  // Paginacao
+  // ---------------------------------------------------------------------------
+  const totalPages = Math.max(1, Math.ceil(totalLista / LIMIT));
 
-  // -------------------------------------------------------------------
+  function mudarStatusFiltro(s: StatusLead | "todos") {
+    setStatusFiltro(s);
+    setPage(1);
+  }
+
+  // ---------------------------------------------------------------------------
   // Render
-  // -------------------------------------------------------------------
+  // ---------------------------------------------------------------------------
+
+  const carregando = visao === "kanban" ? carregandoKanban : false;
+  const erro = visao === "kanban" ? erroKanban : erroLista;
 
   return (
     <div className="flex-1 flex flex-col min-h-0">
@@ -342,8 +442,15 @@ export default function ConsultorLeadsPage() {
         <div>
           <h1 className="text-base font-bold text-foreground">
             Minhas Placas
-            {!carregando && (
-              <span className="ml-2 text-xs font-normal text-muted-foreground">({total})</span>
+            {visao === "kanban" && !carregandoKanban && (
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                ({leadsKanbanFiltrados.length})
+              </span>
+            )}
+            {visao === "lista" && !carregandoLista && (
+              <span className="ml-2 text-xs font-normal text-muted-foreground">
+                ({totalLista})
+              </span>
             )}
           </h1>
           <p className="text-[11px] text-muted-foreground mt-0.5">Gestao de indicacoes recebidas</p>
@@ -353,8 +460,8 @@ export default function ConsultorLeadsPage() {
             type="text"
             value={busca}
             onChange={(e) => setBusca(e.target.value)}
-            placeholder="Buscar placa, nome ou indicador..."
-            className="text-sm border border-border rounded-lg px-3 py-1.5 bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-56"
+            placeholder="Buscar placa ou nome..."
+            className="text-sm border border-border rounded-lg px-3 py-1.5 bg-background text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring w-52"
           />
           <button
             onClick={() => setVisao((v) => (v === "kanban" ? "lista" : "kanban"))}
@@ -374,72 +481,127 @@ export default function ConsultorLeadsPage() {
         <div className="flex-1 flex items-center justify-center text-sm text-red-500">{erro}</div>
       ) : visao === "lista" ? (
         // ---------------------------------------------------------------
-        // Visao Lista
+        // Visao Lista (paginada, server-side)
         // ---------------------------------------------------------------
-        <div className="flex-1 overflow-auto p-4 md:p-8">
-          <div className="rounded-lg border border-border overflow-hidden">
-            <table className="w-full text-sm">
-              <thead>
-                <tr className="bg-muted/40 border-b border-border">
-                  {["Placa", "Proprietario", "Indicado por", "Tipo", "Status", "Data", ""].map((h) => (
-                    <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-4 py-2.5">
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {!leadsFiltrados.length ? (
-                  <tr>
-                    <td colSpan={7} className="text-center py-12 text-sm text-muted-foreground">
-                      Nenhuma indicacao encontrada
-                    </td>
+        <div className="flex-1 flex flex-col min-h-0">
+          {/* Filtro por status */}
+          <div className="px-4 md:px-8 py-2 border-b border-border flex items-center gap-1.5 flex-wrap">
+            {([
+              { key: "todos" as const, label: "Todos" },
+              ...COLUNAS.map((c) => ({ key: c.key, label: c.label })),
+            ]).map((item) => (
+              <button
+                key={item.key}
+                onClick={() => mudarStatusFiltro(item.key)}
+                className={`text-xs font-semibold px-3 py-1 rounded-full border transition-colors
+                  ${statusFiltro === item.key
+                    ? "bg-foreground text-background border-foreground"
+                    : "border-border text-muted-foreground hover:bg-muted"
+                  }`}
+              >
+                {item.label}
+              </button>
+            ))}
+          </div>
+
+          {/* Tabela */}
+          <div className="flex-1 overflow-auto p-4 md:p-8 pb-0">
+            <div className="rounded-lg border border-border overflow-hidden">
+              <table className="w-full text-sm">
+                <thead>
+                  <tr className="bg-muted/40 border-b border-border">
+                    {["Placa", "Proprietario", "Indicado por", "Tipo", "Status", "Data", ""].map((h) => (
+                      <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-4 py-2.5">
+                        {h}
+                      </th>
+                    ))}
                   </tr>
-                ) : (
-                  leadsFiltrados.map((lead, i) => {
-                    const col = COLUNAS.find((c) => c.key === lead.status)!;
-                    return (
-                      <tr key={lead.id} className={`border-b border-border hover:bg-accent/30 transition-colors ${i % 2 !== 0 ? "bg-muted/10" : ""}`}>
-                        <td className="px-4 py-2">
-                          {lead.placa ? (
-                            <PlacaMercosul placa={lead.placa} tamanho="sm" />
-                          ) : (
-                            <span className="text-xs italic text-muted-foreground">sem placa</span>
-                          )}
-                        </td>
-                        <td className="px-4 py-2">
-                          <div className="font-medium text-foreground">
-                            {lead.nome_lead ?? <span className="italic text-muted-foreground/60 text-xs">a preencher</span>}
-                          </div>
-                          {lead.telefone_lead && (
-                            <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{lead.telefone_lead}</div>
-                          )}
-                        </td>
-                        <td className="px-4 py-2 text-muted-foreground">
-                          {lead.indicadores?.nome ?? <span className="italic text-muted-foreground/50 text-xs">direto</span>}
-                        </td>
-                        <td className="px-4 py-2 capitalize text-muted-foreground text-xs">
-                          {lead.tipo_veiculo ?? "carro"}
-                        </td>
-                        <td className="px-4 py-2">
-                          <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${col.badge}`}>
-                            {col.label}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2 text-xs text-muted-foreground">
-                          {new Date(lead.criado_em).toLocaleDateString("pt-BR")}
-                        </td>
-                        <td className="px-4 py-2">
-                          {lead.telefone_lead && (
-                            <AbrirWhatsApp telefone={lead.telefone_lead} nome={lead.nome_lead ?? lead.placa ?? ""} />
-                          )}
+                </thead>
+                <tbody>
+                  {carregandoLista ? (
+                    Array.from({ length: 5 }).map((_, i) => (
+                      <tr key={i}>
+                        <td colSpan={7} className="p-0">
+                          <LeadSkeleton />
                         </td>
                       </tr>
-                    );
-                  })
-                )}
-              </tbody>
-            </table>
+                    ))
+                  ) : !leadsLista.length ? (
+                    <tr>
+                      <td colSpan={7} className="text-center py-12 text-sm text-muted-foreground">
+                        Nenhuma indicacao encontrada
+                      </td>
+                    </tr>
+                  ) : (
+                    leadsLista.map((lead, i) => {
+                      const col = COLUNAS.find((c) => c.key === lead.status)!;
+                      return (
+                        <tr key={lead.id} className={`border-b border-border hover:bg-accent/30 transition-colors ${i % 2 !== 0 ? "bg-muted/10" : ""}`}>
+                          <td className="px-4 py-2">
+                            {lead.placa ? (
+                              <PlacaMercosul placa={lead.placa} tamanho="sm" />
+                            ) : (
+                              <span className="text-xs italic text-muted-foreground">sem placa</span>
+                            )}
+                          </td>
+                          <td className="px-4 py-2">
+                            <div className="font-medium text-foreground">
+                              {lead.nome_lead ?? <span className="italic text-muted-foreground/60 text-xs">a preencher</span>}
+                            </div>
+                            {lead.telefone_lead && (
+                              <div className="text-[10px] text-muted-foreground font-mono mt-0.5">{lead.telefone_lead}</div>
+                            )}
+                          </td>
+                          <td className="px-4 py-2 text-muted-foreground">
+                            {lead.indicadores?.nome ?? <span className="italic text-muted-foreground/50 text-xs">direto</span>}
+                          </td>
+                          <td className="px-4 py-2 capitalize text-muted-foreground text-xs">
+                            {lead.tipo_veiculo ?? "carro"}
+                          </td>
+                          <td className="px-4 py-2">
+                            <span className={`text-[11px] font-semibold px-2 py-0.5 rounded-full ${col.badge}`}>
+                              {col.label}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2 text-xs text-muted-foreground">
+                            {new Date(lead.criado_em).toLocaleDateString("pt-BR")}
+                          </td>
+                          <td className="px-4 py-2">
+                            {lead.telefone_lead && (
+                              <AbrirWhatsApp telefone={lead.telefone_lead} nome={lead.nome_lead ?? lead.placa ?? ""} />
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Rodape paginacao */}
+          <div className="flex items-center justify-between px-4 md:px-8 py-3 border-t border-border text-sm">
+            <span className="text-muted-foreground">{totalLista} lead{totalLista !== 1 ? "s" : ""}</span>
+            <div className="flex items-center gap-2">
+              <button
+                disabled={page === 1 || carregandoLista}
+                onClick={() => setPage((p) => p - 1)}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Anterior
+              </button>
+              <span className="font-medium text-xs text-foreground min-w-[60px] text-center">
+                {page} / {totalPages}
+              </span>
+              <button
+                disabled={page >= totalPages || carregandoLista}
+                onClick={() => setPage((p) => p + 1)}
+                className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                Proximo
+              </button>
+            </div>
           </div>
         </div>
       ) : (
@@ -450,7 +612,7 @@ export default function ConsultorLeadsPage() {
           {/* Tabs mobile */}
           <div className="flex md:hidden border-b border-border bg-background">
             {COLUNAS.map((col) => {
-              const qtd = leadsFiltrados.filter((l) => l.status === col.key).length;
+              const qtd = leadsKanbanFiltrados.filter((l) => l.status === col.key).length;
               return (
                 <button
                   key={col.key}
@@ -472,19 +634,14 @@ export default function ConsultorLeadsPage() {
           {/* Colunas desktop / coluna ativa mobile */}
           <div className="flex-1 flex gap-3 p-4 md:p-6 overflow-x-auto min-h-0">
             {COLUNAS.map((col) => {
-              const isMobileInativa = typeof window !== "undefined"
-                ? false // SSR: render all, CSS hide
-                : false;
-              const leadsColuna = leadsFiltrados.filter((l) => l.status === col.key);
+              const leadsColuna = leadsKanbanFiltrados.filter((l) => l.status === col.key);
               return (
                 <div
                   key={col.key}
                   className={`flex-shrink-0 w-full md:w-72 flex flex-col min-h-0 ${col.key !== abaAtiva ? "hidden md:flex" : "flex"}`}
                 >
                   {/* Cabecalho coluna */}
-                  <div
-                    className="flex items-center gap-2 mb-3 px-1"
-                  >
+                  <div className="flex items-center gap-2 mb-3 px-1">
                     <div className="w-2.5 h-2.5 rounded-full flex-shrink-0" style={{ backgroundColor: col.cor }} />
                     <span className="text-sm font-semibold text-foreground">{col.label}</span>
                     <span

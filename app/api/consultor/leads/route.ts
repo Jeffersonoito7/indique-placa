@@ -1,9 +1,12 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { validarSessao } from "@/lib/sessoes";
 
-export async function GET() {
+const CAMPOS =
+  "id, placa, nome_lead, telefone_lead, status, criado_em, tipo_veiculo, pago_em, comprovante_url, valor_pago, indicadores(nome, chave_pix)";
+
+export async function GET(request: NextRequest) {
   const cookieStore = await cookies();
   const token = cookieStore.get("consultor_auth")?.value;
   if (!token) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
@@ -11,13 +14,48 @@ export async function GET() {
   const consultorId = await validarSessao(token, "consultor");
   if (!consultorId) return NextResponse.json({ error: "Sessão expirada" }, { status: 401 });
 
-  const { data, error } = await supabaseAdmin
+  const { searchParams } = request.nextUrl;
+  const pageParam = searchParams.get("page");
+
+  // Modo legado: sem "page" => retorna array completo (usado pelo kanban)
+  if (!pageParam) {
+    const { data, error } = await supabaseAdmin
+      .from("indicacoes")
+      .select(CAMPOS)
+      .eq("consultor_id", consultorId)
+      .order("criado_em", { ascending: false });
+
+    if (error) return NextResponse.json({ error: "Erro ao buscar leads" }, { status: 500 });
+    return NextResponse.json(data ?? []);
+  }
+
+  // Modo paginado
+  const page = Math.max(1, parseInt(pageParam, 10) || 1);
+  const limitRaw = parseInt(searchParams.get("limit") ?? "20", 10);
+  const limit = Math.min(50, Math.max(1, limitRaw));
+  const status = searchParams.get("status") ?? "";
+  const busca = (searchParams.get("busca") ?? "").trim();
+  const offset = (page - 1) * limit;
+
+  let query = supabaseAdmin
     .from("indicacoes")
-    .select("id, placa, nome_lead, telefone_lead, status, criado_em, tipo_veiculo, pago_em, comprovante_url, valor_pago, indicadores(nome, chave_pix)")
+    .select(CAMPOS, { count: "exact" })
     .eq("consultor_id", consultorId)
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .range(offset, offset + limit - 1);
+
+  if (status && status !== "todos") {
+    query = query.eq("status", status);
+  }
+
+  if (busca) {
+    // Busca por placa (ilike) ou nome_lead (ilike)
+    query = query.or(`placa.ilike.%${busca}%,nome_lead.ilike.%${busca}%`);
+  }
+
+  const { data, count, error } = await query;
 
   if (error) return NextResponse.json({ error: "Erro ao buscar leads" }, { status: 500 });
 
-  return NextResponse.json(data ?? []);
+  return NextResponse.json({ leads: data ?? [], total: count ?? 0, page, limit });
 }
