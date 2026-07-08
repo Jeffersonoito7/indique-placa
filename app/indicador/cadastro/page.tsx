@@ -295,15 +295,15 @@ function FormIndicador() {
         {/* HERO */}
         <section className="hero">
           <div className="hero-grid" /><div className="hero-glow1" /><div className="hero-glow2" />
-          <div className="hero-pill"><span className="pill-dot" />Muitos indicadores ja recebendo via PIX</div>
+          <div className="hero-pill"><span className="pill-dot" />Muitos indicadores já recebendo via PIX</div>
           <div className="hero-logo">
             <img src="/logo-indique.png" alt="Indique Placa" style={{ width:130, height:130, objectFit:"contain" }} />
           </div>
           <h1 className="hero-h1">
-            Conhece alguem com<br />carro, moto ou<br /><span className="green">caminhao?</span>
+            Conhece alguém com<br />carro, moto ou<br /><span className="green">caminhão?</span>
           </h1>
           <p className="hero-sub">
-            Traga ele para proteger o patrimonio dele. Voce indica, o consultor cuida do resto. Quando fechar, cai PIX direto na sua conta. Voce nao vende nada. So conecta pessoas.
+            Traga ele para proteger o patrimônio dele. Você indica, o consultor cuida do resto. Quando fechar, cai PIX direto na sua conta. Você não vende nada. Só conecta pessoas.
           </p>
           <button className="hero-cta" onClick={scrollToForm}>
             Quero meu primeiro PIX

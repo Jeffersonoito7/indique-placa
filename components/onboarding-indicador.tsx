@@ -28,7 +28,7 @@ export function OnboardingIndicador({ totalIndicacoes }: OnboardingIndicadorProp
   };
 
   const passos = [
-    { numero: 1, icone: <Car size={16} />, texto: "Viu um veiculo na rua? Anota a placa e o contato do dono" },
+    { numero: 1, icone: <Car size={16} />, texto: "Viu um veículo na rua? Anota a placa e o contato do dono" },
     { numero: 2, icone: <Hash size={16} />, texto: "Cadastra aqui. Avisa o dono que um consultor vai ligar" },
     { numero: 3, icone: <Send size={16} />, texto: "Quando ele fechar, o PIX cai direto na sua conta" },
   ];
@@ -44,10 +44,10 @@ export function OnboardingIndicador({ totalIndicacoes }: OnboardingIndicadorProp
       }}
     >
       <div style={{ fontSize: 15, fontWeight: 700, color: "var(--foreground)", marginBottom: 4 }}>
-        Sua primeira indicacao pode cair hoje
+        Sua primeira indicação pode cair hoje
       </div>
       <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginBottom: 16 }}>
-        So 3 passos e o PIX e seu:
+        Só 3 passos e o PIX é seu:
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 20 }}>
