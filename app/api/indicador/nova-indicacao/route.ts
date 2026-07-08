@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
+import * as Sentry from "@sentry/nextjs";
 import { getIndicadorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
@@ -93,6 +94,7 @@ export async function POST(req: NextRequest) {
         )
       );
     } catch (err) {
+      Sentry.captureException(err);
       console.error("Erro ao enviar push notification:", err);
     }
   })();
