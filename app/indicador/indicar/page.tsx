@@ -95,6 +95,17 @@ export default function IndicarPage() {
       if (res.status === 409) { setDuplicado(true); return; }
       if (!res.ok) { setErro(json.error ?? "Erro ao enviar"); return; }
       vibrar();
+
+      // Abrir WhatsApp do consultor com mensagem pre-preenchida
+      if (json.consultor?.fone) {
+        const fone = json.consultor.fone.replace(/\D/g, "");
+        const numero = fone.startsWith("55") ? fone : `55${fone}`;
+        const msg = encodeURIComponent(
+          `Ola ${json.consultor.nome}, sou ${nome.trim() || "seu indicador"} e acabei de indicar a placa *${placa}* pelo Indique Placa. O dono e ${nome.trim() || "—"}, WhatsApp: ${telefone || "—"}`
+        );
+        window.open(`https://wa.me/${numero}?text=${msg}`, "_blank");
+      }
+
       setSucesso(true);
       setPlaca("");
       setNome("");

@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIndicadorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { notificarNovoLead, notificarNovaIndicacao } from "@/lib/whatsapp";
 import { z } from "zod";
 
 const schema = z.object({
@@ -50,31 +49,14 @@ export async function POST(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: "Erro ao salvar indicação" }, { status: 500 });
 
-  // Buscar consultor e notificar com await (fire-and-forget mata no Vercel serverless)
   const { data: consultor } = await supabaseAdmin
     .from("consultores")
     .select("nome, fone")
     .eq("id", indicador.consultor_id)
     .single();
 
-  await Promise.all([
-    consultor
-      ? notificarNovoLead({
-          nomeConsultor: consultor.nome,
-          telefoneConsultor: consultor.fone,
-          placa,
-          nomeLead: nome_lead ?? null,
-          telefoneLead: tel,
-          viaIndicador: indicador.nome,
-        })
-      : Promise.resolve(),
-    notificarNovaIndicacao({
-      nomeIndicador: indicador.nome,
-      telefoneIndicador: indicador.telefone,
-      placa,
-      nomeLead: nome_lead ?? null,
-    }),
-  ]);
-
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({
+    ok: true,
+    consultor: consultor ? { nome: consultor.nome, fone: consultor.fone } : null,
+  });
 }
