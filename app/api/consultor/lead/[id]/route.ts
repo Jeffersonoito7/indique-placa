@@ -28,7 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // Só pode alterar leads que pertencem a ele
   const { data: lead } = await supabaseAdmin
     .from("indicacoes")
-    .select("id, consultor_id, nome_lead")
+    .select("id, consultor_id, nome_lead, placa, indicador_id")
     .eq("id", id)
     .single();
 
@@ -44,6 +44,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (error) return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
 
   // Notifica consultor quando lead é fechado
+  let indicadorRetorno: { nome: string; telefone: string | null; chave_pix: string | null; comissao: number | null } | null = null;
+
   if (parsed.data.status === "fechado") {
     const { data: consultor } = await supabaseAdmin
       .from("consultores")
@@ -57,7 +59,63 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         nomeLead: lead.nome_lead ?? "",
       }).catch(() => {});
     }
+
+    // Busca indicador para retornar dados e enviar push
+    if (lead.indicador_id) {
+      const { data: indicador } = await supabaseAdmin
+        .from("indicadores")
+        .select("id, nome, telefone, chave_pix, comissao")
+        .eq("id", lead.indicador_id)
+        .single();
+
+      if (indicador) {
+        indicadorRetorno = {
+          nome: indicador.nome,
+          telefone: indicador.telefone ?? null,
+          chave_pix: indicador.chave_pix ?? null,
+          comissao: indicador.comissao ?? null,
+        };
+
+        // Envia push notification ao indicador (falhas nao bloqueiam a resposta)
+        void (async () => {
+          try {
+            const { data: subs } = await supabaseAdmin
+              .from("push_subscriptions")
+              .select("subscription")
+              .eq("indicador_id", lead.indicador_id);
+
+            if (!subs || subs.length === 0) return;
+
+            const webpush = await import("web-push");
+            webpush.setVapidDetails(
+              process.env.VAPID_EMAIL!,
+              process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+              process.env.VAPID_PRIVATE_KEY!
+            );
+
+            const placaTexto = lead.placa ?? "s/n";
+            const comissaoTexto = indicador.comissao
+              ? indicador.comissao.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+              : "a combinar";
+
+            const payload = JSON.stringify({
+              title: "Venda fechada!",
+              body: `Sua indicacao da placa ${placaTexto} fechou. Voce ganhou ${comissaoTexto}!`,
+              url: "/indicador/dashboard",
+            });
+
+            await Promise.allSettled(
+              subs.map((row) =>
+                webpush.sendNotification(row.subscription as Parameters<typeof webpush.sendNotification>[0], payload)
+              )
+            );
+          } catch (err) {
+            console.error("Erro ao enviar push notification ao indicador:", err);
+          }
+        })();
+      }
+    }
   }
 
-  return NextResponse.json({ ok: true });
+  return NextResponse.json({ ok: true, ...(indicadorRetorno ? { indicador: indicadorRetorno } : {}) });
 }

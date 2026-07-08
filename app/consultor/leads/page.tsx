@@ -295,7 +295,29 @@ export default function ConsultorLeadsPage() {
         body: JSON.stringify({ status }),
       });
       if (!res.ok) throw new Error("Falha ao atualizar");
+
+      const json = await res.json() as {
+        ok: boolean;
+        indicador?: { nome: string; telefone: string | null; chave_pix: string | null; comissao: number | null };
+      };
+
       setLeads((prev) => prev.map((l) => (l.id === id ? { ...l, status } : l)));
+
+      // Abre WhatsApp para o indicador quando venda e fechada
+      if (status === "fechado" && json.indicador?.telefone) {
+        const lead = leads.find((l) => l.id === id);
+        const { nome, telefone, chave_pix, comissao } = json.indicador;
+        const placa = lead?.placa ?? "";
+        const comissaoTexto = comissao
+          ? comissao.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+          : "a combinar";
+        const pixTexto = chave_pix ?? "nao cadastrada";
+        const tel = telefone.replace(/\D/g, "");
+        const texto = encodeURIComponent(
+          `Oi ${nome}, sua indicacao da placa ${placa} fechou! Voce ganhou ${comissaoTexto}. Sua chave PIX e ${pixTexto}.`
+        );
+        window.open(`https://wa.me/55${tel}?text=${texto}`, "_blank");
+      }
     } catch {
       // falha silenciosa no estado local; usuario pode tentar novamente
     } finally {

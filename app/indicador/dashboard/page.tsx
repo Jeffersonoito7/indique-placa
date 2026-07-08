@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ClipboardList, CheckCircle2, Clock, Target, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlacaMercosul } from "@/components/placa-mercosul";
+import PushSubscribeIndicador from "@/components/push-subscribe-indicador";
 
 type Lead = {
   id: string;
@@ -95,6 +96,9 @@ export default function IndicadorDashboard() {
         </div>
         <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginTop: 2 }}>
           Suas indicacoes
+        </div>
+        <div style={{ marginTop: 10 }}>
+          <PushSubscribeIndicador />
         </div>
       </div>
 
