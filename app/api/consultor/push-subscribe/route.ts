@@ -1,8 +1,17 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getConsultorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 export async function POST(req: NextRequest) {
+  const { allowed, retryAfter } = rateLimit(getRateLimitKey(req, "consultor-push-subscribe"), 10, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Muitas requisicoes. Tente novamente em breve." },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } }
+    );
+  }
+
   const consultor = await getConsultorLogado();
   if (!consultor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
 

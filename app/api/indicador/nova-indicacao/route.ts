@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getIndicadorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { z } from "zod";
 
 const schema = z.object({
@@ -11,6 +12,14 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const { allowed, retryAfter } = rateLimit(getRateLimitKey(req, "nova-indicacao"), 20, 60 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Muitas requisicoes. Tente novamente em breve." },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } }
+    );
+  }
+
   const indicador = await getIndicadorLogado();
   if (!indicador) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
