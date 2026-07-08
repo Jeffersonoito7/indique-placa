@@ -30,7 +30,7 @@ export async function getIndicadorLogado() {
 
   const { data } = await supabaseAdmin
     .from("indicadores")
-    .select("id, nome, telefone, consultor_id")
+    .select("id, nome, telefone, consultor_id, chave_pix")
     .eq("id", usuario_id)
     .single();
 

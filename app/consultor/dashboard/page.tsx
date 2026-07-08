@@ -17,7 +17,7 @@ export default async function ConsultorDashboard() {
   const consultor = await getConsultorLogado();
   if (!consultor) redirect("/consultor/login");
 
-  const [leadsRes, indicadoresRes, { data: config }] = await Promise.all([
+  const [leadsRes, indicadoresRes, { data: config }, comissoesPendentesRes] = await Promise.all([
     supabaseAdmin
       .from("indicacoes")
       .select("id, placa, nome_lead, status, criado_em, indicador_id, indicadores(id, nome)")
@@ -29,10 +29,18 @@ export default async function ConsultorDashboard() {
       .eq("consultor_id", consultor.id)
       .order("criado_em", { ascending: false }),
     supabaseAdmin.from("configuracoes").select("comissao_indicador").limit(1).single(),
+    supabaseAdmin
+      .from("indicacoes")
+      .select("id, placa, nome_lead, comissao_valor, indicadores(nome, chave_pix)")
+      .eq("consultor_id", consultor.id)
+      .eq("status", "fechado")
+      .eq("comissao_paga", false)
+      .not("indicador_id", "is", null),
   ]);
 
   const leads = leadsRes.data ?? [];
   const indicadores = indicadoresRes.data ?? [];
+  const comissoesPendentes = comissoesPendentesRes.data ?? [];
   const comissaoIndicador: number = (config as any)?.comissao_indicador ?? 20;
 
   const totalLeads = leads.length;
@@ -96,6 +104,27 @@ export default async function ConsultorDashboard() {
       </div>
 
       <div className="flex-1 p-8 bg-muted/30 space-y-6">
+
+        {/* Alerta comissoes pendentes */}
+        {comissoesPendentes.length > 0 && (
+          <div className="rounded-2xl p-4 bg-amber-500 text-white flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-white shrink-0" />
+            <div className="flex-1">
+              <div className="text-sm font-bold leading-tight">
+                Voce tem {comissoesPendentes.length} comissao(oes) pendente(s) de pagamento
+              </div>
+              <div className="text-xs mt-0.5 text-white/80">
+                Pague logo para nao desmotivar seus indicadores
+              </div>
+            </div>
+            <a
+              href="/consultor/leads?status=fechado"
+              className="shrink-0 text-xs font-bold bg-white/20 hover:bg-white/30 text-white rounded-lg px-3 py-2 transition-colors"
+            >
+              Ver agora
+            </a>
+          </div>
+        )}
 
         {/* Link de Indicadores */}
         <Card className="border border-emerald-500/30 bg-emerald-500/5 shadow-sm">

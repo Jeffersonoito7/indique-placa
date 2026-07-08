@@ -58,7 +58,7 @@ export async function GET() {
   });
 
   return NextResponse.json({
-    indicador: { id: indicador.id, nome: indicador.nome },
+    indicador: { id: indicador.id, nome: indicador.nome, chave_pix: (indicador as any).chave_pix ?? null },
     total,
     fechados,
     leads: leads ?? [],

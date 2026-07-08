@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { ClipboardList, CheckCircle2, Clock, Target, Plus } from "lucide-react";
+import { ClipboardList, CheckCircle2, Clock, Target, Plus, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlacaMercosul } from "@/components/placa-mercosul";
 import PushSubscribeIndicador from "@/components/push-subscribe-indicador";
@@ -27,7 +27,7 @@ type Meta = {
 };
 
 type DashboardData = {
-  indicador: { id: string; nome: string };
+  indicador: { id: string; nome: string; chave_pix: string | null };
   total: number;
   fechados: number;
   leads: Lead[];
@@ -105,6 +105,49 @@ export default function IndicadorDashboard() {
 
       {/* Onboarding para indicadores sem indicacoes */}
       <OnboardingIndicador totalIndicacoes={total} />
+
+      {/* Alerta PIX ausente */}
+      {!indicador.chave_pix && (
+        <div style={{ padding: "0 16px 12px" }}>
+          <div
+            className="rounded-2xl p-4"
+            style={{
+              background: "rgba(239,68,68,0.1)",
+              border: "1px solid rgba(239,68,68,0.3)",
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 12,
+            }}
+          >
+            <AlertCircle size={20} style={{ color: "#ef4444", flexShrink: 0, marginTop: 2 }} />
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: "#ef4444", marginBottom: 2 }}>
+                Chave PIX nao cadastrada
+              </div>
+              <div style={{ fontSize: 12, color: "var(--muted-foreground)", lineHeight: 1.5 }}>
+                Voce ainda nao cadastrou sua chave PIX. Sem ela, nao conseguimos te pagar quando fechar uma venda.
+              </div>
+            </div>
+            <a
+              href="/indicador/perfil"
+              style={{
+                flexShrink: 0,
+                fontSize: 12,
+                fontWeight: 700,
+                color: "#ef4444",
+                background: "rgba(239,68,68,0.12)",
+                border: "1px solid rgba(239,68,68,0.3)",
+                borderRadius: 8,
+                padding: "6px 12px",
+                textDecoration: "none",
+                whiteSpace: "nowrap",
+              }}
+            >
+              Cadastrar agora
+            </a>
+          </div>
+        </div>
+      )}
 
       {/* Cards de stats: 2 por linha */}
       <div
