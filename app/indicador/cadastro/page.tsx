@@ -303,7 +303,7 @@ function FormIndicador() {
             Cada placa na rua<br />é <em>dinheiro</em> no<br /><span className="green">seu bolso.</span>
           </h1>
           <p className="hero-sub">
-            Você viu um carro, moto ou caminhão? Registra a placa no painel. Quando o dono assinar proteção veicular, você recebe via PIX. Sem vender. Sem sair de casa. Sem limite.
+            Viu um carro, moto ou caminhão? Cadastre a placa e os dados do dono no painel. Avise que um consultor vai entrar em contato. Quando ele assinar proteção veicular, você recebe via PIX. Simples assim.
           </p>
           <button className="hero-cta" onClick={scrollToForm}>
             Quero começar agora

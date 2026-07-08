@@ -28,9 +28,9 @@ export function OnboardingIndicador({ totalIndicacoes }: OnboardingIndicadorProp
   };
 
   const passos = [
-    { numero: 1, icone: <Car size={16} />, texto: "Escolha o tipo de veiculo" },
-    { numero: 2, icone: <Hash size={16} />, texto: "Digite a placa" },
-    { numero: 3, icone: <Send size={16} />, texto: "Envie para seu consultor" },
+    { numero: 1, icone: <Car size={16} />, texto: "Viu um carro, moto ou caminhao? Anote a placa e os dados do dono" },
+    { numero: 2, icone: <Hash size={16} />, texto: "Cadastre a placa e o contato do prospecto no painel" },
+    { numero: 3, icone: <Send size={16} />, texto: "Avise ao prospecto que um consultor vai entrar em contato" },
   ];
 
   return (
