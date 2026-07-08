@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, Building2, Users, UserCheck, ClipboardList, Trophy, Link2, Settings, DollarSign } from "lucide-react";
+import { LayoutDashboard, Building2, Users, UserCheck, ClipboardList, Trophy, Link2, Settings, DollarSign, BarChart2 } from "lucide-react";
 
 const navItems = [
   { group: "Visão Geral", items: [
@@ -16,6 +16,7 @@ const navItems = [
     { href: "/master/indicadores", label: "Indicadores", icon: UserCheck },
     { href: "/master/leads", label: "Leads", icon: ClipboardList },
     { href: "/master/ranking", label: "Ranking", icon: Trophy },
+    { href: "/master/relatorio", label: "Relatorio", icon: BarChart2 },
   ]},
   { group: "Administração", items: [
     { href: "/master/financeiro", label: "Financeiro", icon: DollarSign },
