@@ -27,6 +27,9 @@ interface Lead {
   comprovante_url: string | null;
   valor_pago: number | null;
   indicadores: Indicador | null;
+  comissao_valor: number | null;
+  comissao_paga: boolean | null;
+  comissao_paga_em: string | null;
 }
 
 // ---------------------------------------------------------------------------
@@ -77,6 +80,48 @@ const STATUS_COR: Record<StatusLead, string> = {
   fechado: "bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-600 dark:text-emerald-400",
   perdido: "bg-red-500/10 hover:bg-red-500/20 text-red-600 dark:text-red-400",
 };
+
+// ---------------------------------------------------------------------------
+// Botao pagar comissao (visao lista)
+// ---------------------------------------------------------------------------
+
+function BotaoPagarComissao({ lead, onPago }: { lead: Lead; onPago: (leadId: string) => void }) {
+  const [enviando, setEnviando] = useState(false);
+
+  async function pagar() {
+    const valor = lead.comissao_valor
+      ? lead.comissao_valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+      : "a combinar";
+    const confirmado = window.confirm(
+      `Confirmar pagamento da comissao de ${valor} para ${lead.indicadores?.nome ?? "o indicador"}?`
+    );
+    if (!confirmado) return;
+    setEnviando(true);
+    try {
+      const res = await fetch(`/api/consultor/lead/${lead.id}/pagar-comissao`, { method: "POST" });
+      if (!res.ok) {
+        const json = await res.json() as { error?: string };
+        alert(json.error ?? "Erro ao registrar pagamento");
+        return;
+      }
+      onPago(lead.id);
+    } catch {
+      alert("Erro de conexao");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
+  return (
+    <button
+      onClick={() => void pagar()}
+      disabled={enviando}
+      className="text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors disabled:opacity-50 whitespace-nowrap"
+    >
+      {enviando ? "Registrando..." : "Pagar comissao"}
+    </button>
+  );
+}
 
 // ---------------------------------------------------------------------------
 // Skeleton de linha (lista paginada)
@@ -567,9 +612,29 @@ export default function ConsultorLeadsPage() {
                             {new Date(lead.criado_em).toLocaleDateString("pt-BR")}
                           </td>
                           <td className="px-4 py-2">
-                            {lead.telefone_lead && (
-                              <AbrirWhatsApp telefone={lead.telefone_lead} nome={lead.nome_lead ?? lead.placa ?? ""} />
-                            )}
+                            <div className="flex items-center gap-2">
+                              {lead.telefone_lead && (
+                                <AbrirWhatsApp telefone={lead.telefone_lead} nome={lead.nome_lead ?? lead.placa ?? ""} />
+                              )}
+                              {lead.status === "fechado" && lead.indicadores?.nome && (
+                                lead.comissao_paga ? (
+                                  <div className="flex flex-col">
+                                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Comissao paga</span>
+                                    {lead.comissao_paga_em && (
+                                      <span className="text-[10px] text-muted-foreground">
+                                        {new Date(lead.comissao_paga_em).toLocaleString("pt-BR")}
+                                      </span>
+                                    )}
+                                  </div>
+                                ) : (
+                                  <BotaoPagarComissao lead={lead} onPago={(leadId) => {
+                                    const patch = (l: Lead) =>
+                                      l.id === leadId ? { ...l, comissao_paga: true, comissao_paga_em: new Date().toISOString() } : l;
+                                    setLeadsLista((prev) => prev.map(patch));
+                                  }} />
+                                )
+                              )}
+                            </div>
                           </td>
                         </tr>
                       );

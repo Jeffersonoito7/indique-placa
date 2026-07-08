@@ -28,7 +28,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   // Só pode alterar leads que pertencem a ele
   const { data: lead } = await supabaseAdmin
     .from("indicacoes")
-    .select("id, consultor_id, nome_lead, placa, indicador_id")
+    .select("id, consultor_id, nome_lead, placa, indicador_id, tipo_veiculo")
     .eq("id", id)
     .single();
 
@@ -42,6 +42,18 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
+
+  // Salva comissao_valor ao fechar venda
+  if (parsed.data.status === "fechado") {
+    const tipoVeiculo = (lead as { tipo_veiculo?: string | null }).tipo_veiculo ?? "carro";
+    const comissoesPadrao: Record<string, number> = { moto: 50, carro: 100, caminhao: 500 };
+    const comissaoValor = comissoesPadrao[tipoVeiculo] ?? comissoesPadrao["carro"];
+
+    await supabaseAdmin
+      .from("indicacoes")
+      .update({ comissao_valor: comissaoValor })
+      .eq("id", id);
+  }
 
   // Notifica consultor quando lead é fechado
   let indicadorRetorno: { nome: string; telefone: string | null; chave_pix: string | null; comissao: number | null } | null = null;
