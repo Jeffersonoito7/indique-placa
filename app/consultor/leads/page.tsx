@@ -68,10 +68,10 @@ const COLUNAS: { key: StatusLead; label: string; cor: string; borda: string; bad
 ];
 
 const STATUS_ABREV: Record<StatusLead, string> = {
-  novo: "N",
-  contato: "C",
-  fechado: "F",
-  perdido: "P",
+  novo: "Novo",
+  contato: "Contatado",
+  fechado: "Fechar venda",
+  perdido: "Perdido",
 };
 
 const STATUS_COR: Record<StatusLead, string> = {
@@ -280,22 +280,33 @@ function LeadCard({
       </div>
 
       {/* Botoes de status */}
-      <div className="flex gap-1">
-        {COLUNAS.map((col) => (
+      <div className="flex flex-col gap-1.5 mt-1">
+        {lead.status !== "fechado" && lead.status !== "perdido" && (
           <button
-            key={col.key}
-            disabled={atualizando || lead.status === col.key}
-            onClick={() => onMudarStatus(lead.id, col.key)}
-            title={col.label}
-            className={`flex-1 text-[10px] font-bold py-0.5 rounded transition-colors disabled:cursor-default
-              ${lead.status === col.key
-                ? STATUS_COR[col.key] + " ring-1 ring-current"
-                : "bg-muted/40 hover:bg-muted text-muted-foreground"
-              }`}
+            disabled={atualizando}
+            onClick={() => onMudarStatus(lead.id, "fechado")}
+            className="w-full py-2 rounded-xl bg-emerald-500 hover:bg-emerald-600 active:scale-95 text-white text-xs font-bold transition-all"
           >
-            {STATUS_ABREV[col.key]}
+            Fechar venda
           </button>
-        ))}
+        )}
+        <div className="flex gap-1">
+          {COLUNAS.filter(c => c.key !== "fechado").map((col) => (
+            <button
+              key={col.key}
+              disabled={atualizando || lead.status === col.key}
+              onClick={() => onMudarStatus(lead.id, col.key)}
+              title={col.label}
+              className={`flex-1 text-[10px] font-bold py-1 rounded-lg transition-colors disabled:cursor-default
+                ${lead.status === col.key
+                  ? STATUS_COR[col.key] + " ring-1 ring-current"
+                  : "bg-muted/40 hover:bg-muted text-muted-foreground"
+                }`}
+            >
+              {col.key === "novo" ? "Novo" : col.key === "contato" ? "Contatado" : "Perdido"}
+            </button>
+          ))}
+        </div>
       </div>
 
       {/* Pagamento ao indicador (so quando fechado e tem indicador) */}
