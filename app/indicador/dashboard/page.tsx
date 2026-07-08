@@ -7,6 +7,7 @@ import { ClipboardList, CheckCircle2, Clock, Target, Plus } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PlacaMercosul } from "@/components/placa-mercosul";
 import PushSubscribeIndicador from "@/components/push-subscribe-indicador";
+import { OnboardingIndicador } from "@/components/onboarding-indicador";
 
 type Lead = {
   id: string;
@@ -101,6 +102,9 @@ export default function IndicadorDashboard() {
           <PushSubscribeIndicador />
         </div>
       </div>
+
+      {/* Onboarding para indicadores sem indicacoes */}
+      <OnboardingIndicador totalIndicacoes={total} />
 
       {/* Cards de stats: 2 por linha */}
       <div
