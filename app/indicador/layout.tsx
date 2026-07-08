@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, PlusCircle, ClipboardList, Target, UserCircle } from "lucide-react";
+import { LayoutDashboard, PlusCircle, ClipboardList, Target, UserCircle, Wallet } from "lucide-react";
 
 const navItems = [
   { group: "Painel", items: [
@@ -12,6 +12,7 @@ const navItems = [
     { href: "/indicador/indicar", label: "Nova Indicação", icon: PlusCircle },
     { href: "/indicador/historico", label: "Histórico", icon: ClipboardList },
     { href: "/indicador/metas", label: "Minhas Metas", icon: Target },
+    { href: "/indicador/comissoes", label: "Comissoes", icon: Wallet },
   ]},
   { group: "Conta", items: [
     { href: "/indicador/perfil", label: "Meu Perfil / PIX", icon: UserCircle },
