@@ -336,7 +336,7 @@ export default function AppShell({
           </button>
         </nav>
 
-        {/* Drawer lateral - slide da direita */}
+        {/* Drawer bottom sheet - slide de baixo para cima */}
         {drawerMounted && (
           <>
             {/* Overlay */}
@@ -354,28 +354,49 @@ export default function AppShell({
               }}
             />
 
-            {/* Painel */}
+            {/* Painel bottom sheet */}
             <div
               style={{
                 position: "fixed",
-                top: 0,
+                left: 0,
                 right: 0,
                 bottom: 0,
                 zIndex: 51,
-                width: 280,
+                maxHeight: "85dvh",
                 backgroundColor: "#0a1628",
-                borderLeft: "1px solid rgba(255,255,255,0.08)",
+                borderTop: "1px solid rgba(255,255,255,0.08)",
+                borderRadius: "20px 20px 0 0",
                 display: "flex",
                 flexDirection: "column",
-                transform: drawerVisible ? "translateX(0)" : "translateX(100%)",
-                transition: "transform 0.25s ease-out",
+                transform: drawerVisible ? "translateY(0)" : "translateY(100%)",
+                transition: "transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)",
                 willChange: "transform",
               }}
             >
+              {/* Handle bar */}
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "center",
+                  paddingTop: 12,
+                  paddingBottom: 4,
+                  flexShrink: 0,
+                }}
+              >
+                <div
+                  style={{
+                    width: 40,
+                    height: 4,
+                    borderRadius: 99,
+                    background: "rgba(255,255,255,0.2)",
+                  }}
+                />
+              </div>
+
               {/* Header drawer */}
               <div
                 style={{
-                  height: 56,
+                  height: 48,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "space-between",
@@ -445,7 +466,7 @@ export default function AppShell({
                             display: "flex",
                             alignItems: "center",
                             gap: 12,
-                            padding: "12px 20px",
+                            padding: "14px 20px",
                             textDecoration: "none",
                             background: active ? hexToRgba(accentColor, 0.1) : "transparent",
                             borderLeft: active

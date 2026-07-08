@@ -171,6 +171,12 @@ html {
   overscroll-behavior-x: none;
 }
 
+/* Previne scroll horizontal (comportamento de app, nao de site) */
+html, body {
+  overflow-x: hidden;
+  max-width: 100vw;
+}
+
 /* ── FEEDBACK DE TOQUE ───────────────────────────────────────────────── */
 
 /* Botoes e links: escala ao pressionar */

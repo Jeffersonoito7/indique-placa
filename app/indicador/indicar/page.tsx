@@ -147,14 +147,13 @@ export default function IndicarPage() {
   }
 
   return (
-    <div className="flex-1 flex flex-col">
-      <div className="px-6 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Indicar Placa</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Digite a placa do veículo que você quer indicar para proteção</p>
-      </div>
-
-      <div className="flex-1 overflow-y-auto p-6 bg-muted/30">
-        <div className="max-w-md mx-auto space-y-6">
+    <div className="flex-1 flex flex-col" style={{ position: "relative" }}>
+      {/* Conteudo rolavel */}
+      <div
+        className="flex-1 overflow-y-auto bg-muted/30"
+        style={{ paddingBottom: "calc(80px + env(safe-area-inset-bottom))" }}
+      >
+        <div className="max-w-md mx-auto px-6 pt-5 pb-4 space-y-6">
 
           {/* Tipo de veículo */}
           <div>
@@ -167,7 +166,7 @@ export default function IndicarPage() {
                   key={tipo}
                   type="button"
                   onClick={() => { vibrar(); setTipoVeiculo(tipo); }}
-                  className={`flex flex-col items-center gap-2 py-4 px-3 rounded-xl border-2 font-semibold text-sm transition-all ${
+                  className={`flex flex-col items-center gap-2 py-4 px-3 rounded-2xl border-2 font-semibold text-sm transition-all active:scale-95 ${
                     tipoVeiculo === tipo
                       ? "border-amber-500 bg-amber-500/10 text-amber-600 dark:text-amber-400"
                       : "border-border bg-background text-muted-foreground hover:border-amber-500/40"
@@ -206,7 +205,7 @@ export default function IndicarPage() {
 
           {/* Alerta duplicado */}
           {duplicado && (
-            <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-xl p-4">
+            <div className="flex items-start gap-3 bg-amber-500/10 border border-amber-500/30 rounded-2xl p-4">
               <AlertCircle className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" />
               <div>
                 <div className="text-sm font-bold text-amber-600 dark:text-amber-400">Placa já indicada</div>
@@ -215,10 +214,10 @@ export default function IndicarPage() {
             </div>
           )}
 
-          {/* Formulario */}
-          <form onSubmit={enviar} className="space-y-4">
+          {/* Formulario - sem o botao submit aqui */}
+          <form id="indicar-form" onSubmit={enviar} className="space-y-4">
             {erro && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2 text-xs text-red-500">{erro}</div>
+              <div className="bg-red-500/10 border border-red-500/30 rounded-xl px-3 py-2 text-xs text-red-500">{erro}</div>
             )}
 
             {/* Dados opcionais */}
@@ -234,7 +233,7 @@ export default function IndicarPage() {
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
                   placeholder="Ex: João da Silva"
-                  className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                  className="w-full px-4 py-3.5 text-sm rounded-xl border-2 border-border bg-muted/50 focus:outline-none focus:border-amber-500 transition-all"
                 />
               </div>
               <div>
@@ -244,20 +243,37 @@ export default function IndicarPage() {
                   value={telefone}
                   onChange={(e) => setTelefone(fmtTelBR(e.target.value))}
                   placeholder="(87) 99999-9999"
-                  className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-amber-500/30 focus:border-amber-500 transition-all"
+                  className="w-full px-4 py-3.5 text-sm rounded-xl border-2 border-border bg-muted/50 focus:outline-none focus:border-amber-500 transition-all"
                 />
               </div>
             </div>
-
-            <button
-              type="submit"
-              disabled={carregando || !valida}
-              className="w-full py-3.5 rounded-xl bg-amber-500 hover:bg-amber-600 text-white font-bold text-sm transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-            >
-              {carregando ? "Enviando..." : "Indicar esta placa"}
-            </button>
           </form>
         </div>
+      </div>
+
+      {/* Botao fixo no rodape - acima do bottom nav */}
+      <div
+        style={{
+          position: "fixed",
+          bottom: "calc(64px + env(safe-area-inset-bottom))",
+          left: 0,
+          right: 0,
+          zIndex: 30,
+          padding: "12px 16px",
+          background: "linear-gradient(to top, var(--background) 80%, transparent)",
+        }}
+      >
+        <button
+          type="submit"
+          form="indicar-form"
+          disabled={carregando || !valida}
+          className="w-full py-4 rounded-2xl bg-amber-500 text-white font-bold text-base active:scale-95 transition-transform duration-100 disabled:opacity-50 disabled:cursor-not-allowed"
+          style={{
+            boxShadow: valida ? "0 4px 16px rgba(245,158,11,0.4)" : "none",
+          }}
+        >
+          {carregando ? "Enviando..." : "Indicar esta placa"}
+        </button>
       </div>
     </div>
   );
