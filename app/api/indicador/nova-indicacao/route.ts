@@ -55,6 +55,39 @@ export async function POST(req: NextRequest) {
     .eq("id", indicador.consultor_id)
     .single();
 
+  // Disparo de push notification (falhas nao bloqueiam a resposta principal)
+  void (async () => {
+    try {
+      const { data: subs } = await supabaseAdmin
+        .from("push_subscriptions")
+        .select("subscription")
+        .eq("consultor_id", indicador.consultor_id);
+
+      if (!subs || subs.length === 0) return;
+
+      const webpush = await import("web-push");
+      webpush.setVapidDetails(
+        process.env.VAPID_EMAIL!,
+        process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
+        process.env.VAPID_PRIVATE_KEY!
+      );
+
+      const payload = JSON.stringify({
+        title: "Nova indicacao recebida!",
+        body: `Placa ${placa} indicada por ${indicador.nome}`,
+        url: "/consultor/leads",
+      });
+
+      await Promise.allSettled(
+        subs.map((row) =>
+          webpush.sendNotification(row.subscription as Parameters<typeof webpush.sendNotification>[0], payload)
+        )
+      );
+    } catch (err) {
+      console.error("Erro ao enviar push notification:", err);
+    }
+  })();
+
   return NextResponse.json({
     ok: true,
     consultor: consultor ? { nome: consultor.nome, fone: consultor.fone } : null,

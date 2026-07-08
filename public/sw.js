@@ -40,3 +40,23 @@ self.addEventListener("fetch", (e) => {
     );
   }
 });
+
+self.addEventListener('push', (event) => {
+  const data = event.data?.json() ?? {};
+  event.waitUntil(
+    self.registration.showNotification(data.title ?? 'Nova indicacao!', {
+      body: data.body ?? 'Voce recebeu uma nova indicacao.',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
+      vibrate: [200, 100, 200],
+      tag: 'nova-indicacao',
+      renotify: true,
+      data: { url: data.url ?? '/consultor/leads' },
+    })
+  );
+});
+
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  event.waitUntil(clients.openWindow(event.notification.data?.url ?? '/consultor/leads'));
+});

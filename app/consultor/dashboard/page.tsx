@@ -7,6 +7,7 @@ import { ClipboardList, UserCheck, CheckCircle2, TrendingUp, Trophy, Star, Alert
 import { cn } from "@/lib/utils";
 import { PlacaMercosul } from "@/components/placa-mercosul";
 import CopiarLink from "@/app/consultor/perfil/copiar-link";
+import PushSubscribe from "@/components/push-subscribe";
 
 function moeda(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -88,6 +89,9 @@ export default async function ConsultorDashboard() {
           <p className="text-[11px] text-muted-foreground">Painel de desempenho</p>
           <span className="text-[11px] text-muted-foreground/40">|</span>
           <span className="text-[11px] text-muted-foreground font-mono">{consultor.fone}</span>
+        </div>
+        <div className="mt-2">
+          <PushSubscribe />
         </div>
       </div>
 
