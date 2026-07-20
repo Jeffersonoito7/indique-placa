@@ -11,7 +11,7 @@ function formatarPlaca(valor: string): string {
 }
 
 function placaValida(placa: string): boolean {
-  const limpo = placa.replace("-", "");
+  const limpo = placa.replace(/-/g, "");
   if (limpo.length !== 7) return false;
   const mercosul = /^[A-Z]{3}[0-9][A-Z][0-9]{2}$/.test(limpo);
   const antiga = /^[A-Z]{3}[0-9]{4}$/.test(limpo);

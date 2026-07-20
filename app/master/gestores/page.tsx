@@ -173,7 +173,7 @@ export default function MasterGestoresPage() {
       fetch("/api/master/associacoes").then((r) => r.json()),
     ]);
     setGestores(Array.isArray(rG) ? rG : []);
-    setAssociacoes(Array.isArray(rA) ? rA : []);
+    setAssociacoes(Array.isArray(rA?.lista) ? rA.lista : Array.isArray(rA) ? rA : []);
     setCarregando(false);
   }, []);
 

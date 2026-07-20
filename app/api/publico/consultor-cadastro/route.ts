@@ -63,7 +63,7 @@ export async function POST(req: NextRequest) {
     email: email.toLowerCase(),
     cidade,
     associacao,
-    senha: senha_hash,
+    senha_hash,
     status: "ativo",
   });
 

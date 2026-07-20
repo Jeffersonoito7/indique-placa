@@ -1,5 +1,5 @@
 import "server-only";
-import { createHmac } from "crypto";
+import { createHmac, timingSafeEqual } from "crypto";
 
 const DURACAO_HORAS = 8;
 
@@ -39,7 +39,8 @@ export async function validarSessao(token: string, tipo: "consultor" | "indicado
     if (dot === -1) return null;
     const b64 = token.slice(0, dot);
     const sig = token.slice(dot + 1);
-    if (assinar(b64) !== sig) return null;
+    const sigEsperada = assinar(b64);
+    if (sig.length !== sigEsperada.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(sigEsperada))) return null;
 
     const payload = JSON.parse(Buffer.from(b64, "base64url").toString());
     if (payload.tipo !== tipo) return null;

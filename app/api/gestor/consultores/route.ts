@@ -67,7 +67,7 @@ export async function POST(req: NextRequest) {
       nome,
       email: email.toLowerCase(),
       fone: tel,
-      senha: senhaHash,
+      senha_hash: senhaHash,
       gestor_id: gestor.id,
       status: "ativo",
       plano: "free",

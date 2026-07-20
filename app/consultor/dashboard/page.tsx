@@ -18,7 +18,7 @@ export default async function ConsultorDashboard() {
   const consultor = await getConsultorLogado();
   if (!consultor) redirect("/consultor/login");
 
-  const [leadsRes, indicadoresRes, { data: config }, comissoesPendentesRes, statusBloqueio] = await Promise.all([
+  const [leadsRes, indicadoresRes, { data: config }, comissoesPendentesRes, statusBloqueio, countRes] = await Promise.all([
     supabaseAdmin
       .from("indicacoes")
       .select("id, placa, nome_lead, status, criado_em, indicador_id, indicadores(id, nome)")
@@ -39,6 +39,11 @@ export default async function ConsultorDashboard() {
       .eq("comissao_paga", false)
       .not("indicador_id", "is", null),
     verificarBloqueioConsultor(consultor.id),
+    supabaseAdmin
+      .from("indicacoes")
+      .select("id, status", { count: "exact", head: false })
+      .eq("consultor_id", consultor.id)
+      .limit(1),
   ]);
 
   const leads = leadsRes.data ?? [];
@@ -46,7 +51,8 @@ export default async function ConsultorDashboard() {
   const comissoesPendentes = comissoesPendentesRes.data ?? [];
   const comissaoIndicador: number = (config as any)?.comissao_indicador ?? 20;
 
-  const totalLeads = leads.length;
+  const totalLeadsReal = countRes.count ?? leads.length;
+  const totalLeads = totalLeadsReal;
   const totalFechados = leads.filter((l) => l.status === "fechado").length;
   const taxa = totalLeads > 0 ? Math.round((totalFechados / totalLeads) * 100) : 0;
   const totalIndicadores = indicadores.length;
