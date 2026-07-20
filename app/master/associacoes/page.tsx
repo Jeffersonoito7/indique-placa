@@ -47,9 +47,9 @@ const statusStyle: Record<string, string> = {
 
 const planoStyle: Record<string, string> = {
   trial: "bg-amber-500/10 text-amber-600 dark:text-amber-400",
-  basico: "bg-slate-500/10 text-slate-500",
+  bronze: "bg-slate-500/10 text-slate-500",
   pro: "bg-violet-500/10 text-violet-500",
-  enterprise: "bg-blue-500/10 text-blue-500",
+  ouro: "bg-blue-500/10 text-blue-500",
 };
 
 function gerarSlug(nome: string) {
@@ -166,9 +166,9 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
               onChange={(e) => set("plano", e.target.value)}
             >
               <option value="trial">Trial</option>
-              <option value="basico">Basico</option>
-              <option value="pro">Pro</option>
-              <option value="enterprise">Enterprise</option>
+              <option value="bronze">Basico</option>
+              <option value="prata">Pro</option>
+              <option value="ouro">Enterprise</option>
             </select>
           </div>
           {erro && <p className="col-span-2 text-xs text-red-500">{erro}</p>}
@@ -308,9 +308,9 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
                 <label className={labelCls}>Plano</label>
                 <select className={inputCls} value={form.plano} onChange={(e) => set("plano", e.target.value)}>
                   <option value="trial">Trial</option>
-                  <option value="basico">Basico</option>
-                  <option value="pro">Pro</option>
-                  <option value="enterprise">Enterprise</option>
+                  <option value="bronze">Basico</option>
+                  <option value="prata">Pro</option>
+                  <option value="ouro">Enterprise</option>
                 </select>
               </div>
             </div>
@@ -539,9 +539,9 @@ export default function AssociacoesPage() {
                 >
                   <option value="">Todos os planos</option>
                   <option value="trial">Trial</option>
-                  <option value="basico">Basico</option>
-                  <option value="pro">Pro</option>
-                  <option value="enterprise">Enterprise</option>
+                  <option value="bronze">Basico</option>
+                  <option value="prata">Pro</option>
+                  <option value="ouro">Enterprise</option>
                 </select>
               </div>
             </div>

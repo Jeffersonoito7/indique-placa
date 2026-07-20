@@ -48,7 +48,7 @@ const schemaCriar = z.object({
   fone: z.string().optional(),
   cidade: z.string().optional(),
   estado: z.string().optional(),
-  plano: z.enum(["trial", "basico", "pro", "enterprise"]).default("trial"),
+  plano: z.enum(["trial", "bronze", "prata", "ouro"]).default("trial"),
 });
 
 export async function POST(req: NextRequest) {

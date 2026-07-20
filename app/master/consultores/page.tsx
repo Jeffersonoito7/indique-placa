@@ -32,9 +32,9 @@ const statusStyle: Record<string, string> = {
 
 const planoStyle: Record<string, string> = {
   trial: "bg-amber-500/10 text-amber-500",
-  basico: "bg-slate-500/10 text-slate-500",
+  bronze: "bg-slate-500/10 text-slate-500",
   pro: "bg-violet-500/10 text-violet-500",
-  enterprise: "bg-blue-500/10 text-blue-500",
+  ouro: "bg-blue-500/10 text-blue-500",
 };
 
 function ModalRedistribuir({

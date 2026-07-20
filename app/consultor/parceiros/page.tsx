@@ -1,10 +1,9 @@
 "use client";
 
-import { useState } from "react";
-import { Search, Star, MessageCircle, UserPlus, Zap } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search, Star, MessageCircle, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 const SEGMENTOS = [
@@ -47,7 +46,6 @@ function Estrelas({ rating }: { rating: number | null }) {
 
 export default function ParceirosPage() {
   const router = useRouter();
-  const [plano, setPlano] = useState<string | null>(null);
   const [cidade, setCidade] = useState("");
   const [segmento, setSegmento] = useState(SEGMENTOS[0]);
   const [buscando, setBuscando] = useState(false);
@@ -58,13 +56,10 @@ export default function ParceirosPage() {
   const [isMock, setIsMock] = useState(false);
 
   useEffect(() => {
+    // verifica autenticacao
     fetch("/api/consultor/upgrade-pro")
-      .then((r) => {
-        if (r.status === 401) { router.replace("/consultor/login"); return null; }
-        return r.json();
-      })
-      .then((d) => { if (d) setPlano(d.plano ?? "free"); })
-      .catch(() => setPlano("free"));
+      .then((r) => { if (r.status === 401) router.replace("/consultor/login"); })
+      .catch(() => {});
   }, [router]);
 
   async function buscar() {
@@ -112,55 +107,6 @@ export default function ParceirosPage() {
   const btnBase =
     "px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed";
 
-  if (plano === null) {
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <p className="text-sm text-[var(--muted-foreground)]">Carregando...</p>
-      </div>
-    );
-  }
-
-  // Bloqueio para plano free
-  if (plano !== "pro") {
-    return (
-      <div className="flex-1 flex flex-col">
-        <div className="px-8 py-5 border-b border-[var(--border)]">
-          <h1 className="text-base font-bold text-[var(--foreground)] flex items-center gap-2">
-            <Search className="h-5 w-5 text-violet-500" />
-            Buscar Parceiros
-          </h1>
-          <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
-            Encontre empresas e pessoas para recrutar como indicadores
-          </p>
-        </div>
-        <div className="flex-1 flex items-center justify-center p-8">
-          <Card className="shadow-sm border-violet-500/30 max-w-md w-full">
-            <CardContent className="pt-6 text-center space-y-4">
-              <div className="flex justify-center">
-                <span className="inline-flex items-center justify-center w-14 h-14 rounded-full bg-violet-500/10">
-                  <Zap className="h-7 w-7 text-violet-500" />
-                </span>
-              </div>
-              <div>
-                <p className="text-base font-semibold text-[var(--foreground)]">Recurso Pro</p>
-                <p className="text-sm text-[var(--muted-foreground)] mt-1">
-                  O Buscador de Parceiros e exclusivo para consultores do plano Pro. Faca o upgrade
-                  para encontrar empresas e pessoas na sua cidade para recrutar como indicadores.
-                </p>
-              </div>
-              <Link
-                href="/consultor/upgrade"
-                className={`${btnBase} bg-violet-600 hover:bg-violet-700 text-white inline-flex items-center gap-2`}
-              >
-                <Zap className="h-4 w-4" />
-                Fazer upgrade para Pro
-              </Link>
-            </CardContent>
-          </Card>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="flex-1 flex flex-col">

@@ -31,7 +31,7 @@ const schemaAtualizar = z.object({
   estado: z.string().optional(),
   logo_url: z.string().optional(),
   status: z.enum(["ativo", "inativo", "trial", "suspenso"]).optional(),
-  plano: z.enum(["trial", "basico", "pro", "enterprise"]).optional(),
+  plano: z.enum(["trial", "bronze", "prata", "ouro"]).optional(),
   plano_ativo_ate: z.string().optional(),
   cobranca_ativa: z.boolean().optional(),
   valor_mensalidade_associacao: z.number().min(0).optional(),

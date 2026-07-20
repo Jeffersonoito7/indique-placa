@@ -39,17 +39,6 @@ export async function GET(req: NextRequest) {
   const consultorId = await validarSessao(token, "consultor");
   if (!consultorId) return NextResponse.json({ error: "Sessao expirada" }, { status: 401 });
 
-  // Verifica se consultor e pro
-  const { data: consultor } = await supabaseAdmin
-    .from("consultores")
-    .select("plano")
-    .eq("id", consultorId)
-    .single();
-
-  if (!consultor || consultor.plano !== "pro") {
-    return NextResponse.json({ error: "Recurso exclusivo do plano Pro" }, { status: 403 });
-  }
-
   const { searchParams } = req.nextUrl;
   const cidade = (searchParams.get("cidade") ?? "").trim();
   const tipo = (searchParams.get("tipo") ?? "").trim();
