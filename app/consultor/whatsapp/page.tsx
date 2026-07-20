@@ -212,59 +212,66 @@ export default function WhatsAppPage() {
             <Card className="shadow-sm">
               <CardHeader className="pb-3 border-b border-[var(--border)]">
                 <CardTitle className="text-sm font-semibold flex items-center justify-between">
-                  <span>Evolution API (Automatico)</span>
-                  <span
-                    className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${
-                      conectado
-                        ? "bg-emerald-500/10 text-emerald-500"
-                        : "bg-[var(--muted)] text-[var(--muted-foreground)]"
-                    }`}
-                  >
-                    {conectado ? (
-                      <Wifi className="h-3.5 w-3.5" />
-                    ) : (
-                      <WifiOff className="h-3.5 w-3.5" />
-                    )}
-                    {conectado ? "Conectado" : "Desconectado"}
+                  <span>Modo Automatico (Evolution API)</span>
+                  <span className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${conectado ? "bg-emerald-500/10 text-emerald-500" : "bg-[var(--muted)] text-[var(--muted-foreground)]"}`}>
+                    {conectado ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
+                    {conectado ? "WhatsApp Conectado" : "Desconectado"}
                   </span>
                 </CardTitle>
               </CardHeader>
-              <CardContent className="pt-4 space-y-4">
-                <p className="text-xs text-[var(--muted-foreground)]">
-                  Conecte seu WhatsApp via QR Code para enviar mensagens automaticamente pela
-                  Evolution API.
-                </p>
-
-                {!conectado && (
-                  <button onClick={conectar} disabled={loadingQr} className={btnEmerald}>
-                    {loadingQr ? "Gerando QR Code..." : "Conectar WhatsApp"}
-                  </button>
-                )}
-
-                {conectado && (
-                  <button
-                    onClick={desconectar}
-                    disabled={loadingDesconectar}
-                    className={`${btnBase} bg-red-500/10 text-red-500 hover:bg-red-500/20`}
-                  >
-                    {loadingDesconectar ? "Desconectando..." : "Desconectar"}
-                  </button>
+              <CardContent className="pt-5 space-y-5">
+                {!conectado && !qrcode && (
+                  <>
+                    <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 p-4 space-y-3">
+                      <p className="text-xs font-semibold text-[var(--foreground)] uppercase tracking-wide">Como conectar — 3 passos</p>
+                      {[
+                        { n: "1", t: "Clique em \"Gerar QR Code\" abaixo", d: "Um QR Code aparecera nesta tela em segundos." },
+                        { n: "2", t: "Abra o WhatsApp no seu celular", d: "Toque nos 3 pontos (Android) ou em Ajustes (iPhone) e escolha \"Aparelhos conectados\"." },
+                        { n: "3", t: "Escaneie o QR Code com a camera do celular", d: "Aponte a camera para o QR Code que apareceu aqui. A conexao e feita automaticamente." },
+                      ].map((s) => (
+                        <div key={s.n} className="flex gap-3 items-start">
+                          <div className="w-6 h-6 rounded-full bg-emerald-500/15 text-emerald-500 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{s.n}</div>
+                          <div>
+                            <p className="text-sm font-medium text-[var(--foreground)]">{s.t}</p>
+                            <p className="text-xs text-[var(--muted-foreground)] mt-0.5">{s.d}</p>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <button onClick={conectar} disabled={loadingQr} className={btnEmerald}>
+                      {loadingQr ? "Gerando QR Code..." : "Gerar QR Code"}
+                    </button>
+                  </>
                 )}
 
                 {qrcode && !conectado && (
-                  <div className="flex flex-col items-start gap-2">
-                    <p className="text-xs text-[var(--muted-foreground)]">
-                      Abra o WhatsApp no celular, va em Dispositivos Conectados e escaneie o QR
-                      abaixo:
-                    </p>
-                    <img
-                      src={`data:image/png;base64,${qrcode}`}
-                      alt="QR Code WhatsApp"
-                      className="w-48 h-48 border border-[var(--border)] rounded-xl"
-                    />
-                    <p className="text-[11px] text-[var(--muted-foreground)]">
-                      Aguardando leitura...
-                    </p>
+                  <div className="space-y-4">
+                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
+                      <p className="text-sm font-semibold text-[var(--foreground)] mb-1">Escaneie agora com o celular</p>
+                      <p className="text-xs text-[var(--muted-foreground)]">No WhatsApp, va em <strong>Aparelhos conectados</strong> e aponte a camera para o QR abaixo:</p>
+                    </div>
+                    <div className="flex flex-col items-center gap-3">
+                      <img src={`data:image/png;base64,${qrcode}`} alt="QR Code WhatsApp" className="w-52 h-52 border-2 border-emerald-500/30 rounded-2xl" />
+                      <p className="text-xs text-emerald-500 animate-pulse">Aguardando leitura do QR Code...</p>
+                    </div>
+                    <button onClick={conectar} disabled={loadingQr} className={btnMuted}>
+                      {loadingQr ? "Gerando..." : "Gerar novo QR Code"}
+                    </button>
+                  </div>
+                )}
+
+                {conectado && (
+                  <div className="space-y-4">
+                    <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4 flex items-center gap-3">
+                      <Wifi className="h-5 w-5 text-emerald-500 flex-shrink-0" />
+                      <div>
+                        <p className="text-sm font-semibold text-emerald-500">WhatsApp conectado com sucesso</p>
+                        <p className="text-xs text-[var(--muted-foreground)] mt-0.5">As mensagens automaticas estao ativas. Configure os disparadores na aba ao lado.</p>
+                      </div>
+                    </div>
+                    <button onClick={desconectar} disabled={loadingDesconectar} className={`${btnBase} bg-red-500/10 text-red-500 hover:bg-red-500/20`}>
+                      {loadingDesconectar ? "Desconectando..." : "Desconectar WhatsApp"}
+                    </button>
                   </div>
                 )}
               </CardContent>
@@ -272,14 +279,26 @@ export default function WhatsAppPage() {
 
             <Card className="shadow-sm">
               <CardHeader className="pb-3 border-b border-[var(--border)]">
-                <CardTitle className="text-sm font-semibold">WhatsApp Web (Manual)</CardTitle>
+                <CardTitle className="text-sm font-semibold">Modo Manual (WhatsApp Web)</CardTitle>
               </CardHeader>
-              <CardContent className="pt-4">
+              <CardContent className="pt-4 space-y-3">
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  No modo manual, as mensagens sao geradas como links wa.me. Voce clica em cada
-                  link e envia pelo WhatsApp Web ou celular, sem precisar conectar aqui. Basta
-                  selecionar "WhatsApp Web (manual)" como modo de envio na aba Disparadores.
+                  Prefere nao conectar o WhatsApp aqui? Use o modo manual.
                 </p>
+                <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 p-4 space-y-2">
+                  {[
+                    "Voce digita os numeros na aba Disparadores",
+                    "O sistema gera links prontos para cada numero",
+                    "Voce clica em cada link, o WhatsApp Web abre com a mensagem pronta",
+                    "Voce so clica em Enviar no celular ou no computador",
+                  ].map((txt, i) => (
+                    <div key={i} className="flex gap-2 items-start text-xs text-[var(--foreground)]">
+                      <span className="text-emerald-500 font-bold mt-0.5">{i + 1}.</span>
+                      <span>{txt}</span>
+                    </div>
+                  ))}
+                </div>
+                <p className="text-[11px] text-[var(--muted-foreground)]">Para usar: va em Disparadores, selecione "WhatsApp Web (manual)" e inicie a campanha.</p>
               </CardContent>
             </Card>
           </>

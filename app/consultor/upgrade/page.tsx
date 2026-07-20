@@ -151,20 +151,53 @@ export default function UpgradeProPage() {
           </div>
         )}
 
+        {/* O que e o Pro */}
+        <Card className="shadow-sm border-violet-500/20">
+          <CardHeader className="pb-3 border-b border-[var(--border)]">
+            <CardTitle className="text-sm font-semibold">O que muda no plano Pro</CardTitle>
+          </CardHeader>
+          <CardContent className="pt-4 space-y-4">
+            {[
+              {
+                titulo: "Buscador de Parceiros",
+                desc: "Pesquise oficinas, concessionarias, despachantes e outros negocios na sua cidade. Veja o telefone de cada um e recrute como indicador com um clique no WhatsApp.",
+                icone: "🔍",
+              },
+              {
+                titulo: "Disparo automatico no WhatsApp",
+                desc: "Quando um novo lead chega, o sistema manda mensagem automaticamente para ele pelo seu WhatsApp conectado. Voce nao precisa fazer nada manualmente.",
+                icone: "⚡",
+              },
+              {
+                titulo: "Campanha de indicacao",
+                desc: "Cole uma lista de numeros de telefone e o sistema gera links prontos para voce abordar cada contato no WhatsApp com uma mensagem personalizada.",
+                icone: "📣",
+              },
+              {
+                titulo: "Exportacao de dados",
+                desc: "Baixe todos os seus leads e indicadores em planilha CSV para analisar no Excel ou importar em outro sistema.",
+                icone: "📥",
+              },
+            ].map((r) => (
+              <div key={r.titulo} className="flex gap-3 items-start">
+                <span className="text-2xl flex-shrink-0">{r.icone}</span>
+                <div>
+                  <p className="text-sm font-semibold text-[var(--foreground)]">{r.titulo}</p>
+                  <p className="text-xs text-[var(--muted-foreground)] mt-0.5 leading-relaxed">{r.desc}</p>
+                </div>
+              </div>
+            ))}
+          </CardContent>
+        </Card>
+
         {/* Comparativo Free vs Pro */}
         <div className="grid grid-cols-2 gap-4">
           <Card className="shadow-sm">
             <CardHeader className="pb-3 border-b border-[var(--border)]">
-              <CardTitle className="text-sm font-semibold text-[var(--muted-foreground)]">
-                Free
-              </CardTitle>
+              <CardTitle className="text-sm font-semibold text-[var(--muted-foreground)]">Free</CardTitle>
             </CardHeader>
             <CardContent className="pt-4 space-y-2">
-              {[
-                "Receber leads",
-                "Fechar vendas",
-                "Pagar comissoes aos indicadores",
-              ].map((item) => (
+              {["Receber leads", "Fechar vendas", "Pagar comissoes aos indicadores"].map((item) => (
                 <div key={item} className="flex items-start gap-2">
                   <Check className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
                   <span className="text-sm text-[var(--foreground)]">{item}</span>
@@ -176,18 +209,11 @@ export default function UpgradeProPage() {
           <Card className="shadow-sm border-violet-500/30">
             <CardHeader className="pb-3 border-b border-violet-500/20">
               <CardTitle className="text-sm font-semibold text-violet-500 flex items-center gap-1.5">
-                <Zap className="h-4 w-4" />
-                Pro
+                <Zap className="h-4 w-4" /> Pro
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4 space-y-2">
-              {[
-                "Tudo do plano Free",
-                "Buscador de parceiros",
-                "Disparos WhatsApp automaticos",
-                "Relatorios avancados",
-                "Exportacao de dados",
-              ].map((item) => (
+              {["Tudo do Free", "Buscador de parceiros", "WhatsApp automatico", "Campanha de indicacao", "Exportacao CSV"].map((item) => (
                 <div key={item} className="flex items-start gap-2">
                   <Check className="h-4 w-4 text-violet-500 mt-0.5 shrink-0" />
                   <span className="text-sm text-[var(--foreground)]">{item}</span>

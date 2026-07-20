@@ -55,6 +55,7 @@ export default function ParceirosPage() {
   const [total, setTotal] = useState<number | null>(null);
   const [cidadeBuscada, setCidadeBuscada] = useState("");
   const [erro, setErro] = useState<string | null>(null);
+  const [isMock, setIsMock] = useState(false);
 
   useEffect(() => {
     fetch("/api/consultor/upgrade-pro")
@@ -77,12 +78,17 @@ export default function ParceirosPage() {
       const res = await fetch(`/api/consultor/buscar-parceiros?${params}`);
       const data = await res.json();
       if (!res.ok) {
-        setErro(data.error ?? "Erro ao buscar parceiros.");
+        if (res.status === 503) {
+          setErro("Buscador temporariamente indisponivel. Entre em contato com o suporte para ativar.");
+        } else {
+          setErro(data.error ?? "Erro ao buscar parceiros.");
+        }
         return;
       }
       setResultados(data.resultados ?? []);
       setTotal(data.total ?? 0);
       setCidadeBuscada(cidade.trim());
+      setIsMock(!!data.mock);
     } finally {
       setBuscando(false);
     }
@@ -219,6 +225,13 @@ export default function ParceirosPage() {
         {erro && (
           <div className="rounded-lg bg-red-500/10 border border-red-500/20 px-4 py-3">
             <p className="text-sm text-red-500">{erro}</p>
+          </div>
+        )}
+
+        {isMock && total !== null && (
+          <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-4 py-3">
+            <p className="text-sm text-amber-500 font-semibold">Modo de demonstracao</p>
+            <p className="text-xs text-amber-400/80 mt-0.5">Os resultados abaixo sao exemplos fictícios. Para buscar empresas reais do Google Maps, o administrador precisa ativar a integracao Google Places no painel master.</p>
           </div>
         )}
 
