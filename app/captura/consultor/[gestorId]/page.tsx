@@ -108,7 +108,9 @@ export default function CapturaConsultorPage({ params }: { params: Promise<{ ges
       <div className="cap-page">
         <div className="cap-card">
           <div style={{ textAlign: "center", marginBottom: 24 }}>
-            <img src="/logo-indique.png" style={{ width: 80, height: 80, objectFit: "contain", marginBottom: 12 }} alt="Indique Placa" />
+            <div style={{ display: "flex", justifyContent: "center", marginBottom: 12 }}>
+              <img src="/logo-indique.png" style={{ width: 100, height: 100, objectFit: "contain" }} alt="Indique Placa" />
+            </div>
             {linkInvalido ? (
               <div style={{ color: "#f87171", fontSize: 14 }}>Link inválido ou expirado.</div>
             ) : (
@@ -142,7 +144,7 @@ export default function CapturaConsultorPage({ params }: { params: Promise<{ ges
               <form onSubmit={enviar}>
                 <input className="cap-campo" type="text" placeholder="Seu nome completo" value={nome} required onChange={(e) => setNome(e.target.value)} />
                 <input className="cap-campo" type="tel" placeholder="WhatsApp (11) 99999-9999" value={telefone} required onChange={(e) => setTelefone(e.target.value)} />
-                <input className="cap-campo" type="email" placeholder="seu@email.com" value={email} required autoComplete="email" onChange={(e) => setEmail(e.target.value)} />
+                <input className="cap-campo" type="email" placeholder="seu@email.com" value={email} required autoComplete="off" onChange={(e) => setEmail(e.target.value)} />
                 <input className="cap-campo" type="text" placeholder="Cidade" value={cidade} required onChange={(e) => setCidade(e.target.value)} />
                 <div className="cap-senha-wrap">
                   <input
