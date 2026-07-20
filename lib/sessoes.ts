@@ -24,7 +24,7 @@ function assinar(payload: string): string {
 // de alta disponibilidade, substituir por Upstash Redis ou similar.
 const sessoesBloqueadas = new Set<string>();
 
-export async function criarSessao(usuario_id: string, tipo: "consultor" | "indicador"): Promise<string> {
+export async function criarSessao(usuario_id: string, tipo: "consultor" | "indicador" | "gestor"): Promise<string> {
   const expira = Date.now() + DURACAO_HORAS * 60 * 60 * 1000;
   const id = crypto.randomUUID();
   const payload = JSON.stringify({ id, usuario_id, tipo, expira });
@@ -33,7 +33,7 @@ export async function criarSessao(usuario_id: string, tipo: "consultor" | "indic
   return `${b64}.${sig}`;
 }
 
-export async function validarSessao(token: string, tipo: "consultor" | "indicador"): Promise<string | null> {
+export async function validarSessao(token: string, tipo: "consultor" | "indicador" | "gestor"): Promise<string | null> {
   try {
     const dot = token.lastIndexOf(".");
     if (dot === -1) return null;

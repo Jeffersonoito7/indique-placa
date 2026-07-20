@@ -58,6 +58,7 @@ export default function IndicarPage() {
   const [duplicado, setDuplicado] = useState(false);
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(false);
+  const [consultorBloqueado, setConsultorBloqueado] = useState<{ fone?: string; nome?: string } | null>(null);
 
   useEffect(() => {
     fetch("/api/indicador/tipos-veiculo")
@@ -93,6 +94,13 @@ export default function IndicarPage() {
       });
       const json = await res.json();
       if (res.status === 409) { setDuplicado(true); return; }
+      if (res.status === 403) {
+        // Consultor bloqueado: mostrar mensagem especifica com link WhatsApp se disponivel
+        const foneConsultor = json.consultor_fone as string | undefined;
+        const nomeConsultor = json.consultor_nome as string | undefined;
+        setConsultorBloqueado({ fone: foneConsultor, nome: nomeConsultor });
+        return;
+      }
       if (!res.ok) { setErro(json.error ?? "Erro ao enviar"); return; }
       vibrar();
 
@@ -210,6 +218,29 @@ export default function IndicarPage() {
               <div>
                 <div className="text-sm font-bold text-amber-600 dark:text-amber-400">Placa já indicada</div>
                 <div className="text-xs text-muted-foreground mt-0.5">Esta placa já foi cadastrada anteriormente.</div>
+              </div>
+            </div>
+          )}
+
+          {/* Alerta consultor bloqueado */}
+          {consultorBloqueado && (
+            <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-2xl p-4">
+              <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+              <div className="flex-1">
+                <div className="text-sm font-bold text-red-600 dark:text-red-400">Consultor temporariamente indisponivel</div>
+                <div className="text-xs text-muted-foreground mt-0.5">
+                  Seu consultor esta temporariamente indisponivel. Entre em contato com ele diretamente.
+                </div>
+                {consultorBloqueado.fone && (
+                  <a
+                    href={`https://wa.me/55${consultorBloqueado.fone.replace(/\D/g, "")}?text=${encodeURIComponent("Oi, estou tentando fazer uma indicacao pelo Indique Placa mas esta aparecendo uma mensagem de indisponibilidade.")}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-block mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 underline"
+                  >
+                    Falar com o consultor pelo WhatsApp
+                  </a>
+                )}
               </div>
             </div>
           )}

@@ -3,6 +3,7 @@ import * as Sentry from "@sentry/nextjs";
 import { getIndicadorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
+import { verificarBloqueioConsultor } from "@/lib/consultor-status";
 import { z } from "zod";
 
 const schema = z.object({
@@ -33,6 +34,23 @@ export async function POST(req: NextRequest) {
   const { placa, nome_lead, telefone_lead, tipo_veiculo } = parsed.data;
 
   if (!indicador.consultor_id) return NextResponse.json({ error: "Indicador sem consultor vinculado" }, { status: 400 });
+
+  const bloqueio = await verificarBloqueioConsultor(indicador.consultor_id);
+  if (bloqueio.bloqueado) {
+    const { data: consultorInfo } = await supabaseAdmin
+      .from("consultores")
+      .select("nome, fone")
+      .eq("id", indicador.consultor_id)
+      .single();
+    return NextResponse.json(
+      {
+        error: "Seu consultor está temporariamente bloqueado de receber novas indicações. Entre em contato com ele.",
+        consultor_nome: consultorInfo?.nome ?? null,
+        consultor_fone: consultorInfo?.fone ?? null,
+      },
+      { status: 403 }
+    );
+  }
 
   const tel = telefone_lead?.replace(/\D/g, "") ?? null;
 

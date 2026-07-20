@@ -11,7 +11,8 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  if (!rateLimit(`master-login:${ip}`, 10, 15 * 60)) {
+  const { allowed: rlAllowed } = rateLimit(`master-login:${ip}`, 10, 15 * 60 * 1000);
+  if (!rlAllowed) {
     return NextResponse.json({ error: "Muitas tentativas. Aguarde 15 minutos." }, { status: 429 });
   }
 

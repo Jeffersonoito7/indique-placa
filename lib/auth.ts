@@ -20,6 +20,23 @@ export async function getConsultorLogado() {
   return data ?? null;
 }
 
+export async function getGestorLogado() {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("gestor_auth")?.value;
+  if (!token) return null;
+
+  const usuario_id = await validarSessao(token, "gestor");
+  if (!usuario_id) return null;
+
+  const { data } = await supabaseAdmin
+    .from("gestores")
+    .select("id, nome, fone, email, plano, plano_ativo_ate")
+    .eq("id", usuario_id)
+    .single();
+
+  return data ?? null;
+}
+
 export async function getIndicadorLogado() {
   const cookieStore = await cookies();
   const token = cookieStore.get("indicador_auth")?.value;

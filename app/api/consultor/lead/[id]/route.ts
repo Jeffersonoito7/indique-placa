@@ -155,7 +155,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const { error } = await supabaseAdmin
     .from("indicacoes")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("consultor_id", consultorId);
 
   if (error) return NextResponse.json({ error: "Erro ao apagar" }, { status: 500 });
   return NextResponse.json({ ok: true });

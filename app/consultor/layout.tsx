@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, ClipboardList, UserCheck, Trophy, User, DollarSign, Target, Percent } from "lucide-react";
+import { LayoutDashboard, ClipboardList, UserCheck, Trophy, User, DollarSign, Target, Percent, MessageCircle, Search, Zap } from "lucide-react";
 
 const navItems = [
   { group: "Painel", items: [
@@ -15,9 +15,12 @@ const navItems = [
     { href: "/consultor/financeiro", label: "Financeiro", icon: DollarSign },
     { href: "/consultor/comissoes", label: "Comissoes", icon: Percent },
     { href: "/consultor/metas", label: "Metas", icon: Target },
+    { href: "/consultor/whatsapp", label: "WhatsApp", icon: MessageCircle },
+    { href: "/consultor/parceiros", label: "Buscar Parceiros", icon: Search },
   ]},
   { group: "Conta", items: [
     { href: "/consultor/perfil", label: "Meu Perfil", icon: User },
+    { href: "/consultor/upgrade", label: "Upgrade Pro", icon: Zap },
   ]},
 ];
 

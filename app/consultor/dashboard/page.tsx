@@ -1,6 +1,7 @@
 export const dynamic = "force-dynamic";
 import { getConsultorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { verificarBloqueioConsultor } from "@/lib/consultor-status";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { ClipboardList, UserCheck, CheckCircle2, TrendingUp, Trophy, Star, AlertCircle, Users, BarChart2 } from "lucide-react";
@@ -17,12 +18,13 @@ export default async function ConsultorDashboard() {
   const consultor = await getConsultorLogado();
   if (!consultor) redirect("/consultor/login");
 
-  const [leadsRes, indicadoresRes, { data: config }, comissoesPendentesRes] = await Promise.all([
+  const [leadsRes, indicadoresRes, { data: config }, comissoesPendentesRes, statusBloqueio] = await Promise.all([
     supabaseAdmin
       .from("indicacoes")
       .select("id, placa, nome_lead, status, criado_em, indicador_id, indicadores(id, nome)")
       .eq("consultor_id", consultor.id)
-      .order("criado_em", { ascending: false }),
+      .order("criado_em", { ascending: false })
+      .limit(500),
     supabaseAdmin
       .from("indicadores")
       .select("id, nome, criado_em")
@@ -36,6 +38,7 @@ export default async function ConsultorDashboard() {
       .eq("status", "fechado")
       .eq("comissao_paga", false)
       .not("indicador_id", "is", null),
+    verificarBloqueioConsultor(consultor.id),
   ]);
 
   const leads = leadsRes.data ?? [];
@@ -104,6 +107,27 @@ export default async function ConsultorDashboard() {
       </div>
 
       <div className="flex-1 p-8 bg-muted/30 space-y-6">
+
+        {/* Banner de bloqueio por inadimplencia */}
+        {statusBloqueio.bloqueado && (
+          <div className="rounded-2xl p-4 bg-red-600 text-white flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-white shrink-0" />
+            <div className="flex-1">
+              <div className="text-sm font-bold leading-tight">
+                Voce esta bloqueado de receber novas indicacoes
+              </div>
+              <div className="text-xs mt-0.5 text-white/80">
+                Voce tem {statusBloqueio.total_pendente} comissoes pendentes de pagamento. Pague para desbloquear.
+              </div>
+            </div>
+            <a
+              href="/consultor/leads?status=fechado"
+              className="shrink-0 text-xs font-bold bg-white/20 hover:bg-white/30 text-white rounded-lg px-3 py-2 transition-colors"
+            >
+              Ver comissoes pendentes
+            </a>
+          </div>
+        )}
 
         {/* Alerta comissoes pendentes */}
         {comissoesPendentes.length > 0 && (
