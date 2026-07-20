@@ -1,7 +1,9 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "crypto";
 
-const SECRET = process.env.MASTER_TOKEN_SECRET ?? "fallback-insecure-dev-secret";
+const rawSecret = process.env.MASTER_TOKEN_SECRET;
+if (!rawSecret) throw new Error("MASTER_TOKEN_SECRET nao configurado");
+const SECRET: string = rawSecret;
 const DURACAO_MS = 8 * 60 * 60 * 1000;
 
 export function gerarToken(usuario: string): string {

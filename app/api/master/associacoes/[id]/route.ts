@@ -13,7 +13,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { data, error } = await supabaseAdmin
     .from("associacoes")
-    .select("*")
+    .select("id, nome, slug, email, fone, cidade, estado, logo_url, status, plano, plano_ativo_ate, cobranca_ativa, valor_mensalidade_associacao, valor_mensalidade_gestor, valor_mensalidade_consultor_pro, efi_client_id, efi_pix_key, criado_em, atualizado_em")
     .eq("id", id)
     .single();
 

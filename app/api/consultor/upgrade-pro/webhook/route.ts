@@ -3,7 +3,19 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 
 // Webhook da Efi: notifica quando um PIX e pago
 // Configurar no painel Efi: POST para /api/consultor/upgrade-pro/webhook
+// O token e configurado em WEBHOOK_EFI_TOKEN no ambiente e tambem no painel Efi em "chave de autenticacao"
 export async function POST(req: NextRequest) {
+  // Valida token de autenticacao do webhook
+  const webhookToken = process.env.WEBHOOK_EFI_TOKEN;
+  if (webhookToken) {
+    const authHeader = req.headers.get("authorization") ?? "";
+    // Efi envia Bearer <token> ou apenas o token no header
+    const tokenRecebido = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
+    if (!tokenRecebido || tokenRecebido !== webhookToken) {
+      return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+    }
+  }
+
   let body: unknown;
   try {
     body = await req.json();

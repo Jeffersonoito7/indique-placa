@@ -43,11 +43,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   if (error) return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
 
-  // Salva comissao_valor ao fechar venda
+  // Salva comissao_valor ao fechar venda — usa configuracao do consultor, fallback para padrao
   if (parsed.data.status === "fechado") {
     const tipoVeiculo = (lead as { tipo_veiculo?: string | null }).tipo_veiculo ?? "carro";
-    const comissoesPadrao: Record<string, number> = { moto: 50, carro: 100, caminhao: 500 };
-    const comissaoValor = comissoesPadrao[tipoVeiculo] ?? comissoesPadrao["carro"];
+
+    const { data: comissaoConfig } = await supabaseAdmin
+      .from("comissoes_tipos")
+      .select("valor")
+      .eq("consultor_id", consultorId)
+      .eq("tipo_veiculo", tipoVeiculo)
+      .single();
+
+    const comissoesFallback: Record<string, number> = { moto: 50, carro: 100, caminhao: 500 };
+    const comissaoValor = comissaoConfig?.valor ?? comissoesFallback[tipoVeiculo] ?? 100;
 
     await supabaseAdmin
       .from("indicacoes")

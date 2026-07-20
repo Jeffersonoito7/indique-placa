@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
+import { timingSafeEqual } from "crypto";
 import { z } from "zod";
 import { gerarToken } from "@/lib/master-token";
 import { rateLimit } from "@/lib/rate-limit";
@@ -33,9 +34,9 @@ export async function POST(req: NextRequest) {
 
   // Comparacao em tempo constante para evitar timing attack
   const usuarioOk = usuario.length === usuarioEnv.length &&
-    require("crypto").timingSafeEqual(Buffer.from(usuario), Buffer.from(usuarioEnv));
+    timingSafeEqual(Buffer.from(usuario), Buffer.from(usuarioEnv));
   const senhaOk = senha.length === senhaEnv.length &&
-    require("crypto").timingSafeEqual(Buffer.from(senha), Buffer.from(senhaEnv));
+    timingSafeEqual(Buffer.from(senha), Buffer.from(senhaEnv));
 
   if (!usuarioOk || !senhaOk) {
     return NextResponse.json({ error: "Usuario ou senha incorretos" }, { status: 401 });

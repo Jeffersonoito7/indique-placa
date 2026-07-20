@@ -8,9 +8,14 @@ const schema = z.object({
   nova_senha: z.string().min(6).max(128),
 });
 
+function isDevOnly() {
+  // Bloqueia em producao E em qualquer ambiente que nao seja desenvolvimento local explicitamente
+  return process.env.NODE_ENV === "development" && !process.env.VERCEL;
+}
+
 export async function POST(req: NextRequest) {
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Nao disponivel em producao" }, { status: 403 });
+  if (!isDevOnly()) {
+    return NextResponse.json({ error: "Nao disponivel" }, { status: 403 });
   }
 
   let body: unknown;
@@ -55,8 +60,8 @@ export async function POST(req: NextRequest) {
 }
 
 export async function GET() {
-  if (process.env.NODE_ENV === "production") {
-    return NextResponse.json({ error: "Nao disponivel em producao" }, { status: 403 });
+  if (!isDevOnly()) {
+    return NextResponse.json({ error: "Nao disponivel" }, { status: 403 });
   }
 
   const { data } = await supabaseAdmin

@@ -46,16 +46,28 @@ export async function POST(
   }
 
   const { nome, telefone, email, cidade, senha } = parsed.data;
+  const fone = telefone.replace(/\D/g, "");
 
-  // Email único
-  const { data: existente } = await supabaseAdmin
+  // Email unico
+  const { data: emailExistente } = await supabaseAdmin
     .from("consultores")
     .select("id")
     .eq("email", email.toLowerCase())
     .single();
 
-  if (existente) {
+  if (emailExistente) {
     return NextResponse.json({ error: "Este e-mail já está cadastrado." }, { status: 409 });
+  }
+
+  // Fone unico
+  const { data: foneExistente } = await supabaseAdmin
+    .from("consultores")
+    .select("id")
+    .eq("fone", fone)
+    .single();
+
+  if (foneExistente) {
+    return NextResponse.json({ error: "Este telefone já está cadastrado." }, { status: 409 });
   }
 
   const senha_hash = await bcrypt.hash(senha, 10);
@@ -64,7 +76,7 @@ export async function POST(
     .from("consultores")
     .insert({
       nome: nome.trim(),
-      telefone,
+      fone,
       email: email.toLowerCase().trim(),
       cidade: cidade.trim(),
       senha_hash,
