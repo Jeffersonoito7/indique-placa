@@ -2,14 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserCheck, Plus, X, Copy, Check } from "lucide-react";
+import { UserCheck, Plus, Search, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Indicador = {
   id: string;
   nome: string;
-  telefone: string | null;
-  chave_pix: string | null;
+  telefone: string;
+  consultor_id: string | null;
   criado_em: string;
 };
 
@@ -21,62 +21,10 @@ function fmtTelBR(v: string): string {
   return `(${n.slice(0, 2)}) ${n.slice(2, 7)}-${n.slice(7)}`;
 }
 
-function IndicadoresTable({ indicadores }: { indicadores: Indicador[] }) {
-  const [copiadoId, setCopiadoId] = useState<string | null>(null);
-
-  function copiarPix(id: string, valor: string) {
-    navigator.clipboard.writeText(valor).then(() => {
-      setCopiadoId(id);
-      setTimeout(() => setCopiadoId(null), 2000);
-    });
-  }
-
-  return (
-    <table className="w-full">
-      <thead>
-        <tr className="border-b border-border bg-muted/40">
-          {["Nome", "Telefone", "Chave PIX", "Cadastrado em"].map((h) => (
-            <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
-          ))}
-        </tr>
-      </thead>
-      <tbody>
-        {indicadores.map((ind, i) => (
-          <tr key={ind.id} className={cn("border-b border-border hover:bg-accent/40 transition-colors", i % 2 !== 0 && "bg-muted/20")}>
-            <td className="px-6 py-3.5 text-sm font-medium text-foreground">{ind.nome}</td>
-            <td className="px-6 py-3.5 text-sm text-muted-foreground font-mono">{ind.telefone ?? "-"}</td>
-            <td className="px-6 py-3.5 text-sm">
-              {ind.chave_pix ? (
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-foreground">{ind.chave_pix}</span>
-                  <button
-                    onClick={() => copiarPix(ind.id, ind.chave_pix!)}
-                    className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                    title="Copiar chave PIX"
-                  >
-                    {copiadoId === ind.id
-                      ? <Check className="h-3.5 w-3.5 text-emerald-500" />
-                      : <Copy className="h-3.5 w-3.5" />
-                    }
-                  </button>
-                </div>
-              ) : (
-                <span className="italic text-muted-foreground text-xs">nao cadastrada</span>
-              )}
-            </td>
-            <td className="px-6 py-3.5 text-xs text-muted-foreground">
-              {new Date(ind.criado_em).toLocaleDateString("pt-BR")}
-            </td>
-          </tr>
-        ))}
-      </tbody>
-    </table>
-  );
-}
-
-export default function ConsultorIndicadoresPage() {
+export default function AssociacaoIndicadoresPage() {
   const [indicadores, setIndicadores] = useState<Indicador[]>([]);
   const [carregando, setCarregando] = useState(true);
+  const [busca, setBusca] = useState("");
   const [modalAberto, setModalAberto] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erroModal, setErroModal] = useState("");
@@ -85,7 +33,7 @@ export default function ConsultorIndicadoresPage() {
   async function carregar() {
     setCarregando(true);
     try {
-      const res = await fetch("/api/consultor/indicadores");
+      const res = await fetch("/api/associacao/indicadores");
       if (res.ok) setIndicadores(await res.json());
     } finally {
       setCarregando(false);
@@ -94,12 +42,16 @@ export default function ConsultorIndicadoresPage() {
 
   useEffect(() => { carregar(); }, []);
 
+  const filtrados = indicadores.filter((ind) =>
+    ind.nome.toLowerCase().includes(busca.toLowerCase())
+  );
+
   async function adicionar(e: React.FormEvent) {
     e.preventDefault();
     setErroModal("");
     setEnviando(true);
     try {
-      const res = await fetch("/api/consultor/indicadores", {
+      const res = await fetch("/api/associacao/indicadores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, telefone: form.telefone.replace(/\D/g, "") }),
@@ -123,8 +75,8 @@ export default function ConsultorIndicadoresPage() {
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border flex items-center justify-between">
         <div>
-          <h1 className="text-base font-bold text-foreground">Meus Indicadores</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Captadores vinculados a sua conta</p>
+          <h1 className="text-base font-bold text-foreground">Indicadores</h1>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Todos os indicadores vinculados aos consultores desta associacao</p>
         </div>
         <button
           onClick={() => { setModalAberto(true); setErroModal(""); }}
@@ -135,30 +87,64 @@ export default function ConsultorIndicadoresPage() {
         </button>
       </div>
 
-      <div className="flex-1 p-8 bg-muted/30">
-        <Card className="border-t-4 border-t-violet-500 shadow-sm mb-6 max-w-xs">
-          <CardContent className="p-5 flex items-center gap-4">
-            <div className="w-10 h-10 rounded-xl bg-violet-500/10 flex items-center justify-center flex-shrink-0">
-              <UserCheck className="h-5 w-5 text-violet-500" />
-            </div>
-            <div>
-              <div className="text-2xl font-bold text-violet-500">{indicadores.length}</div>
-              <div className="text-xs text-muted-foreground">Indicadores ativos</div>
-            </div>
-          </CardContent>
-        </Card>
+      <div className="flex-1 p-8 bg-muted/30 space-y-4">
+        <div className="relative max-w-sm">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Buscar por nome..."
+            value={busca}
+            onChange={(e) => setBusca(e.target.value)}
+            className="w-full pl-9 pr-4 py-2 text-sm bg-background border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
+          />
+        </div>
 
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
-            <CardTitle className="text-sm font-semibold">Lista de Indicadores</CardTitle>
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <UserCheck className="h-4 w-4 text-violet-500" />
+              Indicadores ({filtrados.length})
+            </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {carregando ? (
-              <div className="text-center text-muted-foreground text-sm py-16">Carregando...</div>
-            ) : indicadores.length === 0 ? (
-              <div className="text-center text-muted-foreground text-sm py-16">Nenhum indicador vinculado ainda</div>
+              <div className="text-center text-muted-foreground text-sm py-10">Carregando...</div>
+            ) : filtrados.length === 0 ? (
+              <div className="text-center text-muted-foreground text-sm py-10">
+                {busca ? "Nenhum resultado." : "Nenhum indicador cadastrado."}
+              </div>
             ) : (
-              <IndicadoresTable indicadores={indicadores} />
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40">
+                    {["Nome", "Telefone", "Consultor", "Cadastrado em"].map((h) => (
+                      <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-5 py-3">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {filtrados.map((ind, i) => (
+                    <tr key={ind.id} className={cn(
+                      "border-b border-border transition-colors hover:bg-accent/40",
+                      i % 2 !== 0 && "bg-muted/20"
+                    )}>
+                      <td className="px-5 py-3.5 text-sm font-semibold text-foreground">{ind.nome}</td>
+                      <td className="px-5 py-3.5 text-sm text-muted-foreground">
+                        {ind.telefone ? fmtTelBR(ind.telefone) : <span className="italic text-muted-foreground/50">sem telefone</span>}
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-muted-foreground">
+                        {ind.consultor_id
+                          ? <span className="text-[10px] bg-emerald-500/10 text-emerald-500 px-2 py-0.5 rounded-full">Vinculado</span>
+                          : <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full border border-border">Sem vinculo</span>
+                        }
+                      </td>
+                      <td className="px-5 py-3.5 text-sm text-muted-foreground">
+                        {new Date(ind.criado_em).toLocaleDateString("pt-BR")}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
             )}
           </CardContent>
         </Card>

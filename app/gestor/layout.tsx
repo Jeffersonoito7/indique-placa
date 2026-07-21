@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, Users, BarChart2, User, ClipboardList, Link2, TrendingUp, DollarSign, Bell } from "lucide-react";
+import { LayoutDashboard, Users, BarChart2, User, ClipboardList, Link2, TrendingUp, DollarSign, Bell, UserCheck } from "lucide-react";
 
 const navItems = [
   { group: "Painel", items: [
@@ -12,6 +12,7 @@ const navItems = [
   ]},
   { group: "Equipe", items: [
     { href: "/gestor/consultores", label: "Meu Time", icon: Users },
+    { href: "/gestor/indicadores", label: "Indicadores", icon: UserCheck },
     { href: "/gestor/leads", label: "Leads do Time", icon: ClipboardList },
     { href: "/gestor/relatorio", label: "Relatorio", icon: BarChart2 },
     { href: "/gestor/comissoes", label: "Comissoes", icon: DollarSign },
