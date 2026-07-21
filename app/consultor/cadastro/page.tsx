@@ -18,7 +18,7 @@ const ESTADOS_CIDADES: Record<string, string[]> = {
   "MS": ["Campo Grande","Dourados","Três Lagoas","Corumbá","Grande Dourados","Ponta Porã","Naviraí","Nova Andradina"],
   "MT": ["Cuiabá","Várzea Grande","Rondonópolis","Sinop","Tangará da Serra","Cáceres","Sorriso","Lucas do Rio Verde","Primavera do Leste"],
   "PA": ["Belém","Ananindeua","Santarém","Marabá","Castanhal","Parauapebas","Altamira","Abaetetuba","Cametá","Marituba"],
-  "PB": ["João Pessoa","Campina Grande","Santa Rita","Patos","Bayeux","Sousa","Caruaru"],
+  "PB": ["João Pessoa","Campina Grande","Santa Rita","Patos","Bayeux","Sousa","Guarabira"],
   "PE": ["Recife","Caruaru","Petrolina","Olinda","Paulista","Palmares","Vitória de Santo Antão","Serra Talhada","Garanhuns","Jaboatão dos Guararapes","Cabo de Santo Agostinho","Camaçari"],
   "PI": ["Teresina","Parnaíba","Picos","Piripiri","Floriano","Campo Maior","Barras"],
   "PR": ["Curitiba","Londrina","Maringá","Ponta Grossa","Cascavel","São José dos Pinhais","Foz do Iguaçu","Colombo","Guarapuava","Paranaguá","Araucária","Toledo","Apucarana","Umuarama","Pinhais"],

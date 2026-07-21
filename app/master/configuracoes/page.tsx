@@ -270,7 +270,7 @@ export default function ConfiguracoesPage() {
                       type="text"
                       value={form.nome_associacao}
                       onChange={set("nome_associacao")}
-                      placeholder="Ex: AutoVale Prevencoes"
+                      placeholder="Ex: Minha Associacao"
                       className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                     />
                   </div>
@@ -339,7 +339,7 @@ export default function ConfiguracoesPage() {
                 </div>
                 <div>
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />Endereço</label>
-                  <input type="text" value={form.endereco} onChange={set("endereco")} placeholder="Rua das Flores, 100 - Petrolina/PE"
+                  <input type="text" value={form.endereco} onChange={set("endereco")} placeholder="Rua das Flores, 100 - Cidade/UF"
                     className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
                 </div>
               </CardContent>

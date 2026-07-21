@@ -109,7 +109,7 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
               className="w-full h-9 px-3 rounded-lg border border-border bg-muted/30 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40"
               value={form.nome}
               onChange={(e) => set("nome", e.target.value)}
-              placeholder="Ex: AVP Petrolina"
+              placeholder="Ex: Associacao Centro-Oeste"
             />
           </div>
           <div className="col-span-2">
@@ -118,7 +118,7 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
               className="w-full h-9 px-3 rounded-lg border border-border bg-muted/30 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40 font-mono"
               value={form.slug}
               onChange={(e) => set("slug", e.target.value)}
-              placeholder="avp-petrolina"
+              placeholder="associacao-centro-oeste"
             />
           </div>
           <div>
@@ -166,9 +166,9 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
               onChange={(e) => set("plano", e.target.value)}
             >
               <option value="trial">Trial</option>
-              <option value="bronze">Basico</option>
-              <option value="prata">Pro</option>
-              <option value="ouro">Enterprise</option>
+              <option value="bronze">Bronze</option>
+              <option value="prata">Prata</option>
+              <option value="ouro">Ouro</option>
             </select>
           </div>
           {erro && <p className="col-span-2 text-xs text-red-500">{erro}</p>}
@@ -308,9 +308,9 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
                 <label className={labelCls}>Plano</label>
                 <select className={inputCls} value={form.plano} onChange={(e) => set("plano", e.target.value)}>
                   <option value="trial">Trial</option>
-                  <option value="bronze">Basico</option>
-                  <option value="prata">Pro</option>
-                  <option value="ouro">Enterprise</option>
+                  <option value="bronze">Bronze</option>
+                  <option value="prata">Prata</option>
+                  <option value="ouro">Ouro</option>
                 </select>
               </div>
             </div>
@@ -539,9 +539,9 @@ export default function AssociacoesPage() {
                 >
                   <option value="">Todos os planos</option>
                   <option value="trial">Trial</option>
-                  <option value="bronze">Basico</option>
-                  <option value="prata">Pro</option>
-                  <option value="ouro">Enterprise</option>
+                  <option value="bronze">Bronze</option>
+                  <option value="prata">Prata</option>
+                  <option value="ouro">Ouro</option>
                 </select>
               </div>
             </div>

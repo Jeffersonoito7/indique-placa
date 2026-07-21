@@ -133,7 +133,7 @@ export default function ParceirosPage() {
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: Petrolina PE"
+                  placeholder="Ex: São Paulo SP"
                   value={cidade}
                   onChange={(e) => setCidade(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") buscar(); }}
