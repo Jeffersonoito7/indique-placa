@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit } from "@/lib/rate-limit";
+import { enviarEmailBoasVindas } from "@/lib/email";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 
@@ -68,9 +69,12 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
-    console.error("Erro ao cadastrar consultor:", error);
+    console.error("[consultor-cadastro] erro ao inserir:", error.code, error.message);
     return NextResponse.json({ error: "Erro ao salvar cadastro. Tente novamente." }, { status: 500 });
   }
+
+  // Email de boas-vindas nao-bloqueante
+  enviarEmailBoasVindas({ email: email.toLowerCase(), nome, tipo: "consultor" }).catch(() => {});
 
   return NextResponse.json({ ok: true });
 }

@@ -10,6 +10,16 @@ const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://indiqueplaca.com.br";
 
 const links = [
   {
+    titulo: "Link do Gestor",
+    descricao: "Pagina de cadastro para lideres de equipe se registrarem e gerenciarem consultores",
+    url: `${BASE}/gestor/cadastro`,
+    cor: "border-t-cyan-500",
+    iconBg: "bg-cyan-500/10",
+    iconColor: "text-cyan-500",
+    badge: "GESTOR",
+    badgeColor: "bg-cyan-500/10 text-cyan-500",
+  },
+  {
     titulo: "Link do Consultor",
     descricao: "Pagina de cadastro para novos consultores se registrarem na plataforma",
     url: `${BASE}/consultor/cadastro`,
@@ -31,23 +41,13 @@ const links = [
   },
   {
     titulo: "Link Indique",
-    descricao: "Formulário público para envio de indicações de clientes",
+    descricao: "Formulário público para envio de indicações de clientes sem precisar criar conta",
     url: `${BASE}/indique`,
     cor: "border-t-amber-500",
     iconBg: "bg-amber-500/10",
     iconColor: "text-amber-500",
     badge: "INDIQUE",
     badgeColor: "bg-amber-500/10 text-amber-500",
-  },
-  {
-    titulo: "Recuperar Senha",
-    descricao: "Página para consultores redefinam a própria senha de acesso",
-    url: `${BASE}/consultor/recuperar-senha`,
-    cor: "border-t-emerald-500",
-    iconBg: "bg-emerald-500/10",
-    iconColor: "text-emerald-500",
-    badge: "SUPORTE",
-    badgeColor: "bg-emerald-500/10 text-emerald-500",
   },
 ];
 

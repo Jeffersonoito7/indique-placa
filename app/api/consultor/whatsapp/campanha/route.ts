@@ -10,15 +10,34 @@ export async function POST(request: NextRequest) {
   const consultor = await getConsultorLogado();
   if (!consultor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-  const body = await request.json();
-  const { numeros, mensagem, modo } = body as {
-    numeros: string[];
-    mensagem: string;
-    modo: "evolution" | "manual";
+  let body: unknown;
+  try {
+    body = await request.json();
+  } catch {
+    return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });
+  }
+
+  const { numeros, mensagem, modo } = (body ?? {}) as {
+    numeros: unknown;
+    mensagem: unknown;
+    modo: unknown;
   };
 
-  if (!Array.isArray(numeros) || !mensagem || !modo) {
+  if (!Array.isArray(numeros) || typeof mensagem !== "string" || !mensagem.trim() ||
+      (modo !== "evolution" && modo !== "manual")) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+  }
+
+  const MAX_NUMEROS = 200;
+  if (numeros.length > MAX_NUMEROS) {
+    return NextResponse.json(
+      { error: `Limite de ${MAX_NUMEROS} números por campanha` },
+      { status: 400 }
+    );
+  }
+
+  if (mensagem.length > 1000) {
+    return NextResponse.json({ error: "Mensagem muito longa (máximo 1000 caracteres)" }, { status: 400 });
   }
 
   if (modo === "manual") {

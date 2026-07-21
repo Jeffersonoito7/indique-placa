@@ -203,6 +203,10 @@ export default function GestorLoginPage() {
           </form>
 
           <div style={{ marginTop: 16, fontSize: 12, color: "rgba(255,255,255,.35)", lineHeight: 1.9 }}>
+            <a href="/gestor/recuperar-senha" style={{ color: "rgba(103,232,249,.8)", textDecoration: "none" }}>
+              Esqueci minha senha
+            </a>
+            {" · "}
             Consultor?{" "}
             <a href="/consultor/login" style={{ color: "rgba(103,232,249,.8)", textDecoration: "none" }}>
               Acesse aqui

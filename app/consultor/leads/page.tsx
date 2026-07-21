@@ -100,10 +100,22 @@ function BotaoPagarComissao({ lead, onPago }: { lead: Lead; onPago: (leadId: str
     setEnviando(true);
     try {
       const res = await fetch(`/api/consultor/lead/${lead.id}/pagar-comissao`, { method: "POST" });
+      const json = await res.json() as { ok?: boolean; error?: string; pix_enviado?: boolean; sem_chave_pix?: boolean; sem_configuracao?: boolean; ja_pago?: boolean };
       if (!res.ok) {
-        const json = await res.json() as { error?: string };
         alert(json.error ?? "Erro ao registrar pagamento");
         return;
+      }
+      if (json.ja_pago) {
+        alert("Esta comissao ja foi paga anteriormente.");
+        onPago(lead.id);
+        return;
+      }
+      if (json.pix_enviado) {
+        alert("PIX enviado com sucesso! O indicador recebera o valor em instantes.");
+      } else if (json.sem_chave_pix) {
+        alert("Pagamento registrado. O indicador ainda nao cadastrou uma chave PIX. Combine o pagamento manualmente.");
+      } else {
+        alert("Pagamento registrado com sucesso.");
       }
       onPago(lead.id);
     } catch {
@@ -119,7 +131,7 @@ function BotaoPagarComissao({ lead, onPago }: { lead: Lead; onPago: (leadId: str
       disabled={enviando}
       className="text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors disabled:opacity-50 whitespace-nowrap"
     >
-      {enviando ? "Registrando..." : "Pagar comissao"}
+      {enviando ? "Enviando PIX..." : "Pagar comissao"}
     </button>
   );
 }

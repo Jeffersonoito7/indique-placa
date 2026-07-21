@@ -9,6 +9,7 @@ import { cn } from "@/lib/utils";
 import { PlacaMercosul } from "@/components/placa-mercosul";
 import CopiarLink from "@/app/consultor/perfil/copiar-link";
 import PushSubscribe from "@/components/push-subscribe";
+import { OnboardingConsultor } from "@/components/onboarding-consultor";
 
 function moeda(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -113,6 +114,9 @@ export default async function ConsultorDashboard() {
       </div>
 
       <div className="flex-1 p-8 bg-muted/30 space-y-6">
+
+        {/* Onboarding para consultores recem-cadastrados */}
+        <OnboardingConsultor totalLeads={totalLeads} totalIndicadores={totalIndicadores} />
 
         {/* Banner de bloqueio por inadimplencia */}
         {statusBloqueio.bloqueado && (

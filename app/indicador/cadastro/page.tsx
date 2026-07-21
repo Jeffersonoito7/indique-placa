@@ -457,6 +457,12 @@ function FormIndicador() {
                     <div style={{ marginTop:16, fontSize:12, color:"var(--txt3)", textAlign:"center" }}>
                       Já tem conta?{" "}<a href="/indicador/login" style={{ color:"rgba(245,158,11,.7)", textDecoration:"none" }}>Entrar</a>
                     </div>
+                    <div style={{ marginTop:10, fontSize:11, color:"rgba(255,255,255,.2)", textAlign:"center", lineHeight:1.6 }}>
+                      Ao se cadastrar, voce concorda com os{" "}
+                      <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color:"rgba(245,158,11,.5)", textDecoration:"underline" }}>Termos de Uso</a>
+                      {" "}e a{" "}
+                      <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color:"rgba(245,158,11,.5)", textDecoration:"underline" }}>Politica de Privacidade</a>.
+                    </div>
                   </form>
                 </>
               )}

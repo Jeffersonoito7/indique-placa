@@ -49,7 +49,9 @@ export async function GET(req: NextRequest) {
     query = query.eq("status", statusFiltro);
   }
   if (busca) {
-    query = query.or(`placa.ilike.%${busca}%,nome_lead.ilike.%${busca}%`);
+    // Escapa caracteres especiais do PostgREST antes de interpolar na expressao .or()
+    const buscaSegura = busca.replace(/[%_,.()"'\\]/g, "\\$&").slice(0, 100);
+    query = query.or(`placa.ilike.%${buscaSegura}%,nome_lead.ilike.%${buscaSegura}%`);
   }
 
   const { data, count, error } = await query;

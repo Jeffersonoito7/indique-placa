@@ -906,6 +906,12 @@ export default function ConsultorCadastroPage() {
                     Ja tem cadastro?{" "}
                     <a href="/consultor/login" style={{ color: "rgba(16,185,129,.6)", textDecoration: "none" }}>Entrar no painel</a>
                   </div>
+                  <div style={{ marginTop: 10, textAlign: "center", fontSize: 11, color: "rgba(255,255,255,.2)", lineHeight: 1.6 }}>
+                    Ao se cadastrar, voce concorda com os{" "}
+                    <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(16,185,129,.5)", textDecoration: "underline" }}>Termos de Uso</a>
+                    {" "}e a{" "}
+                    <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(16,185,129,.5)", textDecoration: "underline" }}>Politica de Privacidade</a>.
+                  </div>
                 </form>
               )}
             </div>

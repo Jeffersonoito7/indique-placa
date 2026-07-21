@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit } from "@/lib/rate-limit";
+import { enviarEmailBoasVindas } from "@/lib/email";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
@@ -32,14 +33,24 @@ export async function POST(req: NextRequest) {
   const { nome, telefone, email, senha, consultor_id } = parsed.data;
   const tel = telefone.replace(/\D/g, "");
 
-  const { data: existente } = await supabaseAdmin
+  const { data: existenteFone } = await supabaseAdmin
     .from("indicadores")
     .select("id")
     .eq("telefone", tel)
     .single();
 
-  if (existente) {
+  if (existenteFone) {
     return NextResponse.json({ error: "Este WhatsApp já está cadastrado" }, { status: 409 });
+  }
+
+  const { data: existenteEmail } = await supabaseAdmin
+    .from("indicadores")
+    .select("id")
+    .eq("email", email.toLowerCase())
+    .single();
+
+  if (existenteEmail) {
+    return NextResponse.json({ error: "Este e-mail já está cadastrado" }, { status: 409 });
   }
 
   let cid = consultor_id ?? null;
@@ -64,9 +75,13 @@ export async function POST(req: NextRequest) {
   });
 
   if (error) {
-    console.error("Erro ao cadastrar indicador:", error);
+    // Log interno sem expor detalhes ao cliente
+    console.error("[indicador-cadastro] erro ao inserir:", error.code, error.message);
     return NextResponse.json({ error: "Erro ao salvar cadastro. Tente novamente." }, { status: 500 });
   }
+
+  // Email de boas-vindas nao-bloqueante
+  enviarEmailBoasVindas({ email: email.toLowerCase(), nome, tipo: "indicador" }).catch(() => {});
 
   return NextResponse.json({ ok: true });
 }

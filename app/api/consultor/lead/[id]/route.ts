@@ -49,13 +49,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
     const { data: comissaoConfig } = await supabaseAdmin
       .from("comissoes_tipos")
-      .select("valor")
+      .select("comissao_indicador")
       .eq("consultor_id", consultorId)
-      .eq("tipo_veiculo", tipoVeiculo)
+      .eq("tipo", tipoVeiculo)
       .single();
 
     const comissoesFallback: Record<string, number> = { moto: 50, carro: 100, caminhao: 500 };
-    const comissaoValor = comissaoConfig?.valor ?? comissoesFallback[tipoVeiculo] ?? 100;
+    const comissaoValor = comissaoConfig?.comissao_indicador ?? comissoesFallback[tipoVeiculo] ?? 100;
 
     await supabaseAdmin
       .from("indicacoes")

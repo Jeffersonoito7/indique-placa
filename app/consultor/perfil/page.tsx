@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { User, Camera, Save, Link2 } from "lucide-react";
+import { User, Camera, Save, Link2, KeyRound, Eye, EyeOff } from "lucide-react";
 import CopiarLink from "./copiar-link";
 
 function fmtTelBR(v: string): string {
@@ -28,6 +28,10 @@ export default function ConsultorPerfilPage() {
   const [sobrenome, setSobrenome] = useState("");
   const [fone, setFone] = useState("");
   const [fotoUrl, setFotoUrl] = useState<string | null>(null);
+  const [senhaAtual, setSenhaAtual] = useState("");
+  const [novaSenha, setNovaSenha] = useState("");
+  const [verSenhaAtual, setVerSenhaAtual] = useState(false);
+  const [verNovaSenha, setVerNovaSenha] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [uploadando, setUploadando] = useState(false);
   const [mensagem, setMensagem] = useState<{ tipo: "ok" | "erro"; texto: string } | null>(null);
@@ -70,17 +74,26 @@ export default function ConsultorPerfilPage() {
 
   const salvar = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (novaSenha && !senhaAtual) {
+      setMensagem({ tipo: "erro", texto: "Informe a senha atual para alterar a senha" });
+      return;
+    }
     setSalvando(true);
     setMensagem(null);
     try {
+      const body: Record<string, unknown> = { nome: nome.trim(), sobrenome: sobrenome.trim(), fone };
+      if (novaSenha) { body.nova_senha = novaSenha; body.senha_atual = senhaAtual; }
+
       const res = await fetch("/api/consultor/perfil", {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome: nome.trim(), sobrenome: sobrenome.trim(), fone }),
+        body: JSON.stringify(body),
       });
       const json = await res.json();
       if (!res.ok) { setMensagem({ tipo: "erro", texto: json.error ?? "Erro ao salvar" }); return; }
       setMensagem({ tipo: "ok", texto: "Perfil atualizado com sucesso!" });
+      setSenhaAtual("");
+      setNovaSenha("");
     } catch {
       setMensagem({ tipo: "erro", texto: "Erro de conexao. Tente novamente." });
     } finally {
@@ -215,6 +228,45 @@ export default function ConsultorPerfilPage() {
                     />
                   </div>
                 )}
+                {/* Alterar senha */}
+                <div className="border-t border-border pt-4 space-y-3">
+                  <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
+                    <KeyRound className="h-3.5 w-3.5" /> Alterar Senha (opcional)
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Senha atual</label>
+                    <div className="relative">
+                      <input
+                        type={verSenhaAtual ? "text" : "password"}
+                        value={senhaAtual}
+                        placeholder="Digite sua senha atual"
+                        onChange={(e) => setSenhaAtual(e.target.value)}
+                        className="w-full px-3 py-2.5 pr-10 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      />
+                      <button type="button" onClick={() => setVerSenhaAtual((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                        {verSenhaAtual ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Nova senha</label>
+                    <div className="relative">
+                      <input
+                        type={verNovaSenha ? "text" : "password"}
+                        value={novaSenha}
+                        placeholder="Minimo 6 caracteres"
+                        onChange={(e) => setNovaSenha(e.target.value)}
+                        className="w-full px-3 py-2.5 pr-10 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      />
+                      <button type="button" onClick={() => setVerNovaSenha((v) => !v)}
+                        className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                        {verNovaSenha ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+
                 <div className="pt-2">
                   <button
                     type="submit"

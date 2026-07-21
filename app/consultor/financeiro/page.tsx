@@ -5,8 +5,6 @@ import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DollarSign, TrendingUp, CheckCircle2, Clock } from "lucide-react";
 
-const COMISSAO_POR_FECHADO = 50; // R$
-
 function moeda(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
@@ -15,17 +13,29 @@ export default async function ConsultorFinanceiroPage() {
   const consultor = await getConsultorLogado();
   if (!consultor) redirect("/consultor/login");
 
-  const { data: leads } = await supabaseAdmin
-    .from("indicacoes")
-    .select("id, nome_lead, telefone_lead, status, criado_em, indicadores(nome)")
-    .eq("consultor_id", consultor.id)
-    .order("criado_em", { ascending: false });
+  const [leadsRes, configRes] = await Promise.all([
+    supabaseAdmin
+      .from("indicacoes")
+      .select("id, nome_lead, telefone_lead, status, criado_em, comissao_valor, indicadores(nome)")
+      .eq("consultor_id", consultor.id)
+      .order("criado_em", { ascending: false }),
+    supabaseAdmin
+      .from("configuracoes")
+      .select("comissao_consultor")
+      .limit(1)
+      .single(),
+  ]);
 
-  const todos = leads ?? [];
+  // Fallback de R$100 se a configuracao do master nao estiver definida
+  const comissaoPadrao = configRes.data?.comissao_consultor ?? 100;
+
+  const todos = leadsRes.data ?? [];
   const fechados = todos.filter((l) => l.status === "fechado");
   const emAndamento = todos.filter((l) => l.status === "contato");
-  const totalGanho = fechados.length * COMISSAO_POR_FECHADO;
-  const potencial = (fechados.length + emAndamento.length) * COMISSAO_POR_FECHADO;
+
+  // Usa comissao_valor salvo no momento do fechamento; fallback para o padrao atual
+  const totalGanho = fechados.reduce((acc, l) => acc + ((l as { comissao_valor?: number | null }).comissao_valor ?? comissaoPadrao), 0);
+  const potencial = totalGanho + emAndamento.length * comissaoPadrao;
 
   return (
     <div className="flex-1 flex flex-col">
@@ -84,7 +94,9 @@ export default async function ConsultorFinanceiroPage() {
                         {(l.indicadores as any)?.nome ?? <span className="italic text-muted-foreground/50">direto</span>}
                       </td>
                       <td className="px-6 py-3.5">
-                        <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">{moeda(COMISSAO_POR_FECHADO)}</span>
+                        <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
+                          {moeda((l as { comissao_valor?: number | null }).comissao_valor ?? comissaoPadrao)}
+                        </span>
                       </td>
                       <td className="px-6 py-3.5 text-xs text-muted-foreground">{new Date(l.criado_em).toLocaleDateString("pt-BR")}</td>
                     </tr>

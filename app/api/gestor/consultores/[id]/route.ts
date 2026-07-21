@@ -54,9 +54,11 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const pertence = await verificarPosse(gestor.id, id);
   if (!pertence) return NextResponse.json({ error: "Consultor nao encontrado" }, { status: 404 });
 
+  // Desativa o consultor em vez de apenas desvincular — consultor desvinculado continuaria
+  // operando normalmente; desativado perde o acesso imediatamente
   const { error } = await supabaseAdmin
     .from("consultores")
-    .update({ gestor_id: null })
+    .update({ status: "inativo", gestor_id: null })
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: "Erro ao remover" }, { status: 500 });

@@ -17,13 +17,15 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const pageParam = searchParams.get("page");
 
-  // Modo legado: sem "page" => retorna array completo (usado pelo kanban)
+  // Modo legado: sem "page" => retorna os ultimos 500 leads (usado pelo kanban)
+  // Limite evita timeout em consultores com volume alto
   if (!pageParam) {
     const { data, error } = await supabaseAdmin
       .from("indicacoes")
       .select(CAMPOS)
       .eq("consultor_id", consultorId)
-      .order("criado_em", { ascending: false });
+      .order("criado_em", { ascending: false })
+      .limit(500);
 
     if (error) return NextResponse.json({ error: "Erro ao buscar leads" }, { status: 500 });
     return NextResponse.json(data ?? []);
@@ -49,8 +51,9 @@ export async function GET(request: NextRequest) {
   }
 
   if (busca) {
-    // Busca por placa (ilike) ou nome_lead (ilike)
-    query = query.or(`placa.ilike.%${busca}%,nome_lead.ilike.%${busca}%`);
+    // Escapa caracteres especiais do PostgREST antes de interpolar na expressao .or()
+    const buscaSegura = busca.replace(/[%_,.()"'\\]/g, "\\$&").slice(0, 100);
+    query = query.or(`placa.ilike.%${buscaSegura}%,nome_lead.ilike.%${buscaSegura}%`);
   }
 
   const { data, count, error } = await query;

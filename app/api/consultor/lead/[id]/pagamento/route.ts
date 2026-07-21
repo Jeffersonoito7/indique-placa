@@ -6,6 +6,8 @@ import { validarSessao } from "@/lib/sessoes";
 const BUCKET = "comprovantes";
 const MAX_SIZE = 5 * 1024 * 1024; // 5MB
 const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp", "application/pdf"];
+// URL assinada valida por 1 hora — tempo suficiente para exibir na tela sem expor o arquivo permanentemente
+const SIGNED_URL_EXPIRES = 3600;
 
 export async function POST(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const cookieStore = await cookies();
@@ -52,7 +54,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Arquivo muito grande. Máximo: 5MB." }, { status: 400 });
   }
 
-  // Garantir bucket existe
+  // Garantir bucket existe (privado)
   const { data: buckets } = await supabaseAdmin.storage.listBuckets();
   const bucketExiste = buckets?.some((b) => b.name === BUCKET);
   if (!bucketExiste) {
@@ -71,13 +73,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Erro ao enviar comprovante" }, { status: 500 });
   }
 
-  const { data: urlData } = supabaseAdmin.storage.from(BUCKET).getPublicUrl(path);
+  // Bucket e privado: gera URL assinada temporaria (1h) em vez de URL publica permanente
+  const { data: signedData, error: signedError } = await supabaseAdmin.storage
+    .from(BUCKET)
+    .createSignedUrl(path, SIGNED_URL_EXPIRES);
 
+  if (signedError || !signedData?.signedUrl) {
+    return NextResponse.json({ error: "Erro ao gerar URL do comprovante" }, { status: 500 });
+  }
+
+  // Salva apenas o path no banco; a URL assinada e gerada sob demanda ao exibir
   const { error: updateError } = await supabaseAdmin
     .from("indicacoes")
     .update({
       pago_em: new Date().toISOString(),
-      comprovante_url: urlData.publicUrl,
+      comprovante_url: path,
       valor_pago: valor > 0 ? valor : null,
     })
     .eq("id", id);
@@ -86,5 +96,41 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Erro ao registrar pagamento" }, { status: 500 });
   }
 
-  return NextResponse.json({ ok: true, comprovante_url: urlData.publicUrl });
+  return NextResponse.json({ ok: true, comprovante_url: signedData.signedUrl });
+}
+
+// GET: gera URL assinada temporaria para visualizar o comprovante
+export async function GET(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
+  const cookieStore = await cookies();
+  const token = cookieStore.get("consultor_auth")?.value;
+  if (!token) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+
+  const consultorId = await validarSessao(token, "consultor");
+  if (!consultorId) return NextResponse.json({ error: "Sessão expirada" }, { status: 401 });
+
+  const { id } = await params;
+
+  const { data: lead } = await supabaseAdmin
+    .from("indicacoes")
+    .select("consultor_id, comprovante_url")
+    .eq("id", id)
+    .single();
+
+  if (!lead || lead.consultor_id !== consultorId) {
+    return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
+  }
+
+  if (!lead.comprovante_url) {
+    return NextResponse.json({ error: "Sem comprovante" }, { status: 404 });
+  }
+
+  const { data: signedData, error } = await supabaseAdmin.storage
+    .from(BUCKET)
+    .createSignedUrl(lead.comprovante_url, SIGNED_URL_EXPIRES);
+
+  if (error || !signedData?.signedUrl) {
+    return NextResponse.json({ error: "Erro ao gerar URL" }, { status: 500 });
+  }
+
+  return NextResponse.json({ url: signedData.signedUrl });
 }
