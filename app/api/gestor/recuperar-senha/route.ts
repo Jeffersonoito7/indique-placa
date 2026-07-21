@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { enviarEmailOTP } from "@/lib/email";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
@@ -14,6 +15,14 @@ const schemaEtapa2 = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const { allowed, retryAfter } = rateLimit(getRateLimitKey(req, "gestor-recuperar-senha"), 5, 15 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Muitas tentativas. Aguarde 15 minutos." },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } }
+    );
+  }
+
   let body: unknown;
   try { body = await req.json(); } catch {
     return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });

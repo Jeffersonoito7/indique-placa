@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
   const { data: consultores, error: errCons } = await supabaseAdmin
     .from("consultores")
-    .select("id, nome, fone, ativo");
+    .select("id, nome, fone, status");
 
   if (errCons) return NextResponse.json({ error: errCons.message }, { status: 500 });
 
@@ -37,7 +37,7 @@ export async function GET(req: NextRequest) {
       id: c.id as string,
       nome: c.nome as string,
       fone: c.fone as string,
-      ativo: c.ativo as boolean,
+      ativo: (c.status as string) === "ativo",
       total_indicacoes: todas.length,
       total_fechadas: fechadas.length,
       taxa_conversao: conversao,

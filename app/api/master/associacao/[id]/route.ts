@@ -7,7 +7,11 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
   const token = req.cookies.get("master_auth")?.value ?? "";
   if (!verificarToken(token)) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-  const { error } = await supabaseAdmin.from("associacoes").delete().eq("id", id);
+  // Soft delete: mantem o registro para preservar integridade referencial com gestores, consultores e indicacoes
+  const { error } = await supabaseAdmin
+    .from("associacoes")
+    .update({ status: "inativo", atualizado_em: new Date().toISOString() })
+    .eq("id", id);
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true });

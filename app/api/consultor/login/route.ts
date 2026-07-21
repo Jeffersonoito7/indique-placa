@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
 
   const { data: consultor } = await supabaseAdmin
     .from("consultores")
-    .select("id, nome, fone, senha, status")
+    .select("id, nome, fone, senha_hash, status")
     .eq("fone", tel)
     .single();
 
@@ -43,18 +43,14 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Conta inativa. Entre em contato com o suporte." }, { status: 403 });
   }
 
-  const senhaCorreta = consultor.senha?.startsWith("$2b$") || consultor.senha?.startsWith("$2a$")
-    ? await bcrypt.compare(senha, consultor.senha)
-    : consultor.senha === senha;
-
-  if (!senhaCorreta) {
+  if (!consultor.senha_hash) {
     return NextResponse.json({ error: "Telefone ou senha incorretos" }, { status: 401 });
   }
 
-  // Migrar senha plaintext para bcrypt na primeira autenticacao bem-sucedida
-  if (!(consultor.senha?.startsWith("$2b$") || consultor.senha?.startsWith("$2a$"))) {
-    const hash = await bcrypt.hash(senha, 12);
-    await supabaseAdmin.from("consultores").update({ senha: hash }).eq("id", consultor.id);
+  const senhaCorreta = await bcrypt.compare(senha, consultor.senha_hash);
+
+  if (!senhaCorreta) {
+    return NextResponse.json({ error: "Telefone ou senha incorretos" }, { status: 401 });
   }
 
   const token = await criarSessao(consultor.id, "consultor");

@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { enviarEmailOTP } from "@/lib/email";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
@@ -14,21 +15,30 @@ const schemaEtapa2 = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const { allowed, retryAfter } = rateLimit(getRateLimitKey(req, "consultor-recuperar-senha"), 5, 15 * 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Muitas tentativas. Aguarde 15 minutos." },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } }
+    );
+  }
+
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const etapa2 = schemaEtapa2.safeParse(body);
   if (etapa2.success) {
     const { email, codigo, novaSenha } = etapa2.data;
-    const entrada = otpStore.get(email);
+    const emailNorm = email.toLowerCase();
+    const entrada = otpStore.get(emailNorm);
     if (!entrada || Date.now() > entrada.expira || entrada.codigo !== codigo) {
       return NextResponse.json({ error: "Código inválido ou expirado" }, { status: 400 });
     }
-    const { data: consultor } = await supabaseAdmin.from("consultores").select("id").eq("email", email).single();
-    if (!consultor) { otpStore.delete(email); return NextResponse.json({ error: "Conta não encontrada" }, { status: 404 }); }
+    const { data: consultor } = await supabaseAdmin.from("consultores").select("id").eq("email", emailNorm).single();
+    if (!consultor) { otpStore.delete(emailNorm); return NextResponse.json({ error: "Conta não encontrada" }, { status: 404 }); }
     const hash = await bcrypt.hash(novaSenha, 10);
-    await supabaseAdmin.from("consultores").update({ senha: hash }).eq("id", consultor.id);
-    otpStore.delete(email);
+    await supabaseAdmin.from("consultores").update({ senha_hash: hash }).eq("id", consultor.id);
+    otpStore.delete(emailNorm);
     return NextResponse.json({ ok: true });
   }
 
@@ -36,11 +46,12 @@ export async function POST(req: NextRequest) {
   if (!etapa1.success) return NextResponse.json({ error: "Email inválido" }, { status: 400 });
 
   const { email } = etapa1.data;
-  const { data: consultor } = await supabaseAdmin.from("consultores").select("nome, email").eq("email", email).single();
+  const emailNorm = email.toLowerCase();
+  const { data: consultor } = await supabaseAdmin.from("consultores").select("nome, email").eq("email", emailNorm).single();
   if (consultor) {
     const codigo = String(Math.floor(100000 + Math.random() * 900000));
-    otpStore.set(email, { codigo, expira: Date.now() + 10 * 60 * 1000 });
-    await enviarEmailOTP({ email, codigo, nome: consultor.nome });
+    otpStore.set(emailNorm, { codigo, expira: Date.now() + 10 * 60 * 1000 });
+    await enviarEmailOTP({ email: emailNorm, codigo, nome: consultor.nome });
   }
   return NextResponse.json({ ok: true });
 }
