@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
       nome,
       email: email ? email.toLowerCase() : null,
       telefone: telefone.replace(/\D/g, ""),
-      senha_hash: senhaHash,
+      senha: senhaHash,
       consultor_id: null,
     })
     .select("id, nome, telefone, criado_em")
