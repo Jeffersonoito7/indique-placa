@@ -208,6 +208,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
     efi_client_id: assoc.efi_client_id ?? "",
     efi_client_secret: assoc.efi_client_secret ?? "",
     efi_pix_key: assoc.efi_pix_key ?? "",
+    nova_senha: "",
   });
   const [mostrarSecret, setMostrarSecret] = useState(false);
   const [salvando, setSalvando] = useState(false);
@@ -228,6 +229,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
         efi_client_id: form.efi_client_id || null,
         efi_client_secret: form.efi_client_secret || null,
         efi_pix_key: form.efi_pix_key || null,
+        nova_senha: form.nova_senha || undefined,
       }),
     });
     setSalvando(false);
@@ -371,6 +373,19 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
                   value={form.valor_mensalidade_consultor_pro}
                   onChange={(e) => set("valor_mensalidade_consultor_pro", parseFloat(e.target.value) || 0)}
                 />
+              </div>
+
+              <div className="col-span-2">
+                <label className={labelCls}>Senha de Acesso da Associacao</label>
+                <input
+                  className={inputCls}
+                  type="password"
+                  placeholder="Deixe em branco para nao alterar"
+                  value={form.nova_senha}
+                  onChange={(e) => set("nova_senha", e.target.value)}
+                  autoComplete="new-password"
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">Senha usada para a associacao acessar o proprio painel.</p>
               </div>
 
               <div className="col-span-2">

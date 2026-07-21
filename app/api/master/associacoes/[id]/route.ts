@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { verificarToken } from "@/lib/master-token";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 
 function auth(req: NextRequest) {
@@ -40,6 +41,7 @@ const schemaAtualizar = z.object({
   efi_client_id: z.string().optional(),
   efi_client_secret: z.string().optional(),
   efi_pix_key: z.string().optional(),
+  nova_senha: z.string().min(6).max(128).optional(),
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -50,7 +52,12 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const parsed = schemaAtualizar.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
 
-  const updates = { ...parsed.data, atualizado_em: new Date().toISOString() };
+  const { nova_senha, ...resto } = parsed.data;
+  const updates: Record<string, unknown> = { ...resto, atualizado_em: new Date().toISOString() };
+  if (nova_senha) {
+    updates.senha_hash = await bcrypt.hash(nova_senha, 10);
+  }
+  delete updates.nova_senha;
 
   const { data, error } = await supabaseAdmin
     .from("associacoes")
