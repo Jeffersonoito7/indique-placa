@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { enviarEmailOTP } from "@/lib/email";
+import { criarOTP, validarOTP } from "@/lib/otp";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-
-const otpStore = new Map<string, { codigo: string; expira: number }>();
 
 const schemaEtapa1 = z.object({ email: z.string().email() });
 const schemaEtapa2 = z.object({
@@ -28,14 +27,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });
   }
 
-  // Etapa 2: validar codigo e redefinir senha
   const etapa2 = schemaEtapa2.safeParse(body);
   if (etapa2.success) {
     const { email, codigo, novaSenha } = etapa2.data;
     const emailNorm = email.toLowerCase();
-    const entrada = otpStore.get(emailNorm);
 
-    if (!entrada || Date.now() > entrada.expira || entrada.codigo !== codigo) {
+    const valido = await validarOTP(emailNorm, "gestor", codigo);
+    if (!valido) {
       return NextResponse.json({ error: "Código inválido ou expirado" }, { status: 400 });
     }
 
@@ -45,18 +43,14 @@ export async function POST(req: NextRequest) {
       .eq("email", emailNorm)
       .single();
 
-    if (!gestor) {
-      otpStore.delete(emailNorm);
-      return NextResponse.json({ error: "Conta não encontrada" }, { status: 404 });
-    }
+    if (!gestor) return NextResponse.json({ error: "Conta não encontrada" }, { status: 404 });
 
     const hash = await bcrypt.hash(novaSenha, 10);
     await supabaseAdmin.from("gestores").update({ senha_hash: hash }).eq("id", gestor.id);
-    otpStore.delete(emailNorm);
+
     return NextResponse.json({ ok: true });
   }
 
-  // Etapa 1: enviar codigo por email
   const etapa1 = schemaEtapa1.safeParse(body);
   if (!etapa1.success) return NextResponse.json({ error: "Email inválido" }, { status: 400 });
 
@@ -69,10 +63,8 @@ export async function POST(req: NextRequest) {
     .eq("email", emailNorm)
     .single();
 
-  // Sempre retorna ok para nao revelar se o email existe
   if (gestor) {
-    const codigo = String(Math.floor(100000 + Math.random() * 900000));
-    otpStore.set(emailNorm, { codigo, expira: Date.now() + 10 * 60 * 1000 });
+    const codigo = await criarOTP(emailNorm, "gestor");
     await enviarEmailOTP({ email: emailNorm, codigo, nome: gestor.nome });
   }
 

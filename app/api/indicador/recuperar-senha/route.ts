@@ -1,11 +1,10 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { enviarEmailOTP } from "@/lib/email";
+import { criarOTP, validarOTP } from "@/lib/otp";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
-
-const otpStore = new Map<string, { codigo: string; expira: number }>();
 
 const schemaEtapa1 = z.object({ email: z.string().email() });
 const schemaEtapa2 = z.object({
@@ -30,15 +29,23 @@ export async function POST(req: NextRequest) {
   if (etapa2.success) {
     const { email, codigo, novaSenha } = etapa2.data;
     const emailNorm = email.toLowerCase();
-    const entrada = otpStore.get(emailNorm);
-    if (!entrada || Date.now() > entrada.expira || entrada.codigo !== codigo) {
+
+    const valido = await validarOTP(emailNorm, "indicador", codigo);
+    if (!valido) {
       return NextResponse.json({ error: "Código inválido ou expirado" }, { status: 400 });
     }
-    const { data: indicador } = await supabaseAdmin.from("indicadores").select("id").eq("email", emailNorm).single();
-    if (!indicador) { otpStore.delete(emailNorm); return NextResponse.json({ error: "Conta não encontrada" }, { status: 404 }); }
+
+    const { data: indicador } = await supabaseAdmin
+      .from("indicadores")
+      .select("id")
+      .eq("email", emailNorm)
+      .single();
+
+    if (!indicador) return NextResponse.json({ error: "Conta não encontrada" }, { status: 404 });
+
     const hash = await bcrypt.hash(novaSenha, 10);
     await supabaseAdmin.from("indicadores").update({ senha: hash }).eq("id", indicador.id);
-    otpStore.delete(emailNorm);
+
     return NextResponse.json({ ok: true });
   }
 
@@ -47,11 +54,17 @@ export async function POST(req: NextRequest) {
 
   const { email } = etapa1.data;
   const emailNorm = email.toLowerCase();
-  const { data: indicador } = await supabaseAdmin.from("indicadores").select("nome, email").eq("email", emailNorm).single();
+
+  const { data: indicador } = await supabaseAdmin
+    .from("indicadores")
+    .select("nome, email")
+    .eq("email", emailNorm)
+    .single();
+
   if (indicador) {
-    const codigo = String(Math.floor(100000 + Math.random() * 900000));
-    otpStore.set(emailNorm, { codigo, expira: Date.now() + 10 * 60 * 1000 });
+    const codigo = await criarOTP(emailNorm, "indicador");
     await enviarEmailOTP({ email: emailNorm, codigo, nome: indicador.nome });
   }
+
   return NextResponse.json({ ok: true });
 }
