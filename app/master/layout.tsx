@@ -2,7 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, Building2, Users, UserCheck, ClipboardList, Trophy, Link2, Settings, DollarSign, BarChart2, ShieldCheck } from "lucide-react";
+import { LayoutDashboard, Building2, Users, UserCheck, ClipboardList, Trophy, Link2, Settings, DollarSign, BarChart2, ShieldCheck, BarChart3, Activity } from "lucide-react";
+import MasterHealthBanner from "@/components/master-health-banner";
 
 const navItems = [
   { group: "Visão Geral", items: [
@@ -18,6 +19,10 @@ const navItems = [
     { href: "/master/leads", label: "Leads", icon: ClipboardList },
     { href: "/master/ranking", label: "Ranking", icon: Trophy },
     { href: "/master/relatorio", label: "Relatorio", icon: BarChart2 },
+  ]},
+  { group: "Analytics", items: [
+    { href: "/master/bi", label: "Business Intelligence", icon: BarChart3 },
+    { href: "/master/health", label: "Health Monitor", icon: Activity },
   ]},
   { group: "Administração", items: [
     { href: "/master/financeiro", label: "Financeiro", icon: DollarSign },
@@ -45,6 +50,7 @@ export default function MasterLayout({ children }: { children: React.ReactNode }
       loginRedirect="/master/login"
       accentColor="#3b82f6"
     >
+      <MasterHealthBanner />
       {children}
     </AppShell>
   );
