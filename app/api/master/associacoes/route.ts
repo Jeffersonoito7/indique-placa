@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { verificarToken } from "@/lib/master-token";
 import { z } from "zod";
+import bcrypt from "bcryptjs";
 
 function auth(req: NextRequest) {
   return verificarToken(req.cookies.get("master_auth")?.value ?? "");
@@ -49,6 +50,7 @@ const schemaCriar = z.object({
   cidade: z.string().optional(),
   estado: z.string().optional(),
   plano: z.enum(["trial", "bronze", "prata", "ouro"]).default("trial"),
+  nova_senha: z.string().min(6).max(128).optional(),
 });
 
 export async function POST(req: NextRequest) {
@@ -58,7 +60,7 @@ export async function POST(req: NextRequest) {
   const parsed = schemaCriar.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: parsed.error.flatten() }, { status: 422 });
 
-  const { nome, slug, email, fone, cidade, estado, plano } = parsed.data;
+  const { nome, slug, email, fone, cidade, estado, plano, nova_senha } = parsed.data;
 
   const { data: existente } = await supabaseAdmin
     .from("associacoes")
@@ -68,9 +70,14 @@ export async function POST(req: NextRequest) {
 
   if (existente) return NextResponse.json({ error: "Slug ja esta em uso" }, { status: 409 });
 
+  const senhaHash = nova_senha ? await bcrypt.hash(nova_senha, 10) : null;
+
   const { data, error } = await supabaseAdmin
     .from("associacoes")
-    .insert({ nome, slug, email: email || null, fone, cidade, estado, plano })
+    .insert({
+      nome, slug, email: email || null, fone, cidade, estado, plano,
+      ...(senhaHash ? { senha_hash: senhaHash } : {}),
+    })
     .select("id, nome, slug, status, plano, criado_em")
     .single();
 

@@ -16,6 +16,12 @@ type Consultor = {
   criado_em: string;
 };
 
+type Gestor = {
+  id: string;
+  nome: string;
+  email: string;
+};
+
 function fmtTelBR(v: string): string {
   const n = v.replace(/\D/g, "").slice(0, 11);
   if (n.length <= 2) return n.length ? `(${n}` : "";
@@ -26,18 +32,23 @@ function fmtTelBR(v: string): string {
 
 export default function AssociacaoConsultoresPage() {
   const [consultores, setConsultores] = useState<Consultor[]>([]);
+  const [gestores, setGestores] = useState<Gestor[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState("");
   const [modalAberto, setModalAberto] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erroModal, setErroModal] = useState("");
-  const [form, setForm] = useState({ nome: "", email: "", fone: "", senha: "" });
+  const [form, setForm] = useState({ nome: "", email: "", fone: "", senha: "", gestor_id: "" });
 
   async function carregar() {
     setCarregando(true);
     try {
-      const res = await fetch("/api/associacao/consultores");
-      if (res.ok) setConsultores(await res.json());
+      const [resC, resG] = await Promise.all([
+        fetch("/api/associacao/consultores"),
+        fetch("/api/associacao/gestores"),
+      ]);
+      if (resC.ok) setConsultores(await resC.json());
+      if (resG.ok) setGestores(await resG.json());
     } finally {
       setCarregando(false);
     }
@@ -55,17 +66,22 @@ export default function AssociacaoConsultoresPage() {
     setErroModal("");
     setEnviando(true);
     try {
+      const payload = {
+        ...form,
+        fone: form.fone.replace(/\D/g, ""),
+        gestor_id: form.gestor_id || null,
+      };
       const res = await fetch("/api/associacao/consultores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, fone: form.fone.replace(/\D/g, "") }),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
       if (!res.ok) {
         setErroModal(json.error ?? "Erro ao adicionar consultor");
       } else {
         setModalAberto(false);
-        setForm({ nome: "", email: "", fone: "", senha: "" });
+        setForm({ nome: "", email: "", fone: "", senha: "", gestor_id: "" });
         await carregar();
       }
     } catch {
@@ -241,6 +257,19 @@ export default function AssociacaoConsultoresPage() {
                   onChange={(e) => setForm((f) => ({ ...f, fone: fmtTelBR(e.target.value) }))}
                   className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
                 />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Gestor responsavel</label>
+                <select
+                  value={form.gestor_id}
+                  onChange={(e) => setForm((f) => ({ ...f, gestor_id: e.target.value }))}
+                  className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="">Sem gestor (definir depois)</option>
+                  {gestores.map((g) => (
+                    <option key={g.id} value={g.id}>{g.nome} — {g.email}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Senha inicial</label>

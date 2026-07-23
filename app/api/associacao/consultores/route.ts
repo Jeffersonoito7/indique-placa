@@ -27,6 +27,7 @@ const postSchema = z.object({
   email: z.string().email(),
   fone: z.string().min(10).max(20),
   senha: z.string().min(6).max(128),
+  gestor_id: z.string().uuid().optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
@@ -39,8 +40,20 @@ export async function POST(req: NextRequest) {
   const parsed = postSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
 
-  const { nome, email, fone, senha } = parsed.data;
+  const { nome, email, fone, senha, gestor_id } = parsed.data;
   const senhaHash = await bcrypt.hash(senha, 10);
+
+  // Valida que o gestor_id pertence a esta associacao
+  let gestorIdFinal: string | null = gestor_id ?? null;
+  if (gestorIdFinal) {
+    const { data: gestorCheck } = await supabaseAdmin
+      .from("gestores")
+      .select("id")
+      .eq("id", gestorIdFinal)
+      .eq("associacao_id", assoc.id)
+      .maybeSingle();
+    if (!gestorCheck) gestorIdFinal = null;
+  }
 
   const { data, error } = await supabaseAdmin
     .from("consultores")
@@ -50,6 +63,7 @@ export async function POST(req: NextRequest) {
       fone: fone.replace(/\D/g, ""),
       senha_hash: senhaHash,
       associacao_id: assoc.id,
+      gestor_id: gestorIdFinal,
       status: "ativo",
       plano: "free",
     })

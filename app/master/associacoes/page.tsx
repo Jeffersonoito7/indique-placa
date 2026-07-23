@@ -63,7 +63,7 @@ function gerarSlug(nome: string) {
 }
 
 function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalvo: () => void }) {
-  const [form, setForm] = useState({ nome: "", slug: "", email: "", fone: "", cidade: "", estado: "", plano: "trial" });
+  const [form, setForm] = useState({ nome: "", slug: "", email: "", fone: "", cidade: "", estado: "", plano: "trial", nova_senha: "" });
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
 
@@ -81,7 +81,7 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
     const res = await fetch("/api/master/associacoes", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(form),
+      body: JSON.stringify({ ...form, nova_senha: form.nova_senha || undefined }),
     });
     setSalvando(false);
     if (!res.ok) {
@@ -170,6 +170,18 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
               <option value="prata">Prata</option>
               <option value="ouro">Ouro</option>
             </select>
+          </div>
+          <div className="col-span-2">
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Senha de Acesso</label>
+            <input
+              className="w-full h-9 px-3 rounded-lg border border-border bg-muted/30 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+              type="password"
+              placeholder="Minimo 6 caracteres"
+              value={form.nova_senha}
+              onChange={(e) => set("nova_senha", e.target.value)}
+              autoComplete="new-password"
+            />
+            <p className="text-[10px] text-muted-foreground mt-1">Senha que a associacao usara para acessar o proprio painel.</p>
           </div>
           {erro && <p className="col-span-2 text-xs text-red-500">{erro}</p>}
         </div>

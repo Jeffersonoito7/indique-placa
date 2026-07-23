@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, use } from "react";
+import { ESTADOS_NOMES, ESTADOS_CIDADES } from "@/lib/cidades-brasil";
 
 const STYLES = `
   @keyframes gradientShift {
@@ -65,6 +66,7 @@ export default function CapturaConsultorPage({ params }: { params: Promise<{ ges
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [email, setEmail] = useState("");
+  const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
   const [senha, setSenha] = useState("");
   const [verSenha, setVerSenha] = useState(false);
@@ -85,12 +87,14 @@ export default function CapturaConsultorPage({ params }: { params: Promise<{ ges
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro("");
+    if (!estado) { setErro("Selecione o estado."); return; }
+    if (!cidade) { setErro("Selecione a cidade."); return; }
     setCarregando(true);
     try {
       const res = await fetch(`/api/publico/captura-consultor/${gestorId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, telefone, email, cidade, senha }),
+        body: JSON.stringify({ nome, telefone, email, cidade: cidade ? `${cidade} - ${estado}` : estado, senha }),
       });
       const json = await res.json();
       if (!res.ok) setErro(json.error ?? "Erro ao cadastrar");
@@ -145,7 +149,32 @@ export default function CapturaConsultorPage({ params }: { params: Promise<{ ges
                 <input className="cap-campo" type="text" placeholder="Seu nome completo" value={nome} required onChange={(e) => setNome(e.target.value)} />
                 <input className="cap-campo" type="tel" placeholder="WhatsApp (11) 99999-9999" value={telefone} required onChange={(e) => setTelefone(e.target.value)} />
                 <input className="cap-campo" type="email" placeholder="seu@email.com" value={email} required autoComplete="off" onChange={(e) => setEmail(e.target.value)} />
-                <input className="cap-campo" type="text" placeholder="Cidade" value={cidade} required onChange={(e) => setCidade(e.target.value)} />
+                <select
+                  className="cap-campo"
+                  required
+                  value={estado}
+                  onChange={(e) => { setEstado(e.target.value); setCidade(""); }}
+                  style={{ appearance: "none" }}
+                >
+                  <option value="">Estado</option>
+                  {Object.entries(ESTADOS_NOMES).sort(([,a],[,b]) => a.localeCompare(b)).map(([uf, nome]) => (
+                    <option key={uf} value={uf}>{nome} ({uf})</option>
+                  ))}
+                </select>
+                {estado && (
+                  <select
+                    className="cap-campo"
+                    required
+                    value={cidade}
+                    onChange={(e) => setCidade(e.target.value)}
+                    style={{ appearance: "none" }}
+                  >
+                    <option value="">Cidade</option>
+                    {(ESTADOS_CIDADES[estado] ?? []).map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                )}
                 <div className="cap-senha-wrap">
                   <input
                     className="cap-campo"
