@@ -11,6 +11,7 @@ const schema = z.object({
   email: z.string().email().max(200),
   cidade: z.string().min(2).max(100),
   associacao: z.string().min(2).max(100),
+  associacao_id: z.string().uuid().optional().nullable(),
   senha: z.string().min(6).max(128),
 });
 
@@ -33,7 +34,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Preencha todos os campos corretamente" }, { status: 400 });
   }
 
-  const { nome, telefone, email, cidade, associacao, senha } = parsed.data;
+  const { nome, telefone, email, cidade, associacao, associacao_id, senha } = parsed.data;
   const tel = telefone.replace(/\D/g, "");
 
   const { data: existenteFone } = await supabaseAdmin
@@ -58,12 +59,24 @@ export async function POST(req: NextRequest) {
 
   const senha_hash = await bcrypt.hash(senha, 10);
 
+  // Se associacao_id valido, confirma que existe antes de vincular
+  let assocIdFinal: string | null = associacao_id ?? null;
+  if (assocIdFinal) {
+    const { data: assocCheck } = await supabaseAdmin
+      .from("associacoes")
+      .select("id")
+      .eq("id", assocIdFinal)
+      .single();
+    if (!assocCheck) assocIdFinal = null;
+  }
+
   const { error } = await supabaseAdmin.from("consultores").insert({
     nome,
     fone: tel,
     email: email.toLowerCase(),
     cidade,
     associacao,
+    associacao_id: assocIdFinal,
     senha_hash,
     status: "ativo",
   });

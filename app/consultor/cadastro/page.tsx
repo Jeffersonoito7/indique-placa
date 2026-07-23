@@ -417,7 +417,8 @@ export default function ConsultorCadastroPage() {
   const [email, setEmail] = useState("");
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
-  const [associacao, setAssociacao] = useState("");
+  const [associacaoId, setAssociacaoId] = useState("");
+  const [associacaoNome, setAssociacaoNome] = useState("");
   const [associacaoTexto, setAssociacaoTexto] = useState("");
   const [associacoes, setAssociacoes] = useState<Associacao[]>([]);
   const [senha, setSenha] = useState("");
@@ -427,8 +428,9 @@ export default function ConsultorCadastroPage() {
   const [sucesso, setSucesso] = useState(false);
 
   /* demo */
-  const [placas, setPlacas] = useState(127);
-  const [indicadores, setIndicadores] = useState(18);
+  const [placasBase, setPlacasBase] = useState(0);
+  const [placas, setPlacas] = useState(0);
+  const [indicadores, setIndicadores] = useState(0);
   const [moneyCoins, setMoneyCoins] = useState<Money[]>([]);
   const [activeLead, setActiveLead] = useState(0);
   const coinId = useRef(0);
@@ -437,6 +439,20 @@ export default function ConsultorCadastroPage() {
     fetch("/api/publico/associacoes")
       .then(r => r.json())
       .then(d => setAssociacoes(d.associacoes ?? []));
+    // Busca contadores reais do banco
+    fetch("/api/publico/stats")
+      .then(r => r.json())
+      .then(d => {
+        const base = d.placas_mes ?? 0;
+        setPlacasBase(base);
+        setPlacas(base);
+        setIndicadores(d.consultores_ativos ?? 0);
+      })
+      .catch(() => {
+        // fallback silencioso se API falhar
+        setPlacas(0);
+        setIndicadores(0);
+      });
   }, []);
 
   /* contador de placas sobe sozinho */
@@ -476,14 +492,16 @@ export default function ConsultorCadastroPage() {
     if (tel.length < 10) { setErro("Digite um WhatsApp valido com DDD"); return; }
     if (!estado) { setErro("Selecione o estado"); return; }
     if (!cidade) { setErro("Selecione a cidade"); return; }
-    const nomeAssoc = associacao === "outra" ? associacaoTexto : associacao;
+    const nomeAssoc = associacaoId === "outra" ? associacaoTexto : associacaoNome;
     if (!nomeAssoc.trim()) { setErro("Informe a associação"); return; }
     if (senha.length < 6) { setErro("A senha precisa ter no mínimo 6 caracteres"); return; }
     setCarregando(true);
     try {
+      const payload: Record<string, unknown> = { nome, telefone, email, cidade: `${cidade} - ${estado}`, associacao: nomeAssoc, senha };
+      if (associacaoId && associacaoId !== "outra") payload.associacao_id = associacaoId;
       const res = await fetch("/api/publico/consultor-cadastro", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, telefone, email, cidade: `${cidade} - ${estado}`, associacao: nomeAssoc, senha }),
+        body: JSON.stringify(payload),
       });
       const json = await res.json();
       if (!res.ok) setErro(json.error ?? "Erro ao cadastrar");
@@ -548,7 +566,7 @@ export default function ConsultorCadastroPage() {
                   <div className="demo-col" style={{ position: "relative", overflow: "hidden" }}>
                     <div className="demo-col-label">Placas vendidas este mes</div>
                     <div className="big-counter" key={placas}>{placas}</div>
-                    <div className="counter-label">+{Math.floor((placas - 127) / 3 + 1)} agora mesmo</div>
+                    <div className="counter-label">{placas > placasBase ? `+${placas - placasBase} agora mesmo` : "ao vivo"}</div>
 
                     {/* barras de crescimento */}
                     <div className="bar-chart" style={{ marginTop: 20 }}>
@@ -648,7 +666,7 @@ export default function ConsultorCadastroPage() {
                     <span className="db-label">indicadores ativos</span>
                   </div>
                   <div className="db-item">
-                    <span className="db-val">+{placas - 127}</span>
+                    <span className="db-val">+{placas - placasBase}</span>
                     <span className="db-label">placas esta sessao</span>
                   </div>
                   <div className="db-item">
@@ -846,16 +864,21 @@ export default function ConsultorCadastroPage() {
                   <div className="campo-group">
                     <label className="campo-label">Nome da empresa</label>
                     {associacoes.length > 0 ? (
-                      <select className="campo campo-select" required value={associacao} onChange={e => setAssociacao(e.target.value)}>
+                      <select className="campo campo-select" required value={associacaoId} onChange={e => {
+                        const id = e.target.value;
+                        setAssociacaoId(id);
+                        const found = associacoes.find(a => a.id === id);
+                        setAssociacaoNome(found ? found.nome : "");
+                      }}>
                         <option value="">Selecione a associação</option>
-                        {associacoes.map(a => <option key={a.id} value={a.nome}>{a.nome}</option>)}
+                        {associacoes.map(a => <option key={a.id} value={a.id}>{a.nome}</option>)}
                         <option value="outra">Outra associação</option>
                       </select>
                     ) : (
-                      <input className="campo" type="text" placeholder="Nome da sua associação" value={associacao} required onChange={e => setAssociacao(e.target.value)} />
+                      <input className="campo" type="text" placeholder="Nome da sua associação" value={associacaoNome} required onChange={e => setAssociacaoNome(e.target.value)} />
                     )}
                   </div>
-                  {associacao === "outra" && (
+                  {associacaoId === "outra" && (
                     <div className="campo-group">
                       <label className="campo-label">Qual associação?</label>
                       <input className="campo" type="text" placeholder="Digite o nome" value={associacaoTexto} required onChange={e => setAssociacaoTexto(e.target.value)} />
