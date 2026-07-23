@@ -14,7 +14,7 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const { allowed, retryAfter } = rateLimit(getRateLimitKey(req, "nova-indicacao"), 20, 60 * 60 * 1000);
+  const { allowed, retryAfter } = await rateLimit(getRateLimitKey(req, "nova-indicacao"), 20, 60 * 60 * 1000);
   if (!allowed) {
     return NextResponse.json(
       { error: "Muitas requisicoes. Tente novamente em breve." },

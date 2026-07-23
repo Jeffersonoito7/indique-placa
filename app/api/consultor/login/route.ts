@@ -12,7 +12,7 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const { allowed, retryAfter } = rateLimit(getRateLimitKey(req, "consultor-login"), 5, 15 * 60 * 1000);
+  const { allowed, retryAfter } = await rateLimit(getRateLimitKey(req, "consultor-login"), 5, 15 * 60 * 1000);
   if (!allowed) {
     return NextResponse.json(
       { error: "Muitas tentativas. Aguarde 15 minutos." },

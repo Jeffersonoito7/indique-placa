@@ -16,7 +16,7 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const { allowed: rlAllowed } = rateLimit(`consultor-cadastro:${ip}`, 3, 60 * 1000);
+  const { allowed: rlAllowed } = await rateLimit(`consultor-cadastro:${ip}`, 3, 60 * 1000);
   if (!rlAllowed) {
     return NextResponse.json({ error: "Muitas tentativas. Aguarde 1 minuto." }, { status: 429 });
   }
