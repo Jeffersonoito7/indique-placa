@@ -2,11 +2,14 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, Users, User, UserCheck, Briefcase } from "lucide-react";
+import { LayoutDashboard, Users, User, UserCheck, Briefcase, ClipboardList } from "lucide-react";
 
 const navItems = [
   { group: "Painel", items: [
     { href: "/associacao/dashboard", label: "Dashboard", icon: LayoutDashboard },
+  ]},
+  { group: "Negocios", items: [
+    { href: "/associacao/leads", label: "Leads", icon: ClipboardList },
   ]},
   { group: "Equipe", items: [
     { href: "/associacao/gestores", label: "Gestores", icon: Briefcase },
