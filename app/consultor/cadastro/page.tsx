@@ -2,45 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
-
-const ESTADOS_CIDADES: Record<string, string[]> = {
-  "AC": ["Rio Branco","Cruzeiro do Sul","Sena Madureira","Tarauacá","Feijó"],
-  "AL": ["Maceió","Arapiraca","Palmeira dos Índios","Rio Largo","Penedo","União dos Palmares"],
-  "AM": ["Manaus","Parintins","Itacoatiara","Manacapuru","Coari","Tefé","Maués"],
-  "AP": ["Macapá","Santana","Laranjal do Jari","Oiapoque","Mazagão"],
-  "BA": ["Salvador","Feira de Santana","Vitória da Conquista","Camaçari","Juazeiro","Itabuna","Ilhéus","Lauro de Freitas","Jequié","Alagoinhas","Barreiras","Porto Seguro","Simões Filho","Paulo Afonso","Eunápolis"],
-  "CE": ["Fortaleza","Caucaia","Juazeiro do Norte","Maracanaú","Sobral","Crato","Itapipoca","Maranguape","Iguatu","Quixadá"],
-  "DF": ["Brasília","Ceilândia","Taguatinga","Planaltina","Samambaia","Santa Maria","Gama"],
-  "ES": ["Vitória","Vila Velha","Serra","Cariacica","Linhares","Cachoeiro de Itapemirim","Colatina","Guarapari"],
-  "GO": ["Goiânia","Aparecida de Goiânia","Anápolis","Rio Verde","Luziânia","Águas Lindas de Goiás","Valparaíso de Goiás","Trindade","Formosa","Novo Gama"],
-  "MA": ["São Luís","Imperatriz","São José de Ribamar","Timon","Caxias","Codó","Paço do Lumiar","Açailândia","Bacabal","Balsas"],
-  "MG": ["Belo Horizonte","Uberlândia","Contagem","Juiz de Fora","Betim","Montes Claros","Ribeirão das Neves","Uberaba","Governador Valadares","Ipatinga","Sete Lagoas","Divinópolis","Santana do Paraíso","Ibirité","Poços de Caldas","Patos de Minas","Pouso Alegre","Teófilo Otoni","Barbacena","Sabará"],
-  "MS": ["Campo Grande","Dourados","Três Lagoas","Corumbá","Grande Dourados","Ponta Porã","Naviraí","Nova Andradina"],
-  "MT": ["Cuiabá","Várzea Grande","Rondonópolis","Sinop","Tangará da Serra","Cáceres","Sorriso","Lucas do Rio Verde","Primavera do Leste"],
-  "PA": ["Belém","Ananindeua","Santarém","Marabá","Castanhal","Parauapebas","Altamira","Abaetetuba","Cametá","Marituba"],
-  "PB": ["João Pessoa","Campina Grande","Santa Rita","Patos","Bayeux","Sousa","Guarabira"],
-  "PE": ["Recife","Caruaru","Petrolina","Olinda","Paulista","Palmares","Vitória de Santo Antão","Serra Talhada","Garanhuns","Jaboatão dos Guararapes","Cabo de Santo Agostinho","Camaçari"],
-  "PI": ["Teresina","Parnaíba","Picos","Piripiri","Floriano","Campo Maior","Barras"],
-  "PR": ["Curitiba","Londrina","Maringá","Ponta Grossa","Cascavel","São José dos Pinhais","Foz do Iguaçu","Colombo","Guarapuava","Paranaguá","Araucária","Toledo","Apucarana","Umuarama","Pinhais"],
-  "RJ": ["Rio de Janeiro","São Gonçalo","Duque de Caxias","Nova Iguaçu","Belford Roxo","Niterói","São João de Meriti","Campos dos Goytacazes","Petrópolis","Volta Redonda","Magé","Itaboraí","Macaé","Cabo Frio","Nova Friburgo","Resende"],
-  "RN": ["Natal","Mossoró","Parnamirim","São Gonçalo do Amarante","Caicó","Macaíba"],
-  "RO": ["Porto Velho","Ji-Paraná","Ariquemes","Vilhena","Cacoal","Rolim de Moura"],
-  "RR": ["Boa Vista","Rorainópolis","Caracaraí"],
-  "RS": ["Porto Alegre","Caxias do Sul","Pelotas","Canoas","Santa Maria","Gravataí","Viamão","Novo Hamburgo","São Leopoldo","Rio Grande","Alvorada","Passo Fundo","Sapucaia do Sul","Uruguaiana","Santa Cruz do Sul","Cachoeirinha","Bagé","Bento Gonçalves"],
-  "SC": ["Joinville","Florianópolis","Blumenau","São José","Criciúma","Chapecó","Itajaí","Lages","Jaraguá do Sul","Palhoça","Balneário Camboriú","Brusque","Tubarão","Caçador"],
-  "SE": ["Aracaju","Nossa Senhora do Socorro","Lagarto","Itabaiana","São Cristóvão","Estância"],
-  "SP": ["São Paulo","Guarulhos","Campinas","São Bernardo do Campo","Santo André","Osasco","Ribeirão Preto","Sorocaba","Mauá","São José dos Campos","Mogi das Cruzes","Santos","Diadema","Piracicaba","Bauru","São José do Rio Preto","Jundiaí","Carapicuíba","Franca","Limeira","Taubaté","Praia Grande","Caçapava","Suzano","Barueri","Taboão da Serra","Guarujá","Indaiatuba","Americana","Araraquara"],
-  "TO": ["Palmas","Araguaína","Gurupi","Porto Nacional","Paraíso do Tocantins","Colinas do Tocantins"],
-};
-
-const ESTADOS_NOMES: Record<string, string> = {
-  AC:"Acre", AL:"Alagoas", AM:"Amazonas", AP:"Amapá", BA:"Bahia", CE:"Ceará",
-  DF:"Distrito Federal", ES:"Espírito Santo", GO:"Goiás", MA:"Maranhão",
-  MG:"Minas Gerais", MS:"Mato Grosso do Sul", MT:"Mato Grosso", PA:"Pará",
-  PB:"Paraíba", PE:"Pernambuco", PI:"Piauí", PR:"Paraná", RJ:"Rio de Janeiro",
-  RN:"Rio Grande do Norte", RO:"Rondônia", RR:"Roraima", RS:"Rio Grande do Sul",
-  SC:"Santa Catarina", SE:"Sergipe", SP:"São Paulo", TO:"Tocantins",
-};
+import { ESTADOS_CIDADES, ESTADOS_NOMES } from "@/lib/cidades-brasil";
 
 /* ─── ESTILOS ─────────────────────────────────────────────────────────── */
 const STYLES = `
