@@ -201,6 +201,11 @@ export default function AssociacaoLoginPage() {
               {carregando ? "ENTRANDO..." : "ENTRAR"}
             </button>
           </form>
+          <div style={{ marginTop: 16, fontSize: 12, color: "rgba(255,255,255,.35)", textAlign: "center" }}>
+            <a href="/associacao/recuperar-senha" style={{ color: "rgba(196,181,253,.8)", textDecoration: "none" }}>
+              Esqueceu a senha?
+            </a>
+          </div>
         </div>
       </div>
     </>
