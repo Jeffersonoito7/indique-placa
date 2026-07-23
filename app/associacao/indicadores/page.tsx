@@ -13,6 +13,12 @@ type Indicador = {
   criado_em: string;
 };
 
+type Consultor = {
+  id: string;
+  nome: string;
+  email: string;
+};
+
 function fmtTelBR(v: string): string {
   const n = v.replace(/\D/g, "").slice(0, 11);
   if (n.length <= 2) return n.length ? `(${n}` : "";
@@ -23,18 +29,23 @@ function fmtTelBR(v: string): string {
 
 export default function AssociacaoIndicadoresPage() {
   const [indicadores, setIndicadores] = useState<Indicador[]>([]);
+  const [consultores, setConsultores] = useState<Consultor[]>([]);
   const [carregando, setCarregando] = useState(true);
   const [busca, setBusca] = useState("");
   const [modalAberto, setModalAberto] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erroModal, setErroModal] = useState("");
-  const [form, setForm] = useState({ nome: "", email: "", telefone: "", senha: "" });
+  const [form, setForm] = useState({ nome: "", email: "", telefone: "", senha: "", consultor_id: "" });
 
   async function carregar() {
     setCarregando(true);
     try {
-      const res = await fetch("/api/associacao/indicadores");
-      if (res.ok) setIndicadores(await res.json());
+      const [resI, resC] = await Promise.all([
+        fetch("/api/associacao/indicadores"),
+        fetch("/api/associacao/consultores"),
+      ]);
+      if (resI.ok) setIndicadores(await resI.json());
+      if (resC.ok) setConsultores(await resC.json());
     } finally {
       setCarregando(false);
     }
@@ -54,14 +65,14 @@ export default function AssociacaoIndicadoresPage() {
       const res = await fetch("/api/associacao/indicadores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...form, telefone: form.telefone.replace(/\D/g, "") }),
+        body: JSON.stringify({ ...form, telefone: form.telefone.replace(/\D/g, ""), consultor_id: form.consultor_id || null }),
       });
       const json = await res.json();
       if (!res.ok) {
         setErroModal(json.error ?? "Erro ao adicionar indicador");
       } else {
         setModalAberto(false);
-        setForm({ nome: "", email: "", telefone: "", senha: "" });
+        setForm({ nome: "", email: "", telefone: "", senha: "", consultor_id: "" });
         await carregar();
       }
     } catch {
@@ -187,6 +198,19 @@ export default function AssociacaoIndicadoresPage() {
                   onChange={(e) => setForm((f) => ({ ...f, telefone: fmtTelBR(e.target.value) }))}
                   className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
                 />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Consultor responsavel</label>
+                <select
+                  value={form.consultor_id}
+                  onChange={(e) => setForm((f) => ({ ...f, consultor_id: e.target.value }))}
+                  className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="">Sem consultor (definir depois)</option>
+                  {consultores.map((c) => (
+                    <option key={c.id} value={c.id}>{c.nome} — {c.email}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Senha inicial</label>

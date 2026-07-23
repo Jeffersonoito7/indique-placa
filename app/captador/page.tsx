@@ -12,6 +12,7 @@ function FormCaptador() {
   const [telefone, setTelefone] = useState("");
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState(false);
+  const [senhaGerada, setSenhaGerada] = useState("");
   const [carregando, setCarregando] = useState(false);
 
   const enviar = async (e: React.FormEvent) => {
@@ -26,7 +27,10 @@ function FormCaptador() {
       });
       const json = await res.json();
       if (!res.ok) setErro(json.error ?? "Erro ao enviar");
-      else setSucesso(true);
+      else {
+        if (json.senha_temporaria) setSenhaGerada(json.senha_temporaria);
+        setSucesso(true);
+      }
     } catch { setErro("Erro de conexão."); }
     finally { setCarregando(false); }
   };
@@ -40,7 +44,23 @@ function FormCaptador() {
           <CheckCircle2 size={32} color="#10B981" />
         </div>
         <h2 style={{ fontSize: 18, fontWeight: 800, color: "#fff", marginBottom: 8 }}>Cadastro realizado!</h2>
-        <p style={{ fontSize: 14, color: "#9CA3AF" }}>Seu cadastro foi enviado. Em breve entraremos em contato.</p>
+        {senhaGerada ? (
+          <>
+            <p style={{ fontSize: 14, color: "#9CA3AF", marginBottom: 16 }}>
+              Sua conta foi criada. Use o telefone e a senha abaixo para acessar o painel.
+            </p>
+            <div style={{ background: "rgba(108,143,212,.1)", border: "1px solid rgba(108,143,212,.3)", borderRadius: 10, padding: "12px 16px", marginBottom: 16, textAlign: "left" }}>
+              <div style={{ fontSize: 10, fontWeight: 700, color: "#6C8FD4", letterSpacing: 1, textTransform: "uppercase", marginBottom: 4 }}>Sua senha de acesso</div>
+              <div style={{ fontSize: 20, fontWeight: 900, color: "#fff", letterSpacing: 2, fontFamily: "monospace" }}>{senhaGerada}</div>
+              <div style={{ fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>Anote e guarde esta senha. Ela nao sera exibida novamente.</div>
+            </div>
+            <a href="/indicador/login" style={{ display: "inline-block", padding: "12px 24px", background: "linear-gradient(135deg,#1a0080,#2222CC)", borderRadius: 10, color: "#fff", fontWeight: 700, fontSize: 14, textDecoration: "none" }}>
+              Acessar o Painel
+            </a>
+          </>
+        ) : (
+          <p style={{ fontSize: 14, color: "#9CA3AF" }}>Seu cadastro foi enviado. Em breve entraremos em contato.</p>
+        )}
       </div>
     );
   }

@@ -37,6 +37,7 @@ const postSchema = z.object({
   email: z.string().email().optional(),
   telefone: z.string().min(10).max(20),
   senha: z.string().min(6).max(128),
+  consultor_id: z.string().uuid().optional().nullable(),
 });
 
 export async function POST(req: NextRequest) {
@@ -49,8 +50,20 @@ export async function POST(req: NextRequest) {
   const parsed = postSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
 
-  const { nome, email, telefone, senha } = parsed.data;
+  const { nome, email, telefone, senha, consultor_id } = parsed.data;
   const senhaHash = await bcrypt.hash(senha, 10);
+
+  // Valida que o consultor_id pertence a esta associacao
+  let consultorIdFinal: string | null = consultor_id ?? null;
+  if (consultorIdFinal) {
+    const { data: consultorCheck } = await supabaseAdmin
+      .from("consultores")
+      .select("id")
+      .eq("id", consultorIdFinal)
+      .eq("associacao_id", assoc.id)
+      .maybeSingle();
+    if (!consultorCheck) consultorIdFinal = null;
+  }
 
   const { data, error } = await supabaseAdmin
     .from("indicadores")
@@ -59,7 +72,7 @@ export async function POST(req: NextRequest) {
       email: email ? email.toLowerCase() : null,
       telefone: telefone.replace(/\D/g, ""),
       senha: senhaHash,
-      consultor_id: null,
+      consultor_id: consultorIdFinal,
     })
     .select("id, nome, telefone, criado_em")
     .single();
