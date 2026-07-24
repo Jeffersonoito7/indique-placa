@@ -1,9 +1,29 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getConsultorLogado } from "@/lib/auth";
-import { supabaseAdmin } from "@/lib/supabase-server";
 
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
+const BATCH_SIZE = 5;
+
+async function enviarParaNumero(
+  numeroLimpo: string,
+  mensagem: string,
+  instanceName: string
+): Promise<"ok" | "erro"> {
+  try {
+    const res = await fetch(
+      `${process.env.EVOLUTION_API_URL}/message/sendText/${instanceName}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          apikey: process.env.EVOLUTION_API_KEY!,
+        },
+        body: JSON.stringify({ number: numeroLimpo, text: mensagem }),
+      }
+    );
+    return res.ok ? "ok" : "erro";
+  } catch {
+    return "erro";
+  }
 }
 
 export async function POST(request: NextRequest) {
@@ -23,8 +43,12 @@ export async function POST(request: NextRequest) {
     modo: unknown;
   };
 
-  if (!Array.isArray(numeros) || typeof mensagem !== "string" || !mensagem.trim() ||
-      (modo !== "evolution" && modo !== "manual")) {
+  if (
+    !Array.isArray(numeros) ||
+    typeof mensagem !== "string" ||
+    !mensagem.trim() ||
+    (modo !== "evolution" && modo !== "manual")
+  ) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
 
@@ -40,56 +64,31 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Mensagem muito longa (máximo 1000 caracteres)" }, { status: 400 });
   }
 
+  // Modo manual: gera links wa.me, sem Evolution API
   if (modo === "manual") {
     const links = numeros.map((n) => ({
       numero: n,
-      link: `https://wa.me/55${n.replace(/\D/g, "")}?text=${encodeURIComponent(mensagem)}`,
+      link: `https://wa.me/55${String(n).replace(/\D/g, "")}?text=${encodeURIComponent(mensagem)}`,
     }));
     return NextResponse.json({ links, enviados: 0 });
   }
 
-  const { data: config } = await supabaseAdmin
-    .from("consultor_whatsapp_config")
-    .select("intervalo_min, intervalo_max")
-    .eq("consultor_id", consultor.id)
-    .maybeSingle();
-
-  const intervaloMin = (config?.intervalo_min ?? 30) * 1000;
-  const intervaloMax = (config?.intervalo_max ?? 90) * 1000;
-
+  // Modo evolution: batches paralelos de BATCH_SIZE sem delay artificial
+  // Delay no servidor causaria timeout serverless (limite 60-300s)
   const instanceName = `consultor-${consultor.id}`;
-  let enviados = 0;
-  const erros: string[] = [];
+  const numerosLimpos = numeros.map((n) => String(n).replace(/\D/g, ""));
+  const resultados: Array<"ok" | "erro"> = [];
 
-  for (const numero of numeros) {
-    const numeroLimpo = numero.replace(/\D/g, "");
-    try {
-      const res = await fetch(
-        `${process.env.EVOLUTION_API_URL}/message/sendText/${instanceName}`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            apikey: process.env.EVOLUTION_API_KEY!,
-          },
-          body: JSON.stringify({ number: numeroLimpo, text: mensagem }),
-        }
-      );
-
-      if (res.ok) {
-        enviados++;
-      } else {
-        erros.push(numeroLimpo);
-      }
-    } catch {
-      erros.push(numeroLimpo);
-    }
-
-    if (numero !== numeros[numeros.length - 1]) {
-      const espera = Math.floor(Math.random() * (intervaloMax - intervaloMin + 1)) + intervaloMin;
-      await delay(espera);
-    }
+  for (let i = 0; i < numerosLimpos.length; i += BATCH_SIZE) {
+    const batch = numerosLimpos.slice(i, i + BATCH_SIZE);
+    const batchResults = await Promise.all(
+      batch.map((n) => enviarParaNumero(n, mensagem, instanceName))
+    );
+    resultados.push(...batchResults);
   }
+
+  const enviados = resultados.filter((r) => r === "ok").length;
+  const erros = numerosLimpos.filter((_, idx) => resultados[idx] === "erro");
 
   return NextResponse.json({ enviados, erros, links: [] });
 }

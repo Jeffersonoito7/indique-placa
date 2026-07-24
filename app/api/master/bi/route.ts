@@ -22,13 +22,24 @@ export async function GET(req: NextRequest) {
   const periodo = ["7d", "30d", "90d"].includes(periodoParam) ? periodoParam : "30d";
   const desde = periodoParaData(periodo);
 
-  // Queries paralelas de totais gerais
+  const seisM = new Date();
+  seisM.setMonth(seisM.getMonth() - 5);
+  seisM.setDate(1);
+  seisM.setHours(0, 0, 0, 0);
+
+  // Uma unica rodada de queries paralelas — sem N+1
   const [
     { count: totalAssociacoes },
     { count: totalGestores },
     { count: totalConsultores },
     { count: totalIndicadores },
     { data: indicacoesDoPeriodo },
+    { data: indicacoesComIndicador },
+    { data: indicacoesMensais },
+    { data: associacoes },
+    { data: consultoresList },
+    { data: gestoresList },
+    { data: indicadoresList },
   ] = await Promise.all([
     supabaseAdmin.from("associacoes").select("*", { count: "exact", head: true }),
     supabaseAdmin.from("gestores").select("*", { count: "exact", head: true }),
@@ -39,6 +50,23 @@ export async function GET(req: NextRequest) {
       .select("id, consultor_id, associacao_id, status, comissao_valor, criado_em")
       .gte("criado_em", desde)
       .limit(1000),
+    supabaseAdmin
+      .from("indicacoes")
+      .select("indicador_id, status, comissao_valor")
+      .gte("criado_em", desde)
+      .not("indicador_id", "is", null)
+      .limit(1000),
+    supabaseAdmin
+      .from("indicacoes")
+      .select("status, criado_em")
+      .gte("criado_em", seisM.toISOString())
+      .limit(5000),
+    supabaseAdmin.from("associacoes").select("id, nome, plano"),
+    supabaseAdmin
+      .from("consultores")
+      .select("id, nome, fone, cidade, gestor_id, associacao_id, gestores(nome), associacoes(nome)"),
+    supabaseAdmin.from("gestores").select("id, nome, associacao_id, associacoes(nome)"),
+    supabaseAdmin.from("indicadores").select("id, nome, consultor_id, associacao_id, consultores(nome)"),
   ]);
 
   if ((indicacoesDoPeriodo?.length ?? 0) >= 1000) {
@@ -52,47 +80,7 @@ export async function GET(req: NextRequest) {
     .filter((i) => i.status === "fechado")
     .reduce((acc, i) => acc + (Number(i.comissao_valor) || 0), 0);
 
-  // Por associacao
-  const { data: associacoes } = await supabaseAdmin
-    .from("associacoes")
-    .select("id, nome, plano");
-
-  const porAssociacao = await Promise.all(
-    (associacoes ?? []).map(async (assoc) => {
-      const [
-        { count: totalG },
-        { count: totalC },
-        { count: totalI },
-      ] = await Promise.all([
-        supabaseAdmin.from("gestores").select("*", { count: "exact", head: true }).eq("associacao_id", assoc.id),
-        supabaseAdmin.from("consultores").select("*", { count: "exact", head: true }).eq("associacao_id", assoc.id),
-        supabaseAdmin.from("indicadores").select("*", { count: "exact", head: true }).eq("associacao_id", assoc.id),
-      ]);
-
-      const leadsAssoc = inds.filter((i) => i.associacao_id === assoc.id).length;
-      const fechAssoc = inds.filter((i) => i.associacao_id === assoc.id && i.status === "fechado").length;
-
-      return {
-        id: assoc.id,
-        nome: assoc.nome,
-        plano: assoc.plano ?? "trial",
-        total_gestores: totalG ?? 0,
-        total_consultores: totalC ?? 0,
-        total_indicadores: totalI ?? 0,
-        total_leads: leadsAssoc,
-        total_fechamentos: fechAssoc,
-        taxa_conversao: leadsAssoc > 0 ? Math.round((fechAssoc / leadsAssoc) * 100) : 0,
-      };
-    })
-  );
-
-  porAssociacao.sort((a, b) => b.total_fechamentos - a.total_fechamentos);
-
-  // Ranking consultores (do periodo, top 20)
-  const { data: consultoresList } = await supabaseAdmin
-    .from("consultores")
-    .select("id, nome, fone, cidade, gestor_id, associacao_id, gestores(nome), associacoes(nome)");
-
+  // --- Ranking consultores ---
   const consultorMap: Record<string, {
     id: string; nome: string; fone: string; associacao: string | null;
     gestor: string | null; cidade: string | null;
@@ -116,8 +104,7 @@ export async function GET(req: NextRequest) {
   }
 
   for (const ind of inds) {
-    if (!ind.consultor_id) continue;
-    if (!consultorMap[ind.consultor_id]) continue;
+    if (!ind.consultor_id || !consultorMap[ind.consultor_id]) continue;
     const entry = consultorMap[ind.consultor_id];
     entry.total_leads++;
     if (ind.status === "fechado") {
@@ -135,15 +122,11 @@ export async function GET(req: NextRequest) {
       taxa_conversao: c.total_leads > 0 ? Math.round((c.total_fechamentos / c.total_leads) * 100) : 0,
     }));
 
-  // Ranking gestores (top 10)
+  // --- Ranking gestores ---
   const gestorEquipeMap: Record<string, {
     id: string; nome: string; associacao: string | null;
     total_consultores: number; total_leads_equipe: number; total_fechamentos_equipe: number;
   }> = {};
-
-  const { data: gestoresList } = await supabaseAdmin
-    .from("gestores")
-    .select("id, nome, associacao_id, associacoes(nome)");
 
   for (const g of (gestoresList ?? [])) {
     const assocNome = (g.associacoes as { nome?: string } | null)?.nome ?? null;
@@ -158,8 +141,7 @@ export async function GET(req: NextRequest) {
   }
 
   for (const c of (consultoresList ?? [])) {
-    if (!c.gestor_id) continue;
-    if (!gestorEquipeMap[c.gestor_id]) continue;
+    if (!c.gestor_id || !gestorEquipeMap[c.gestor_id]) continue;
     gestorEquipeMap[c.gestor_id].total_consultores++;
     const entry = consultorMap[c.id];
     if (entry) {
@@ -172,22 +154,11 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => b.total_fechamentos_equipe - a.total_fechamentos_equipe)
     .slice(0, 10);
 
-  // Ranking indicadores (top 10 por leads)
-  const { data: indicadoresList } = await supabaseAdmin
-    .from("indicadores")
-    .select("id, nome, consultor_id, consultores(nome)");
-
+  // --- Ranking indicadores ---
   const indicadorMap: Record<string, {
     id: string; nome: string; consultor: string | null;
     total_leads: number; total_fechamentos: number; total_comissoes: number;
   }> = {};
-
-  const { data: indicacoesComIndicador } = await supabaseAdmin
-    .from("indicacoes")
-    .select("indicador_id, status, comissao_valor")
-    .gte("criado_em", desde)
-    .not("indicador_id", "is", null)
-    .limit(1000);
 
   for (const ind of (indicadoresList ?? [])) {
     const consultorNome = (ind.consultores as { nome?: string } | null)?.nome ?? null;
@@ -215,7 +186,41 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => b.total_leads - a.total_leads)
     .slice(0, 10);
 
-  // Por cidade (top 15)
+  // --- Por associacao (usando dados ja em memoria, sem queries extras) ---
+  const gestoresPorAssoc: Record<string, number> = {};
+  const consultoresPorAssoc: Record<string, number> = {};
+  const indicadoresPorAssoc: Record<string, number> = {};
+
+  for (const g of (gestoresList ?? [])) {
+    if (g.associacao_id) gestoresPorAssoc[g.associacao_id] = (gestoresPorAssoc[g.associacao_id] ?? 0) + 1;
+  }
+  for (const c of (consultoresList ?? [])) {
+    if (c.associacao_id) consultoresPorAssoc[c.associacao_id] = (consultoresPorAssoc[c.associacao_id] ?? 0) + 1;
+  }
+  for (const i of (indicadoresList ?? [])) {
+    const assocId = (i as { associacao_id?: string | null }).associacao_id;
+    if (assocId) indicadoresPorAssoc[assocId] = (indicadoresPorAssoc[assocId] ?? 0) + 1;
+  }
+
+  const porAssociacao = (associacoes ?? [])
+    .map((assoc) => {
+      const leadsAssoc = inds.filter((i) => i.associacao_id === assoc.id).length;
+      const fechAssoc = inds.filter((i) => i.associacao_id === assoc.id && i.status === "fechado").length;
+      return {
+        id: assoc.id,
+        nome: assoc.nome,
+        plano: assoc.plano ?? "trial",
+        total_gestores: gestoresPorAssoc[assoc.id] ?? 0,
+        total_consultores: consultoresPorAssoc[assoc.id] ?? 0,
+        total_indicadores: indicadoresPorAssoc[assoc.id] ?? 0,
+        total_leads: leadsAssoc,
+        total_fechamentos: fechAssoc,
+        taxa_conversao: leadsAssoc > 0 ? Math.round((fechAssoc / leadsAssoc) * 100) : 0,
+      };
+    })
+    .sort((a, b) => b.total_fechamentos - a.total_fechamentos);
+
+  // --- Por cidade (top 15) ---
   const cidadeMap: Record<string, {
     cidade: string; total_consultores: number; total_leads: number; total_fechamentos: number;
   }> = {};
@@ -237,18 +242,7 @@ export async function GET(req: NextRequest) {
     .sort((a, b) => b.total_leads - a.total_leads)
     .slice(0, 15);
 
-  // Evolucao mensal (ultimos 6 meses)
-  const seisM = new Date();
-  seisM.setMonth(seisM.getMonth() - 5);
-  seisM.setDate(1);
-  seisM.setHours(0, 0, 0, 0);
-
-  const { data: indicacoesMensais } = await supabaseAdmin
-    .from("indicacoes")
-    .select("status, criado_em")
-    .gte("criado_em", seisM.toISOString())
-    .limit(5000);
-
+  // --- Evolucao mensal ---
   const mesMap: Record<string, { mes: string; leads: number; fechamentos: number }> = {};
   for (const ind of (indicacoesMensais ?? [])) {
     const mes = ind.criado_em.slice(0, 7);
