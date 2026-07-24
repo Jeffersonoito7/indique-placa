@@ -69,26 +69,30 @@ export default function GestorLeadsPage() {
       if (novaPagina === 1) setCarregando(true);
       else setCarregandoMais(true);
 
-      const params = new URLSearchParams();
-      params.set("page", String(novaPagina));
-      params.set("limit", String(LIMIT));
-      if (filtroConsultor) params.set("consultor_id", filtroConsultor);
-      if (filtroStatus !== "todos") params.set("status", filtroStatus);
-      if (busca) params.set("busca", busca);
+      try {
+        const params = new URLSearchParams();
+        params.set("page", String(novaPagina));
+        params.set("limit", String(LIMIT));
+        if (filtroConsultor) params.set("consultor_id", filtroConsultor);
+        if (filtroStatus !== "todos") params.set("status", filtroStatus);
+        if (busca) params.set("busca", busca);
 
-      const res = await fetch(`/api/gestor/leads?${params.toString()}`);
-      if (res.ok) {
-        const json = await res.json();
-        setLeads((prev) => (acumular ? [...prev, ...(json.leads ?? [])] : (json.leads ?? [])));
-        setTotal(json.total ?? 0);
-        if (!acumular) {
-          setTotais(json.totais ?? null);
-          setConsultores(json.consultores ?? []);
+        const res = await fetch(`/api/gestor/leads?${params.toString()}`);
+        if (res.ok) {
+          const json = await res.json();
+          setLeads((prev) => (acumular ? [...prev, ...(json.leads ?? [])] : (json.leads ?? [])));
+          setTotal(json.total ?? 0);
+          if (!acumular) {
+            setTotais(json.totais ?? null);
+            setConsultores(json.consultores ?? []);
+          }
         }
+      } catch {
+        // erro de rede — nao trava o spinner
+      } finally {
+        if (novaPagina === 1) setCarregando(false);
+        else setCarregandoMais(false);
       }
-
-      if (novaPagina === 1) setCarregando(false);
-      else setCarregandoMais(false);
     },
     [filtroConsultor, filtroStatus, busca]
   );

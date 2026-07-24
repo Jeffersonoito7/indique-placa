@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
   if (consultor_id) query = query.eq("consultor_id", consultor_id);
   if (status) query = query.eq("status", status);
   if (de) query = query.gte("criado_em", de);
-  if (ate) query = query.lte("criado_em", ate);
+  if (ate) query = query.lte("criado_em", `${ate}T23:59:59`);
 
   const { data, count, error } = await query;
 

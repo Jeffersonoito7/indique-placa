@@ -518,7 +518,7 @@ export default function ConsultorLeadsPage() {
         window.open(`https://wa.me/55${tel}?text=${texto}`, "_blank");
       }
     } catch {
-      // falha silenciosa; usuario pode tentar novamente
+      setErroKanban("Erro ao mover o card. Verifique sua conexao e tente novamente.");
     } finally {
       setAtualizando((prev) => {
         const next = new Set(prev);

@@ -26,13 +26,28 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
   const { data: lead } = await supabaseAdmin
     .from("indicacoes")
-    .select("id, consultor_id, nome_lead")
+    .select("id, consultor_id, nome_lead, tipo_veiculo, comissao_valor")
     .eq("id", id)
     .single();
 
+  const updatePayload: Record<string, unknown> = { status: parsed.data.status };
+
+  // Calcula comissao_valor ao fechar — mesma logica do consultor
+  if (parsed.data.status === "fechado" && lead && !lead.comissao_valor) {
+    const tipoVeiculo = (lead.tipo_veiculo as string | null) ?? "carro";
+    const { data: comissaoConfig } = await supabaseAdmin
+      .from("comissoes_tipos")
+      .select("comissao_indicador")
+      .eq("consultor_id", lead.consultor_id)
+      .eq("tipo", tipoVeiculo)
+      .single();
+    const fallback: Record<string, number> = { moto: 50, carro: 100, caminhao: 500 };
+    updatePayload.comissao_valor = comissaoConfig?.comissao_indicador ?? fallback[tipoVeiculo] ?? 100;
+  }
+
   const { error } = await supabaseAdmin
     .from("indicacoes")
-    .update({ status: parsed.data.status })
+    .update(updatePayload)
     .eq("id", id);
 
   if (error) return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
