@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { validarSessao } from "@/lib/sessoes";
 
 const CAMPOS =
-  "id, placa, nome_lead, telefone_lead, status, criado_em, tipo_veiculo, pago_em, comprovante_url, valor_pago, indicadores(nome, chave_pix)";
+  "id, placa, nome_lead, telefone_lead, status, criado_em, tipo_veiculo, pago_em, comprovante_url, valor_pago, comissao_paga, comissao_valor, indicador_id, indicadores(nome, chave_pix)";
 
 export async function GET(request: NextRequest) {
   const cookieStore = await cookies();

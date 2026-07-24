@@ -133,7 +133,7 @@ export default function RecuperarSenhaConsultorPage() {
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div className="crp-titulo">Senha alterada!</div>
-              <p className="crp-sub">Entre com seu WhatsApp e a nova senha.</p>
+              <p className="crp-sub">Entre com seu email e a nova senha.</p>
               <button className="crp-btn" onClick={() => { vibrar(); router.push("/consultor/login"); }}>
                 Ir para o login
               </button>
@@ -186,7 +186,7 @@ export default function RecuperarSenhaConsultorPage() {
               </form>
               <div style={{ marginTop: 16, textAlign: "center" }}>
                 <button className="crp-link" onClick={() => { setEtapa("telefone"); setErro(""); setCodigo(""); setEmail(""); }}>
-                  Usar outro número
+                  Usar outro email
                 </button>
               </div>
             </>
@@ -208,7 +208,7 @@ export default function RecuperarSenhaConsultorPage() {
                   onChange={e => setEmail(e.target.value)}
                 />
                 <button className="crp-btn" type="submit" disabled={carregando}>
-                  {carregando ? "Enviando..." : "Enviar código pelo WhatsApp"}
+                  {carregando ? "Enviando..." : "Enviar código por email"}
                 </button>
               </form>
             </>

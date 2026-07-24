@@ -158,6 +158,32 @@ function moeda(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
 }
 
+function BotaoComprovante({ leadId }: { leadId: string }) {
+  const [carregando, setCarregando] = useState(false);
+
+  const abrir = async () => {
+    setCarregando(true);
+    try {
+      const res = await fetch(`/api/consultor/lead/${leadId}/pagamento`);
+      if (!res.ok) return;
+      const { url } = await res.json();
+      if (url) window.open(url, "_blank", "noopener,noreferrer");
+    } finally {
+      setCarregando(false);
+    }
+  };
+
+  return (
+    <button
+      onClick={abrir}
+      disabled={carregando}
+      className="text-[10px] text-blue-500 underline ml-auto disabled:opacity-50"
+    >
+      {carregando ? "abrindo..." : "ver comprovante"}
+    </button>
+  );
+}
+
 function PainelPagamento({ lead, onPago }: { lead: Lead; onPago: (leadId: string, valorPago: number | null, comprovanteUrl: string | null) => void }) {
   const [aberto, setAberto] = useState(false);
   const [valor, setValor] = useState(lead.valor_pago?.toString() ?? "");
@@ -174,7 +200,7 @@ function PainelPagamento({ lead, onPago }: { lead: Lead; onPago: (leadId: string
         <span className="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold">Pago</span>
         {lead.valor_pago && <span className="text-[10px] text-muted-foreground">{moeda(lead.valor_pago)}</span>}
         {lead.comprovante_url && (
-          <a href={lead.comprovante_url} target="_blank" rel="noopener noreferrer" className="text-[10px] text-blue-500 underline ml-auto">ver comprovante</a>
+          <BotaoComprovante leadId={lead.id} />
         )}
       </div>
     );

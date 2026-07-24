@@ -99,7 +99,7 @@ export default function ParceirosPage() {
 
   function urlCadastrarIndicador(parceiro: Parceiro) {
     const params = new URLSearchParams({ nome: parceiro.nome, fone: parceiro.telefone });
-    return `/consultor/indicadores/novo?${params}`;
+    return `/consultor/indicadores?${params}`;
   }
 
   const inputClass =
