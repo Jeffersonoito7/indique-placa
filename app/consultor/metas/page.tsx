@@ -85,10 +85,13 @@ export default function MetasPage() {
 
   const remover = async (id: string) => {
     setRemovendo(id);
+    setErro("");
     try {
-      await fetch(`/api/consultor/metas?id=${id}`, { method: "DELETE" });
-      setMetas((prev) => prev.filter((m) => m.id !== id));
+      const res = await fetch(`/api/consultor/metas?id=${id}`, { method: "DELETE" });
+      if (res.ok) setMetas((prev) => prev.filter((m) => m.id !== id));
+      else setErro("Erro ao remover meta. Tente novamente.");
     } catch {
+      setErro("Erro de conexao. Tente novamente.");
     } finally {
       setRemovendo(null);
     }

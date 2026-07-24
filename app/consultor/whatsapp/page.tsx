@@ -42,6 +42,7 @@ export default function WhatsAppPage() {
   const [rodandoCampanha, setRodandoCampanha] = useState(false);
   const [links, setLinks] = useState<{ numero: string; link: string }[]>([]);
   const [enviados, setEnviados] = useState<number | null>(null);
+  const [erroWpp, setErroWpp] = useState<string | null>(null);
   const pollRef = useRef<NodeJS.Timeout | null>(null);
 
   useEffect(() => {
@@ -100,11 +101,15 @@ export default function WhatsAppPage() {
 
   async function desconectar() {
     setLoadingDesconectar(true);
+    setErroWpp(null);
     try {
-      await fetch("/api/consultor/whatsapp/disconnect", { method: "POST" });
+      const res = await fetch("/api/consultor/whatsapp/disconnect", { method: "POST" });
+      if (!res.ok) { setErroWpp("Erro ao desconectar. Tente novamente."); return; }
       setConectado(false);
       setQrcode(null);
       if (pollRef.current) clearInterval(pollRef.current);
+    } catch {
+      setErroWpp("Erro de conexao ao desconectar.");
     } finally {
       setLoadingDesconectar(false);
     }
@@ -112,6 +117,7 @@ export default function WhatsAppPage() {
 
   async function salvarConfig() {
     setSalvando(true);
+    setErroWpp(null);
     try {
       const res = await fetch("/api/consultor/whatsapp/config", {
         method: "POST",
@@ -119,7 +125,10 @@ export default function WhatsAppPage() {
         body: JSON.stringify(config),
       });
       const d = await res.json();
-      if (!d.error) setConfig({ ...DEFAULT_CONFIG, ...d });
+      if (!res.ok) { setErroWpp(d.error ?? "Erro ao salvar configuracao."); return; }
+      setConfig({ ...DEFAULT_CONFIG, ...d });
+    } catch {
+      setErroWpp("Erro de conexao ao salvar.");
     } finally {
       setSalvando(false);
     }
@@ -136,6 +145,7 @@ export default function WhatsAppPage() {
     setRodandoCampanha(true);
     setLinks([]);
     setEnviados(null);
+    setErroWpp(null);
 
     try {
       const res = await fetch("/api/consultor/whatsapp/campanha", {
@@ -148,8 +158,11 @@ export default function WhatsAppPage() {
         }),
       });
       const data = await res.json();
+      if (!res.ok) { setErroWpp(data.error ?? "Erro ao iniciar campanha."); return; }
       setLinks(data.links ?? []);
       setEnviados(data.enviados ?? 0);
+    } catch {
+      setErroWpp("Erro de conexao ao iniciar campanha.");
     } finally {
       setRodandoCampanha(false);
     }
@@ -185,6 +198,11 @@ export default function WhatsAppPage() {
           <MessageCircle className="h-5 w-5 text-emerald-500" />
           WhatsApp
         </h1>
+        {erroWpp && (
+          <div className="mt-2 text-sm text-red-500 bg-red-500/10 border border-red-500/30 rounded-lg px-3 py-2">
+            {erroWpp}
+          </div>
+        )}
         <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
           Conexao, disparadores e exportacao de dados
         </p>

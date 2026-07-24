@@ -40,9 +40,12 @@ export default function ComissoesPage() {
   const carregar = () => {
     setCarregando(true);
     fetch("/api/consultor/comissoes")
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error("Erro ao carregar comissoes");
+        return r.json();
+      })
       .then((d: ComissaoTipo[]) => setComissoes(d))
-      .catch(() => {})
+      .catch(() => setErroNovo("Erro ao carregar configuracoes de comissao."))
       .finally(() => setCarregando(false));
   };
 

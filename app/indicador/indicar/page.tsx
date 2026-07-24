@@ -75,7 +75,7 @@ export default function IndicarPage() {
     setErro("");
   };
 
-  const placaLimpa = placa.replace("-", "");
+  const placaLimpa = placa.replace(/-/g, "");
   const valida = placaValida(placa);
 
   const enviar = async (e: React.FormEvent) => {

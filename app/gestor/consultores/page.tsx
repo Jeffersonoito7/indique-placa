@@ -33,6 +33,7 @@ export default function GestorConsultoresPage() {
   const [modalAberto, setModalAberto] = useState(false);
   const [enviando, setEnviando] = useState(false);
   const [erroModal, setErroModal] = useState("");
+  const [erroAcao, setErroAcao] = useState("");
   const [form, setForm] = useState({ nome: "", email: "", fone: "", senha: "" });
 
   async function carregar() {
@@ -78,19 +79,31 @@ export default function GestorConsultoresPage() {
   }
 
   async function toggleStatus(c: Consultor) {
+    setErroAcao("");
     const novoStatus = c.status === "ativo" ? "inativo" : "ativo";
-    const res = await fetch(`/api/gestor/consultores/${c.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: novoStatus }),
-    });
-    if (res.ok) await carregar();
+    try {
+      const res = await fetch(`/api/gestor/consultores/${c.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: novoStatus }),
+      });
+      if (res.ok) await carregar();
+      else setErroAcao("Erro ao atualizar status. Tente novamente.");
+    } catch {
+      setErroAcao("Erro de conexao. Tente novamente.");
+    }
   }
 
   async function removerDoTime(c: Consultor) {
     if (!confirm(`Remover ${c.nome} do seu time? O consultor nao sera excluido.`)) return;
-    const res = await fetch(`/api/gestor/consultores/${c.id}`, { method: "DELETE" });
-    if (res.ok) await carregar();
+    setErroAcao("");
+    try {
+      const res = await fetch(`/api/gestor/consultores/${c.id}`, { method: "DELETE" });
+      if (res.ok) await carregar();
+      else setErroAcao("Erro ao remover consultor. Tente novamente.");
+    } catch {
+      setErroAcao("Erro de conexao. Tente novamente.");
+    }
   }
 
   return (
@@ -122,6 +135,12 @@ export default function GestorConsultoresPage() {
             className="w-full pl-9 pr-4 py-2 text-sm bg-background border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
           />
         </div>
+
+        {erroAcao && (
+          <div className="rounded-xl p-3 bg-red-500/10 border border-red-500/30 text-red-500 text-sm">
+            {erroAcao}
+          </div>
+        )}
 
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
