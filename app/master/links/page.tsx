@@ -10,6 +10,16 @@ const BASE = process.env.NEXT_PUBLIC_BASE_URL ?? "https://indiqueplaca.com.br";
 
 const links = [
   {
+    titulo: "Link da Associação",
+    descricao: "Página de cadastro para novas associações se registrarem e solicitar ativação da conta",
+    url: `${BASE}/captura/associacao`,
+    cor: "border-t-violet-500",
+    iconBg: "bg-violet-500/10",
+    iconColor: "text-violet-500",
+    badge: "ASSOCIAÇÃO",
+    badgeColor: "bg-violet-500/10 text-violet-500",
+  },
+  {
     titulo: "Link do Gestor",
     descricao: "Pagina de cadastro para lideres de equipe se registrarem e gerenciarem consultores",
     url: `${BASE}/gestor/cadastro`,
