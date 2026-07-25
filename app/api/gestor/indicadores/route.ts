@@ -51,6 +51,27 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
 
   const { nome, email, telefone, senha, consultor_id } = parsed.data;
+
+  // Verificar limite do plano do gestor
+  const { data: planoConfig } = await supabaseAdmin
+    .from("planos_config_gestor")
+    .select("max_consultores")
+    .eq("plano", (gestor as { plano?: string }).plano ?? "free")
+    .maybeSingle();
+
+  if (planoConfig?.max_consultores !== null && planoConfig?.max_consultores !== undefined) {
+    const { count } = await supabaseAdmin
+      .from("consultores")
+      .select("id", { count: "exact", head: true })
+      .eq("gestor_id", gestor.id);
+    if ((count ?? 0) >= planoConfig.max_consultores) {
+      return NextResponse.json(
+        { error: `Limite de ${planoConfig.max_consultores} consultores na equipe atingido no seu plano. Faça upgrade Pro para adicionar mais.` },
+        { status: 403 }
+      );
+    }
+  }
+
   const senhaHash = await bcrypt.hash(senha, 10);
 
   // Valida que o consultor_id pertence a este gestor

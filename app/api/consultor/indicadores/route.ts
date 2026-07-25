@@ -40,6 +40,27 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
 
   const { nome, email, telefone, senha } = parsed.data;
+
+  // Verificar limite do plano
+  const { data: planoConfig } = await supabaseAdmin
+    .from("planos_config_consultor")
+    .select("max_indicadores")
+    .eq("plano", (consultor as { plano?: string }).plano ?? "free")
+    .maybeSingle();
+
+  if (planoConfig?.max_indicadores !== null && planoConfig?.max_indicadores !== undefined) {
+    const { count } = await supabaseAdmin
+      .from("indicadores")
+      .select("id", { count: "exact", head: true })
+      .eq("consultor_id", consultor.id);
+    if ((count ?? 0) >= planoConfig.max_indicadores) {
+      return NextResponse.json(
+        { error: `Limite de ${planoConfig.max_indicadores} indicadores atingido no seu plano. Faça upgrade Pro para adicionar mais.` },
+        { status: 403 }
+      );
+    }
+  }
+
   const senhaHash = await bcrypt.hash(senha, 10);
 
   const { data, error } = await supabaseAdmin

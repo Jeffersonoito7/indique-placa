@@ -41,6 +41,27 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
 
   const { nome, email, fone, senha, gestor_id } = parsed.data;
+
+  // Verificar limite do plano
+  const { data: planoConfig } = await supabaseAdmin
+    .from("planos_config_associacao")
+    .select("max_consultores")
+    .eq("plano", assoc.plano ?? "trial")
+    .maybeSingle();
+
+  if (planoConfig?.max_consultores !== null && planoConfig?.max_consultores !== undefined) {
+    const { count } = await supabaseAdmin
+      .from("consultores")
+      .select("id", { count: "exact", head: true })
+      .eq("associacao_id", assoc.id);
+    if ((count ?? 0) >= planoConfig.max_consultores) {
+      return NextResponse.json(
+        { error: `Limite de ${planoConfig.max_consultores} consultores atingido no plano ${assoc.plano ?? "trial"}. Faça upgrade para adicionar mais.` },
+        { status: 403 }
+      );
+    }
+  }
+
   const senhaHash = await bcrypt.hash(senha, 10);
 
   // Valida que o gestor_id pertence a esta associacao

@@ -40,6 +40,27 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
 
   const { nome, email, fone, senha } = parsed.data;
+
+  // Verificar limite do plano
+  const { data: planoConfig } = await supabaseAdmin
+    .from("planos_config_associacao")
+    .select("max_gestores")
+    .eq("plano", assoc.plano ?? "trial")
+    .maybeSingle();
+
+  if (planoConfig?.max_gestores !== null && planoConfig?.max_gestores !== undefined) {
+    const { count } = await supabaseAdmin
+      .from("gestores")
+      .select("id", { count: "exact", head: true })
+      .eq("associacao_id", assoc.id);
+    if ((count ?? 0) >= planoConfig.max_gestores) {
+      return NextResponse.json(
+        { error: `Limite de ${planoConfig.max_gestores} gestores atingido no plano ${assoc.plano ?? "trial"}. Faça upgrade para adicionar mais.` },
+        { status: 403 }
+      );
+    }
+  }
+
   const senhaHash = await bcrypt.hash(senha, 10);
 
   const { data, error } = await supabaseAdmin
