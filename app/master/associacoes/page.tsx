@@ -97,7 +97,7 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
       <div className="bg-background border border-border rounded-2xl shadow-2xl w-full max-w-lg">
         <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-          <h2 className="text-sm font-bold">Nova Associacao</h2>
+          <h2 className="text-sm font-bold">Nova Associação</h2>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
             <X className="h-4 w-4" />
           </button>
@@ -109,7 +109,7 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
               className="w-full h-9 px-3 rounded-lg border border-border bg-muted/30 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40"
               value={form.nome}
               onChange={(e) => set("nome", e.target.value)}
-              placeholder="Ex: Associacao Centro-Oeste"
+              placeholder="Ex: Associação Centro-Oeste"
             />
           </div>
           <div className="col-span-2">
@@ -181,7 +181,7 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
               onChange={(e) => set("nova_senha", e.target.value)}
               autoComplete="new-password"
             />
-            <p className="text-[10px] text-muted-foreground mt-1">Senha que a associacao usara para acessar o proprio painel.</p>
+            <p className="text-[10px] text-muted-foreground mt-1">Senha que a associação usará para acessar o próprio painel.</p>
           </div>
           {erro && <p className="col-span-2 text-xs text-red-500">{erro}</p>}
         </div>
@@ -277,7 +277,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
                 aba === a ? "bg-violet-500 text-white" : "text-muted-foreground hover:bg-accent"
               )}
             >
-              {a === "dados" ? "Dados Gerais" : "Cobranca"}
+              {a === "dados" ? "Dados Gerais" : "Cobrança"}
             </button>
           ))}
         </div>
@@ -354,7 +354,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
               </div>
 
               <div>
-                <label className={labelCls}>Mensalidade Associacao (R$)</label>
+                <label className={labelCls}>Mensalidade Associação (R$)</label>
                 <input
                   className={inputCls}
                   type="number"
@@ -388,16 +388,16 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
               </div>
 
               <div className="col-span-2">
-                <label className={labelCls}>Senha de Acesso da Associacao</label>
+                <label className={labelCls}>Senha de Acesso da Associação</label>
                 <input
                   className={inputCls}
                   type="password"
-                  placeholder="Deixe em branco para nao alterar"
+                  placeholder="Deixe em branco para não alterar"
                   value={form.nova_senha}
                   onChange={(e) => set("nova_senha", e.target.value)}
                   autoComplete="new-password"
                 />
-                <p className="text-[10px] text-muted-foreground mt-1">Senha usada para a associacao acessar o proprio painel.</p>
+                <p className="text-[10px] text-muted-foreground mt-1">Senha usada para a associação acessar o próprio painel.</p>
               </div>
 
               <div className="col-span-2">
@@ -500,7 +500,7 @@ export default function AssociacoesPage() {
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border flex items-center justify-between">
         <div>
-          <h1 className="text-base font-bold text-foreground">Associacoes</h1>
+          <h1 className="text-base font-bold text-foreground">Associações</h1>
           <p className="text-[11px] text-muted-foreground mt-0.5">Clientes white-label da plataforma</p>
         </div>
         <button
@@ -508,7 +508,7 @@ export default function AssociacoesPage() {
           className="flex items-center gap-2 h-9 px-4 rounded-lg text-sm font-semibold bg-violet-500 text-white hover:bg-violet-600 transition-colors"
         >
           <Plus className="h-4 w-4" />
-          Nova Associacao
+          Nova Associação
         </button>
       </div>
 
@@ -537,7 +537,7 @@ export default function AssociacoesPage() {
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between gap-4 flex-wrap">
-              <CardTitle className="text-sm font-semibold">Lista de Associacoes</CardTitle>
+              <CardTitle className="text-sm font-semibold">Lista de Associações</CardTitle>
               <div className="flex items-center gap-3">
                 <div className="relative">
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
@@ -575,7 +575,7 @@ export default function AssociacoesPage() {
           </CardHeader>
           <CardContent className="p-0">
             {filtrada.length === 0 ? (
-              <div className="text-center text-muted-foreground text-sm py-16">Nenhuma associacao encontrada</div>
+              <div className="text-center text-muted-foreground text-sm py-16">Nenhuma associação encontrada</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full">
