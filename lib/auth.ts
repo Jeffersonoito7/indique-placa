@@ -13,7 +13,7 @@ export async function getConsultorLogado() {
 
   const { data } = await supabaseAdmin
     .from("consultores")
-    .select("id, nome, fone, email, status")
+    .select("id, nome, fone, email, status, plano, plano_ativo_ate, associacao_id")
     .eq("id", usuario_id)
     .single();
 
@@ -30,7 +30,7 @@ export async function getGestorLogado() {
 
   const { data } = await supabaseAdmin
     .from("gestores")
-    .select("id, nome, fone, email, plano, plano_ativo_ate")
+    .select("id, nome, fone, email, plano, plano_ativo_ate, associacao_id")
     .eq("id", usuario_id)
     .single();
 

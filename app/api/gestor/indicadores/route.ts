@@ -94,6 +94,7 @@ export async function POST(req: NextRequest) {
       telefone: telefone.replace(/\D/g, ""),
       senha: senhaHash,
       consultor_id: consultorIdFinal,
+      associacao_id: (gestor as { associacao_id?: string | null }).associacao_id ?? null,
     })
     .select("id, nome, telefone, criado_em")
     .single();

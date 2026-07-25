@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getConsultorLogado } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 const BATCH_SIZE = 5;
 
@@ -62,6 +63,20 @@ export async function POST(request: NextRequest) {
 
   if (mensagem.length > 1000) {
     return NextResponse.json({ error: "Mensagem muito longa (máximo 1000 caracteres)" }, { status: 400 });
+  }
+
+  // Verificar se o plano permite campanha WhatsApp
+  const { data: planoConfig } = await supabaseAdmin
+    .from("planos_config_consultor")
+    .select("campanha_whatsapp")
+    .eq("plano", (consultor as { plano?: string }).plano ?? "free")
+    .maybeSingle();
+
+  if (!planoConfig?.campanha_whatsapp && modo === "evolution") {
+    return NextResponse.json(
+      { error: "Campanha WhatsApp não está disponível no seu plano. Faça upgrade Pro para usar este recurso." },
+      { status: 403 }
+    );
   }
 
   // Modo manual: gera links wa.me, sem Evolution API

@@ -44,6 +44,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (error) return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
 
   // Salva comissao_valor ao fechar venda — usa configuracao do consultor, fallback para padrao
+  let comissaoValorFinal = 0;
   if (parsed.data.status === "fechado") {
     const tipoVeiculo = (lead as { tipo_veiculo?: string | null }).tipo_veiculo ?? "carro";
 
@@ -55,11 +56,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .single();
 
     const comissoesFallback: Record<string, number> = { moto: 50, carro: 100, caminhao: 500 };
-    const comissaoValor = comissaoConfig?.comissao_indicador ?? comissoesFallback[tipoVeiculo] ?? 100;
+    comissaoValorFinal = comissaoConfig?.comissao_indicador ?? comissoesFallback[tipoVeiculo] ?? 100;
 
     await supabaseAdmin
       .from("indicacoes")
-      .update({ comissao_valor: comissaoValor })
+      .update({ comissao_valor: comissaoValorFinal })
       .eq("id", id);
   }
 
@@ -84,7 +85,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     if (lead.indicador_id) {
       const { data: indicador } = await supabaseAdmin
         .from("indicadores")
-        .select("id, nome, telefone, chave_pix, comissao")
+        .select("id, nome, telefone, chave_pix")
         .eq("id", lead.indicador_id)
         .single();
 
@@ -93,7 +94,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           nome: indicador.nome,
           telefone: indicador.telefone ?? null,
           chave_pix: indicador.chave_pix ?? null,
-          comissao: indicador.comissao ?? null,
+          comissao: comissaoValorFinal || null,
         };
 
         // Envia push notification ao indicador (falhas nao bloqueiam a resposta)
@@ -114,8 +115,8 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
             );
 
             const placaTexto = lead.placa ?? "s/n";
-            const comissaoTexto = indicador.comissao
-              ? indicador.comissao.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
+            const comissaoTexto = comissaoValorFinal
+              ? comissaoValorFinal.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
               : "a combinar";
 
             const payload = JSON.stringify({

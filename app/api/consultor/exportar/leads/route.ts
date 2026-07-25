@@ -6,6 +6,20 @@ export async function GET() {
   const consultor = await getConsultorLogado();
   if (!consultor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
+  // Verificar se o plano permite exportação CSV
+  const { data: planoConfig } = await supabaseAdmin
+    .from("planos_config_consultor")
+    .select("exportar_csv")
+    .eq("plano", (consultor as { plano?: string }).plano ?? "free")
+    .maybeSingle();
+
+  if (!planoConfig?.exportar_csv) {
+    return NextResponse.json(
+      { error: "Exportação de CSV não está disponível no seu plano. Faça upgrade Pro para usar este recurso." },
+      { status: 403 }
+    );
+  }
+
   const { data, error } = await supabaseAdmin
     .from("indicacoes")
     .select("placa, nome_lead, telefone_lead, status, criado_em, comissao_valor, comissao_paga, indicadores(nome)")
