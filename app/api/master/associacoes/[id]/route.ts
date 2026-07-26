@@ -14,7 +14,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
   const { data, error } = await supabaseAdmin
     .from("associacoes")
-    .select("id, nome, slug, email, fone, cidade, estado, logo_url, status, plano, plano_ativo_ate, cobranca_ativa, valor_mensalidade_associacao, valor_mensalidade_gestor, valor_mensalidade_consultor_pro, efi_client_id, efi_pix_key, criado_em, atualizado_em")
+    .select("id, nome, slug, email, fone, cidade, estado, logo_url, status, plano, plano_ativo_ate, cobranca_ativa, valor_mensalidade_associacao, valor_mensalidade_gestor, valor_mensalidade_consultor_pro, efi_client_id, efi_pix_key, efi_certificate_base64, criado_em, atualizado_em")
     .eq("id", id)
     .single();
 
@@ -41,6 +41,7 @@ const schemaAtualizar = z.object({
   efi_client_id: z.string().optional(),
   efi_client_secret: z.string().optional(),
   efi_pix_key: z.string().optional(),
+  efi_certificate_base64: z.string().optional().nullable(),
   nova_senha: z.string().min(6).max(128).optional(),
 });
 

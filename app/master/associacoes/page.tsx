@@ -36,6 +36,7 @@ interface AssociacaoDetalhe extends Associacao {
   efi_client_id: string | null;
   efi_client_secret: string | null;
   efi_pix_key: string | null;
+  efi_certificate_base64: string | null;
 }
 
 const statusStyle: Record<string, string> = {
@@ -220,6 +221,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
     efi_client_id: assoc.efi_client_id ?? "",
     efi_client_secret: assoc.efi_client_secret ?? "",
     efi_pix_key: assoc.efi_pix_key ?? "",
+    efi_certificate_base64: assoc.efi_certificate_base64 ?? "",
     nova_senha: "",
   });
   const [mostrarSecret, setMostrarSecret] = useState(false);
@@ -241,6 +243,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
         efi_client_id: form.efi_client_id || null,
         efi_client_secret: form.efi_client_secret || null,
         efi_pix_key: form.efi_pix_key || null,
+        efi_certificate_base64: form.efi_certificate_base64 || null,
         nova_senha: form.nova_senha || undefined,
       }),
     });
@@ -426,6 +429,17 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
                 <label className={labelCls}>Chave PIX Efi</label>
                 <input className={inputCls} value={form.efi_pix_key} onChange={(e) => set("efi_pix_key", e.target.value)} />
               </div>
+              <div className="col-span-2">
+                <label className={labelCls}>Certificado Efi (Base64)</label>
+                <textarea
+                  className="w-full px-3 py-2 rounded-lg border border-border bg-muted/30 text-xs font-mono focus:outline-none focus:ring-2 focus:ring-violet-500/40 resize-none"
+                  rows={3}
+                  placeholder="Cole aqui o conteúdo do certificado .p12 convertido para Base64"
+                  value={form.efi_certificate_base64}
+                  onChange={(e) => set("efi_certificate_base64", e.target.value)}
+                />
+                <p className="text-[10px] text-muted-foreground mt-1">Obtenha no painel Efí: Minha Conta › API › Certificados. Converta o .p12 para Base64 antes de colar aqui.</p>
+              </div>
             </div>
           )}
 
@@ -441,7 +455,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
             disabled={salvando}
             className="h-9 px-5 rounded-lg text-sm font-semibold bg-violet-500 text-white hover:bg-violet-600 disabled:opacity-50 transition-colors"
           >
-            {salvando ? "Salvando..." : "Salvar Alteracoes"}
+            {salvando ? "Salvando..." : "Salvar Alterações"}
           </button>
         </div>
       </div>

@@ -55,11 +55,14 @@ export async function POST(req: NextRequest) {
       .update({ status: "pago", pago_em: new Date().toISOString() })
       .eq("txid", txid)
       .eq("status", "pendente")
-      .select("consultor_id")
-      .single();
+      .select("usuario_id, usuario_tipo")
+      .maybeSingle();
 
     // Se retornou null, o txid ja foi processado ou nao existe — nao faz nada
-    if (!cobranca?.consultor_id) continue;
+    if (!cobranca?.usuario_id) continue;
+
+    // Por enquanto so trata consultores; futuramente expandir para outros tipos
+    if (cobranca.usuario_tipo !== "consultor") continue;
 
     // Ativa plano pro por 30 dias
     const planoAte = new Date();
@@ -68,7 +71,7 @@ export async function POST(req: NextRequest) {
     await supabaseAdmin
       .from("consultores")
       .update({ plano: "pro", plano_ativo_ate: planoAte.toISOString() })
-      .eq("id", cobranca.consultor_id);
+      .eq("id", cobranca.usuario_id);
   }
 
   return NextResponse.json({ ok: true });

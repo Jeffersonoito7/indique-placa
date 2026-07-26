@@ -32,8 +32,9 @@ export async function GET(req: NextRequest) {
       .from("cobrancas")
       .select("status")
       .eq("txid", txid)
-      .eq("consultor_id", consultor.id)
-      .single();
+      .eq("usuario_id", consultor.id)
+      .eq("usuario_tipo", "consultor")
+      .maybeSingle();
 
     const pago = cobranca?.status === "pago";
     return NextResponse.json({ pago, plano: consultor.plano, plano_ativo_ate: consultor.plano_ativo_ate });
@@ -134,12 +135,12 @@ export async function POST(_req: NextRequest) {
     const qrcode_image: string = ((qrRes as Record<string, unknown>).imagemQrcode as string) ?? "";
 
     await supabaseAdmin.from("cobrancas").insert({
-      consultor_id: consultor.id,
+      usuario_id: consultor.id,
+      usuario_tipo: "consultor",
       associacao_id: assoc.id,
       txid,
       valor,
       status: "pendente",
-      descricao: "Consultor Pro - Indique Placa",
     });
 
     return NextResponse.json({ ok: true, qrcode, qrcode_image, txid, valor });

@@ -10,10 +10,16 @@ export default async function ConsultorRankingPage() {
   const consultor = await getConsultorLogado();
   if (!consultor) redirect("/consultor/login");
 
-  const { data: indicacoes } = await supabaseAdmin
+  const assocId = (consultor as { associacao_id?: string | null }).associacao_id;
+
+  const query = supabaseAdmin
     .from("indicacoes")
     .select("consultor_id, status, consultores(nome)")
     .limit(2000);
+
+  const { data: indicacoes } = assocId
+    ? await query.eq("associacao_id", assocId)
+    : await query;
 
   const map: Record<string, { nome: string; total: number; fechados: number }> = {};
   for (const ind of indicacoes ?? []) {
