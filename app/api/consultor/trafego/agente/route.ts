@@ -13,7 +13,7 @@ export async function POST(req: NextRequest) {
   const id = await autenticarTrafego("consultor");
   if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
 
-  if (!process.env.ANTHROPIC_API_KEY) {
+  if (!process.env.OPENAI_API_KEY) {
     return NextResponse.json({ error: "Agente IA nao configurado" }, { status: 503 });
   }
 

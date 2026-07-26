@@ -1,7 +1,7 @@
 import "server-only";
-import Anthropic from "@anthropic-ai/sdk";
+import OpenAI from "openai";
 
-const client = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
+const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
 
 export type CopyGerado = {
   titulo: string;
@@ -42,14 +42,16 @@ Diferencial: ${params.diferencial ?? "Melhor custo-benefício vs seguro tradicio
 
 Retorne um JSON array com 3 objetos, cada um com: titulo, corpo, cta, justificativa.`;
 
-  const msg = await client.messages.create({
-    model: "claude-haiku-4-5-20251001",
+  const msg = await client.chat.completions.create({
+    model: "gpt-4o-mini",
     max_tokens: 1024,
-    system: SYSTEM_PROMPT,
-    messages: [{ role: "user", content: userMsg }],
+    messages: [
+      { role: "system", content: SYSTEM_PROMPT },
+      { role: "user", content: userMsg },
+    ],
   });
 
-  const text = msg.content[0].type === "text" ? msg.content[0].text : "[]";
+  const text = msg.choices[0].message.content ?? "[]";
   const match = text.match(/\[[\s\S]*\]/);
   if (!match) return [];
   return JSON.parse(match[0]) as CopyGerado[];
@@ -96,13 +98,13 @@ Regras de classificação:
 Retorne JSON com: tipo ("positivo"|"negativo"|"info"), titulo (curto, max 60 chars), mensagem (explicação em 1-2 frases com dica prática), acao_tomada (o que o sistema fez automaticamente, se fez algo).`;
 
   try {
-    const msg = await client.messages.create({
-      model: "claude-haiku-4-5-20251001",
+    const msg = await client.chat.completions.create({
+      model: "gpt-4o-mini",
       max_tokens: 512,
       messages: [{ role: "user", content: userMsg }],
     });
 
-    const text = msg.content[0].type === "text" ? msg.content[0].text : "{}";
+    const text = msg.choices[0].message.content ?? "{}";
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error("parse");
     return JSON.parse(match[0]) as AnaliseAlerta;
