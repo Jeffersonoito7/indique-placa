@@ -58,11 +58,24 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: "Erro ao buscar leads" }, { status: 500 });
 
-  // Totais globais do gestor (sem filtro)
-  const { data: todosLeads } = await supabaseAdmin
+  // Totais aplicando os mesmos filtros da query paginada
+  let totQuery = supabaseAdmin
     .from("indicacoes")
     .select("status")
     .in("consultor_id", ids);
+
+  if (consultorIdFiltro) {
+    totQuery = totQuery.eq("consultor_id", consultorIdFiltro);
+  }
+  if (statusFiltro && statusFiltro !== "todos") {
+    totQuery = totQuery.eq("status", statusFiltro);
+  }
+  if (busca) {
+    const buscaSegura = busca.replace(/[%_,.()"'\\]/g, "\\$&").slice(0, 100);
+    totQuery = totQuery.or(`placa.ilike.%${buscaSegura}%,nome_lead.ilike.%${buscaSegura}%`);
+  }
+
+  const { data: todosLeads } = await totQuery;
 
   const todos = todosLeads ?? [];
   const totalGlobal = todos.length;

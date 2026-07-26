@@ -1,9 +1,7 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "crypto";
 
-const rawSecret = process.env.MASTER_TOKEN_SECRET;
-if (!rawSecret) throw new Error("MASTER_TOKEN_SECRET nao configurado");
-const SECRET: string = rawSecret;
+const SECRET: string = process.env.MASTER_TOKEN_SECRET ?? "";
 const DURACAO_MS = 8 * 60 * 60 * 1000;
 
 export function gerarToken(usuario: string): string {
@@ -14,6 +12,7 @@ export function gerarToken(usuario: string): string {
 }
 
 export function verificarToken(token: string): boolean {
+  if (!SECRET) return false;
   try {
     const decoded = Buffer.from(token, "base64url").toString("utf8");
     const lastColon = decoded.lastIndexOf(":");

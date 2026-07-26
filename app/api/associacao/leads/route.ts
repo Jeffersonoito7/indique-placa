@@ -49,11 +49,20 @@ export async function GET(req: NextRequest) {
 
   const { data: leads, count } = await query;
 
-  // Totalizadores
-  const { data: totRaw } = await supabaseAdmin
+  // Totalizadores aplicando os mesmos filtros da query paginada
+  let totQuery = supabaseAdmin
     .from("indicacoes")
     .select("status")
     .in("consultor_id", ids);
+
+  if (statusFiltro && statusFiltro !== "todos") {
+    totQuery = totQuery.eq("status", statusFiltro);
+  }
+  if (busca) {
+    totQuery = totQuery.or(`placa.ilike.%${busca}%,nome_lead.ilike.%${busca}%`);
+  }
+
+  const { data: totRaw } = await totQuery;
 
   const tot = totRaw ?? [];
   const total = tot.length;

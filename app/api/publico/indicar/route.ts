@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
       .eq("consultor_id", cid)
       .eq("placa", placa)
       .limit(1)
-      .single();
+      .maybeSingle();
     if (existente) return NextResponse.json({ error: "Esta placa já foi indicada anteriormente." }, { status: 409 });
   }
 
