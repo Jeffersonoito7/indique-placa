@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { timingSafeEqual } from "crypto";
 
-// Webhook da Efi para pagamentos de associacoes ao master
-// A Efi faz GET para validar a URL antes de registrar
+// Webhook da Efi para pagamentos PIX do master (Indique Placa)
+// A Efi valida a URL enviando GET ou POST antes de registrar
 export async function GET(req: NextRequest) {
   const challenge = req.nextUrl.searchParams.get("challenge");
   if (challenge) return NextResponse.json({ challenge });
@@ -11,22 +10,6 @@ export async function GET(req: NextRequest) {
 }
 
 export async function POST(req: NextRequest) {
-  const webhookToken = process.env.WEBHOOK_EFI_TOKEN;
-  if (!webhookToken) {
-    return NextResponse.json({ error: "Servico indisponivel" }, { status: 503 });
-  }
-
-  const authHeader = req.headers.get("authorization") ?? "";
-  const tokenRecebido = authHeader.startsWith("Bearer ") ? authHeader.slice(7) : authHeader;
-
-  let tokensIguais = false;
-  try {
-    const a = Buffer.from(tokenRecebido);
-    const b = Buffer.from(webhookToken);
-    tokensIguais = a.length === b.length && timingSafeEqual(a, b);
-  } catch { tokensIguais = false; }
-
-  if (!tokensIguais) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
 
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Payload invalido" }, { status: 400 }); }
