@@ -2,23 +2,31 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, Users, BarChart2, User, ClipboardList, Link2, TrendingUp, DollarSign, Bell, UserCheck, Megaphone } from "lucide-react";
+import { LayoutDashboard, Users, BarChart2, User, ClipboardList, Link2, TrendingUp, DollarSign, Bell, UserCheck, Megaphone, QrCode, MessageCircle, Search, Target } from "lucide-react";
 
 const navItems = [
-  { group: "Painel", items: [
+  { group: "Meu Painel", items: [
     { href: "/gestor/dashboard", label: "Dashboard", icon: LayoutDashboard },
-    { href: "/gestor/ranking", label: "Ranking do Time", icon: TrendingUp },
-    { href: "/gestor/notificacoes", label: "Notificacoes", icon: Bell },
   ]},
-  { group: "Equipe", items: [
-    { href: "/gestor/consultores", label: "Meu Time", icon: Users },
-    { href: "/gestor/indicadores", label: "Indicadores", icon: UserCheck },
+  { group: "Minha Producao", items: [
+    { href: "/gestor/meus-leads", label: "Meus Leads", icon: ClipboardList },
+    { href: "/gestor/meus-indicadores", label: "Meus Indicadores", icon: UserCheck },
+    { href: "/gestor/financeiro-proprio", label: "Financeiro", icon: DollarSign },
+    { href: "/gestor/metas", label: "Metas", icon: Target },
+  ]},
+  { group: "Meu Time", items: [
+    { href: "/gestor/consultores", label: "Consultores", icon: Users },
+    { href: "/gestor/indicadores", label: "Indicadores do Time", icon: UserCheck },
     { href: "/gestor/leads", label: "Leads do Time", icon: ClipboardList },
     { href: "/gestor/relatorio", label: "Relatorio", icon: BarChart2 },
     { href: "/gestor/comissoes", label: "Comissoes", icon: DollarSign },
+    { href: "/gestor/ranking", label: "Ranking", icon: TrendingUp },
   ]},
   { group: "Captacao", items: [
     { href: "/gestor/captura", label: "Link de Captura", icon: Link2 },
+    { href: "/gestor/qrcode", label: "QR Code", icon: QrCode },
+    { href: "/gestor/whatsapp", label: "WhatsApp", icon: MessageCircle },
+    { href: "/gestor/parceiros", label: "Buscar Parceiros", icon: Search },
     { href: "/gestor/trafego", label: "Trafego Pago", icon: Megaphone },
   ]},
   { group: "Conta", items: [

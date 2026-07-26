@@ -2,6 +2,7 @@ export const dynamic = "force-dynamic";
 import { getGestorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Users, ClipboardList, CheckCircle2, TrendingUp, AlertCircle, Trophy } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -54,6 +55,19 @@ export default async function GestorDashboard() {
 
   const semLeads = ranking.filter((c) => c.leads === 0);
 
+  // Minha Producao: leads proprios do gestor (gestor_id = gestor.id)
+  const { data: meusLeadsData } = await supabaseAdmin
+    .from("indicacoes")
+    .select("status")
+    .eq("gestor_id", gestor.id);
+
+  const meusLeads = meusLeadsData ?? [];
+  const meusTotalLeads = meusLeads.length;
+  const meusTotalFechamentos = meusLeads.filter((i) => i.status === "fechado").length;
+  const minhaTaxa = meusTotalLeads > 0 ? Math.round((meusTotalFechamentos / meusTotalLeads) * 100) : 0;
+
+  const isPrimeiroAcesso = total_consultores === 0 && meusTotalLeads === 0;
+
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
@@ -79,6 +93,67 @@ export default async function GestorDashboard() {
       </div>
 
       <div className="flex-1 p-8 bg-muted/30 space-y-6">
+
+        {/* Banner de boas-vindas: primeiro acesso */}
+        {isPrimeiroAcesso && (
+          <div className="rounded-2xl p-5 bg-cyan-500/10 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center gap-4">
+            <div className="flex-1">
+              <div className="text-sm font-bold text-cyan-400 leading-tight mb-1">
+                Bem-vindo ao seu painel!
+              </div>
+              <div className="text-xs text-muted-foreground">
+                Comece adicionando consultores ao seu time ou cadastrando seus primeiros leads pessoais.
+              </div>
+            </div>
+            <div className="flex gap-2 shrink-0">
+              <Link
+                href="/gestor/consultores"
+                className="text-xs font-semibold px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 hover:bg-cyan-500/30 transition-colors"
+              >
+                Adicionar Consultor
+              </Link>
+              <Link
+                href="/gestor/meus-leads"
+                className="text-xs font-semibold px-4 py-2 rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 transition-colors"
+              >
+                Cadastrar Lead
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Minha Producao */}
+        <div>
+          <div className="flex items-center justify-between mb-3">
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Minha Producao</h2>
+            <Link
+              href="/gestor/meus-leads"
+              className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
+            >
+              Ver todos
+            </Link>
+          </div>
+          <div className="grid grid-cols-3 gap-4">
+            {[
+              { label: "Meus Leads", value: meusTotalLeads, icon: ClipboardList, iconBg: "bg-cyan-500/10", iconColor: "text-cyan-500", valueColor: "text-cyan-500", border: "border-t-cyan-500" },
+              { label: "Meus Fechamentos", value: meusTotalFechamentos, icon: CheckCircle2, iconBg: "bg-cyan-600/10", iconColor: "text-cyan-400", valueColor: "text-cyan-400", border: "border-t-cyan-400" },
+              { label: "Minha Taxa", value: `${minhaTaxa}%`, icon: TrendingUp, iconBg: "bg-sky-500/10", iconColor: "text-sky-400", valueColor: "text-sky-400", border: "border-t-sky-400" },
+            ].map((m) => {
+              const Icon = m.icon;
+              return (
+                <Card key={m.label} className={cn("border-t-4 shadow-sm", m.border)}>
+                  <CardContent className="p-5">
+                    <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center mb-3", m.iconBg)}>
+                      <Icon className={cn("h-4 w-4", m.iconColor)} />
+                    </div>
+                    <div className={cn("text-2xl font-bold tracking-tight mb-0.5", m.valueColor)}>{m.value}</div>
+                    <p className="text-[11px] text-muted-foreground">{m.label}</p>
+                  </CardContent>
+                </Card>
+              );
+            })}
+          </div>
+        </div>
 
         {/* KPIs */}
         <div className="grid grid-cols-4 gap-4">
