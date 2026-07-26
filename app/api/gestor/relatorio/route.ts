@@ -42,6 +42,7 @@ export async function GET(req: NextRequest) {
       taxa_conversao: 0,
       ranking: [],
       leads_por_consultor: [],
+      permite_csv: planoConfig.exportar_csv ?? false,
     });
   }
 

@@ -90,18 +90,25 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     return NextResponse.json({ error: "Erro ao gerar URL do comprovante" }, { status: 500 });
   }
 
-  // Salva apenas o path no banco; a URL assinada e gerada sob demanda ao exibir
-  const { error: updateError } = await supabaseAdmin
+  // Guard atomico: so atualiza se pago_em ainda nao foi setado
+  // Previne que requests concorrentes sobrescrevam comprovante original
+  const { data: updated, error: updateError } = await supabaseAdmin
     .from("indicacoes")
     .update({
       pago_em: new Date().toISOString(),
       comprovante_url: path,
       valor_pago: valor > 0 ? valor : null,
     })
-    .eq("id", id);
+    .eq("id", id)
+    .is("pago_em", null)
+    .select("id");
 
   if (updateError) {
     return NextResponse.json({ error: "Erro ao registrar pagamento" }, { status: 500 });
+  }
+
+  if (!updated || updated.length === 0) {
+    return NextResponse.json({ ok: true, ja_pago: true });
   }
 
   return NextResponse.json({ ok: true, comprovante_url: signedData.signedUrl });
