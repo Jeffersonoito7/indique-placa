@@ -54,8 +54,11 @@ export async function enviarPixIndicador({
   ) as Record<string, unknown>;
 
   const status = resultado.status as string | undefined;
+  // Apenas REALIZADO confirma transferencia concluida.
+  // PENDENTE = processamento assincrono ainda em andamento (nao garantido).
+  // NAO_REALIZADO = recusado.
   return {
-    ok: status !== "NAO_REALIZADO",
+    ok: status === "REALIZADO",
     idEnvio: resultado.idEnvio as string | undefined,
     status,
   };

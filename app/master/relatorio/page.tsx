@@ -8,7 +8,6 @@ import { cn } from "@/lib/utils";
 type LinhaRelatorio = {
   id: string;
   nome: string;
-  fone: string;
   ativo: boolean;
   total_indicacoes: number;
   total_fechadas: number;
@@ -213,7 +212,6 @@ export default function RelatorioPage() {
                             >
                               <td className="px-6 py-3.5">
                                 <div className="text-sm font-medium text-foreground">{item.nome}</div>
-                                <div className="text-[10px] text-muted-foreground">{item.fone}</div>
                               </td>
 
                               <td className="px-6 py-3.5">

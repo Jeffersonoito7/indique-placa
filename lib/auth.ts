@@ -15,7 +15,7 @@ export async function getConsultorLogado() {
     .from("consultores")
     .select("id, nome, fone, email, status, plano, plano_ativo_ate, associacao_id")
     .eq("id", usuario_id)
-    .single();
+    .maybeSingle();
 
   return data ?? null;
 }
@@ -32,7 +32,7 @@ export async function getGestorLogado() {
     .from("gestores")
     .select("id, nome, fone, email, plano, plano_ativo_ate, associacao_id")
     .eq("id", usuario_id)
-    .single();
+    .maybeSingle();
 
   return data ?? null;
 }
@@ -49,7 +49,7 @@ export async function getAssociacaoLogada() {
     .from("associacoes")
     .select("id, nome, email, fone, cidade, estado, plano, status")
     .eq("id", usuario_id)
-    .single();
+    .maybeSingle();
 
   return data ?? null;
 }
@@ -66,7 +66,7 @@ export async function getIndicadorLogado() {
     .from("indicadores")
     .select("id, nome, telefone, consultor_id, chave_pix")
     .eq("id", usuario_id)
-    .single();
+    .maybeSingle();
 
   return data ?? null;
 }

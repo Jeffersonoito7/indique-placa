@@ -1,9 +1,19 @@
 import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
-import { timingSafeEqual } from "crypto";
 import { z } from "zod";
+import { createHmac } from "crypto";
 import { gerarToken } from "@/lib/master-token";
 import { rateLimit } from "@/lib/rate-limit";
+
+// Comparacao em tempo constante sem vazamento de tamanho via HMAC
+function safeEquals(a: string, b: string): boolean {
+  const key = "compare";
+  const ha = createHmac("sha256", key).update(a).digest();
+  const hb = createHmac("sha256", key).update(b).digest();
+  let diff = 0;
+  for (let i = 0; i < ha.length; i++) diff |= ha[i] ^ hb[i];
+  return diff === 0;
+}
 
 const schema = z.object({
   usuario: z.string().min(1).max(64),
@@ -32,11 +42,9 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Configuração do servidor incompleta" }, { status: 500 });
   }
 
-  // Comparacao em tempo constante para evitar timing attack
-  const usuarioOk = usuario.length === usuarioEnv.length &&
-    timingSafeEqual(Buffer.from(usuario), Buffer.from(usuarioEnv));
-  const senhaOk = senha.length === senhaEnv.length &&
-    timingSafeEqual(Buffer.from(senha), Buffer.from(senhaEnv));
+  // Comparacao em tempo constante — ambas avaliadas antes de checar resultado
+  const usuarioOk = safeEquals(usuario, usuarioEnv);
+  const senhaOk = safeEquals(senha, senhaEnv);
 
   if (!usuarioOk || !senhaOk) {
     return NextResponse.json({ error: "Usuario ou senha incorretos" }, { status: 401 });

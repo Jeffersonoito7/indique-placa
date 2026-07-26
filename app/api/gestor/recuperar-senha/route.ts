@@ -41,12 +41,13 @@ export async function POST(req: NextRequest) {
       .from("gestores")
       .select("id")
       .eq("email", emailNorm)
-      .single();
+      .maybeSingle();
 
     if (!gestor) return NextResponse.json({ error: "Conta não encontrada" }, { status: 404 });
 
-    const hash = await bcrypt.hash(novaSenha, 10);
-    await supabaseAdmin.from("gestores").update({ senha_hash: hash }).eq("id", gestor.id);
+    const hash = await bcrypt.hash(novaSenha, 12);
+    const { error: errUpdate } = await supabaseAdmin.from("gestores").update({ senha_hash: hash }).eq("id", gestor.id);
+    if (errUpdate) return NextResponse.json({ error: "Erro ao redefinir senha" }, { status: 500 });
 
     return NextResponse.json({ ok: true });
   }
@@ -61,7 +62,7 @@ export async function POST(req: NextRequest) {
     .from("gestores")
     .select("nome, email")
     .eq("email", emailNorm)
-    .single();
+    .maybeSingle();
 
   if (gestor) {
     const codigo = await criarOTP(emailNorm, "gestor");

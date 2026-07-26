@@ -42,6 +42,11 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   const valor = Number(formData.get("valor") ?? 0);
+
+  if (valor < 0 || valor > 1_000_000) {
+    return NextResponse.json({ error: "Valor inválido" }, { status: 400 });
+  }
+
   const arquivo = formData.get("comprovante");
 
   if (!(arquivo instanceof File)) {

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getConsultorLogado } from "@/lib/auth";
+import { createHmac } from "crypto";
 
 export async function POST() {
   const consultor = await getConsultorLogado();
@@ -14,9 +15,13 @@ export async function POST() {
         "Content-Type": "application/json",
         apikey: process.env.EVOLUTION_API_KEY!,
       },
+      // Token unico por instancia derivado de SESSION_SECRET — nunca usar a chave admin
       body: JSON.stringify({
         instanceName,
-        token: process.env.EVOLUTION_API_KEY,
+        token: createHmac("sha256", process.env.SESSION_SECRET ?? "default")
+          .update(`wpp-${consultor.id}`)
+          .digest("hex")
+          .slice(0, 32),
         qrcode: true,
       }),
     });

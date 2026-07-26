@@ -11,7 +11,8 @@ export async function GET() {
     .select("id, placa, nome_lead, tipo_veiculo, criado_em, comissao_valor, comissao_paga, comissao_paga_em")
     .eq("indicador_id", indicador.id)
     .eq("status", "fechado")
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(1000);
 
   const indicacoes = data ?? [];
   const total_ganho = indicacoes.reduce((acc, i) => acc + (i.comissao_valor ?? 0), 0);

@@ -5,6 +5,7 @@ const SECRET: string = process.env.MASTER_TOKEN_SECRET ?? "";
 const DURACAO_MS = 8 * 60 * 60 * 1000;
 
 export function gerarToken(usuario: string): string {
+  if (!SECRET) throw new Error("MASTER_TOKEN_SECRET nao configurado");
   const expira = Date.now() + DURACAO_MS;
   const payload = `${usuario}:${expira}`;
   const mac = createHmac("sha256", SECRET).update(payload).digest("hex");

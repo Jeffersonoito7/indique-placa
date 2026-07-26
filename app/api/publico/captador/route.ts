@@ -3,6 +3,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { randomInt } from "crypto";
 
 const schema = z.object({
   nome: z.string().min(2).max(100),
@@ -34,9 +35,9 @@ export async function POST(req: NextRequest) {
     if (!data || data.status !== "ativo") cid = null;
   }
 
-  // Senha: usa a fornecida ou gera uma temporaria de 8 chars alfanumericos
+  // Senha: usa a fornecida ou gera uma temporaria de 8 chars alfanumericos com crypto
   const chars = "ABCDEFGHJKMNPQRSTUVWXYZabcdefghjkmnpqrstuvwxyz23456789";
-  const senhaPlain = parsed.data.senha ?? Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  const senhaPlain = parsed.data.senha ?? Array.from({ length: 8 }, () => chars[randomInt(0, chars.length)]).join("");
   const senhaHash = await bcrypt.hash(senhaPlain, 10);
 
   const { error } = await supabaseAdmin.from("indicadores").insert({
@@ -46,7 +47,10 @@ export async function POST(req: NextRequest) {
     consultor_id: cid,
   });
 
-  if (error) return NextResponse.json({ error: "Erro ao salvar cadastro" }, { status: 500 });
+  if (error) {
+    if (error.code === "23505") return NextResponse.json({ error: "Telefone ja cadastrado" }, { status: 409 });
+    return NextResponse.json({ error: "Erro ao salvar cadastro" }, { status: 500 });
+  }
 
   // Retorna senha temporaria apenas se nao foi fornecida pelo chamador
   const resposta: Record<string, unknown> = { ok: true };

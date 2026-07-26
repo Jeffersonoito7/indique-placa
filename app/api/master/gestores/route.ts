@@ -16,7 +16,8 @@ export async function GET(req: NextRequest) {
   let query = supabaseAdmin
     .from("gestores")
     .select(`id, nome, email, fone, ativo, plano, plano_ativo_ate, criado_em, associacao_id, associacoes(id, nome)`)
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(2000);
 
   if (associacao_id) query = query.eq("associacao_id", associacao_id);
 
@@ -65,7 +66,7 @@ export async function POST(req: NextRequest) {
     .from("gestores")
     .select("id")
     .eq("email", email.toLowerCase())
-    .single();
+    .maybeSingle();
 
   if (existente) return NextResponse.json({ error: "Este e-mail ja esta cadastrado." }, { status: 409 });
 

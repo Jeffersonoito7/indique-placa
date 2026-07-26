@@ -6,6 +6,9 @@ import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
+// Hash dummy para comparar quando gestor nao existe (evita timing oracle que revela emails validos)
+const DUMMY_HASH = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
+
 const schema = z.object({
   email: z.string().email(),
   senha: z.string().min(1).max(128),
@@ -30,19 +33,18 @@ export async function POST(req: NextRequest) {
     .from("gestores")
     .select("id, nome, fone, email, senha_hash, ativo")
     .eq("email", email.toLowerCase())
-    .single();
+    .maybeSingle();
 
-  if (!gestor) {
+  // Sempre executa bcrypt.compare para nao revelar por timing se o email existe
+  const hashParaComparar = gestor?.senha_hash ?? DUMMY_HASH;
+  const senhaCorreta = await bcrypt.compare(senha, hashParaComparar);
+
+  if (!gestor || !senhaCorreta) {
     return NextResponse.json({ error: "Email ou senha incorretos" }, { status: 401 });
   }
 
   if (!gestor.ativo) {
     return NextResponse.json({ error: "Conta inativa. Entre em contato com o suporte." }, { status: 403 });
-  }
-
-  const senhaCorreta = await bcrypt.compare(senha, gestor.senha_hash);
-  if (!senhaCorreta) {
-    return NextResponse.json({ error: "Email ou senha incorretos" }, { status: 401 });
   }
 
   const token = await criarSessao(gestor.id, "gestor");

@@ -215,11 +215,11 @@ export default function MasterGestoresPage() {
 
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+          <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
             <ShieldCheck size={20} className="text-blue-400" />
             Gestores
           </h1>
-          <p className="text-sm text-slate-500 mt-0.5">{gestores.length} cadastrados, {ativos} ativos</p>
+          <p className="text-sm text-muted-foreground mt-0.5">{gestores.length} cadastrados, {ativos} ativos</p>
         </div>
         <button onClick={() => setModalCriar(true)} className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 text-white text-sm font-semibold hover:bg-blue-500">
           <Plus size={15} /> Novo Gestor
@@ -227,10 +227,10 @@ export default function MasterGestoresPage() {
       </div>
 
       {carregando ? (
-        <div className="text-center py-12 text-slate-500 text-sm">Carregando...</div>
+        <div className="text-center py-12 text-muted-foreground text-sm">Carregando...</div>
       ) : gestores.length === 0 ? (
         <Card>
-          <CardContent className="py-12 text-center text-slate-500 text-sm">
+          <CardContent className="py-12 text-center text-muted-foreground text-sm">
             Nenhum gestor cadastrado. Clique em "Novo Gestor" para comecar.
           </CardContent>
         </Card>
@@ -244,26 +244,26 @@ export default function MasterGestoresPage() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-semibold text-slate-100 text-sm">{g.nome}</span>
+                    <span className="font-semibold text-foreground text-sm">{g.nome}</span>
                     <Badge ativo={g.ativo} />
-                    <span className={cn("px-2 py-0.5 rounded-md text-xs font-semibold", g.plano === "pro" ? "bg-violet-500/10 text-violet-400" : "bg-slate-500/10 text-slate-400")}>
+                    <span className={cn("px-2 py-0.5 rounded-md text-xs font-semibold", g.plano === "pro" ? "bg-violet-500/10 text-violet-400" : "bg-muted/60 text-muted-foreground")}>
                       {g.plano.toUpperCase()}
                     </span>
                   </div>
-                  <div className="text-xs text-slate-500 mt-0.5 flex flex-wrap gap-x-3">
+                  <div className="text-xs text-muted-foreground mt-0.5 flex flex-wrap gap-x-3">
                     <span>{g.email}</span>
                     {g.fone && <span>{g.fone}</span>}
                     {g.associacao && <span className="text-blue-400">{g.associacao}</span>}
                   </div>
                 </div>
                 <div className="flex items-center gap-1 flex-shrink-0">
-                  <button onClick={() => setEditando(g)} title="Editar" className="p-2 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5">
+                  <button onClick={() => setEditando(g)} title="Editar" className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50">
                     <Pencil size={14} />
                   </button>
-                  <button onClick={() => toggleAtivo(g)} title={g.ativo ? "Desativar" : "Ativar"} className="p-2 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-white/5">
+                  <button onClick={() => toggleAtivo(g)} title={g.ativo ? "Desativar" : "Ativar"} className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted/50">
                     {g.ativo ? <UserX size={14} /> : <UserCheck size={14} />}
                   </button>
-                  <button onClick={() => setConfirmDelete(g.id)} title="Remover" className="p-2 rounded-lg text-slate-500 hover:text-red-400 hover:bg-red-500/5">
+                  <button onClick={() => setConfirmDelete(g.id)} title="Remover" className="p-2 rounded-lg text-muted-foreground hover:text-red-400 hover:bg-red-500/5">
                     <Trash2 size={14} />
                   </button>
                 </div>

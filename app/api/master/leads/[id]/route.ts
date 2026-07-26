@@ -27,7 +27,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .from("indicacoes")
       .select("consultor_id, tipo_veiculo, comissao_valor")
       .eq("id", id)
-      .single();
+      .maybeSingle();
 
     if (lead && !lead.comissao_valor) {
       const tipoVeiculo = (lead.tipo_veiculo as string | null) ?? "carro";
@@ -36,7 +36,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         .select("comissao_indicador")
         .eq("consultor_id", lead.consultor_id)
         .eq("tipo", tipoVeiculo)
-        .single();
+        .maybeSingle();
 
       const fallback: Record<string, number> = { moto: 50, carro: 100, caminhao: 500 };
       updatePayload.comissao_valor = comissaoConfig?.comissao_indicador ?? fallback[tipoVeiculo] ?? 100;
@@ -48,7 +48,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .update(updatePayload)
     .eq("id", id)
     .select("id, status, consultor_id, comissao_valor")
-    .single();
+    .maybeSingle();
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

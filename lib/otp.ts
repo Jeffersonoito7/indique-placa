@@ -1,10 +1,11 @@
 import "server-only";
+import { randomInt } from "crypto";
 import { supabaseAdmin } from "./supabase-server";
 
 type TipoOTP = "consultor" | "gestor" | "indicador" | "associacao";
 
 export async function criarOTP(email: string, tipo: TipoOTP): Promise<string> {
-  const codigo = String(Math.floor(100000 + Math.random() * 900000));
+  const codigo = String(randomInt(100000, 1000000));
   const expiraEm = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
   // Invalida tokens anteriores do mesmo email+tipo
@@ -30,25 +31,18 @@ export async function validarOTP(
   tipo: TipoOTP,
   codigo: string
 ): Promise<boolean> {
-  const { data } = await supabaseAdmin
+  // UPDATE atomico: se duas requisicoes chegarem ao mesmo tempo apenas uma
+  // encontrara usado=false e marcara como usado. A outra recebera array vazio.
+  const { data: updated } = await supabaseAdmin
     .from("otp_tokens")
-    .select("id, expira_em, usado")
+    .update({ usado: true })
     .eq("email", email)
     .eq("tipo", tipo)
     .eq("codigo", codigo)
     .eq("usado", false)
-    .order("criado_em", { ascending: false })
-    .limit(1)
-    .single();
+    .gt("expira_em", new Date().toISOString())
+    .select("id")
+    .limit(1);
 
-  if (!data) return false;
-  if (new Date(data.expira_em) < new Date()) return false;
-
-  // Marca como usado
-  await supabaseAdmin
-    .from("otp_tokens")
-    .update({ usado: true })
-    .eq("id", data.id);
-
-  return true;
+  return !!(updated && updated.length > 0);
 }

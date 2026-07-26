@@ -5,6 +5,7 @@ import { criarSessao } from "@/lib/sessoes";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
+import { timingSafeEqual } from "crypto";
 
 const schema = z.object({
   telefone: z.string().min(10).max(20),
@@ -43,15 +44,26 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Conta inativa. Entre em contato com o suporte." }, { status: 403 });
   }
 
-  const senhaCorreta = indicador.senha?.startsWith("$2b$") || indicador.senha?.startsWith("$2a$")
-    ? await bcrypt.compare(senha, indicador.senha)
-    : indicador.senha === senha;
+  const isHashed = indicador.senha?.startsWith("$2b$") || indicador.senha?.startsWith("$2a$");
+  let senhaCorreta: boolean;
+  if (isHashed) {
+    senhaCorreta = await bcrypt.compare(senha, indicador.senha ?? "");
+  } else {
+    // Comparacao em tempo constante para senhas ainda em plaintext
+    const stored = indicador.senha ?? "";
+    const maxLen = Math.max(senha.length, stored.length);
+    const aBuf = Buffer.alloc(maxLen);
+    const bBuf = Buffer.alloc(maxLen);
+    Buffer.from(senha).copy(aBuf);
+    Buffer.from(stored).copy(bBuf);
+    senhaCorreta = timingSafeEqual(aBuf, bBuf);
+  }
 
   if (!senhaCorreta) {
     return NextResponse.json({ error: "Telefone ou senha incorretos" }, { status: 401 });
   }
 
-  if (!(indicador.senha?.startsWith("$2b$") || indicador.senha?.startsWith("$2a$"))) {
+  if (!isHashed) {
     const hash = await bcrypt.hash(senha, 12);
     await supabaseAdmin.from("indicadores").update({ senha: hash }).eq("id", indicador.id);
   }

@@ -12,7 +12,7 @@ export async function verificarBloqueioConsultor(consultor_id: string): Promise<
       .from("configuracoes")
       .select("limite_comissoes_pendentes")
       .limit(1)
-      .single(),
+      .maybeSingle(),
     supabaseAdmin
       .from("indicacoes")
       .select("id", { count: "exact", head: true })

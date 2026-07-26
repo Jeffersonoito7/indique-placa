@@ -6,6 +6,20 @@ export async function GET() {
   const consultor = await getConsultorLogado();
   if (!consultor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
+  // Verificar se o plano permite exportacao CSV (mesma regra de exportar/leads)
+  const { data: planoConfig } = await supabaseAdmin
+    .from("planos_config_consultor")
+    .select("exportar_csv")
+    .eq("plano", (consultor as { plano?: string }).plano ?? "free")
+    .maybeSingle();
+
+  if (!planoConfig?.exportar_csv) {
+    return NextResponse.json(
+      { error: "Exportação de CSV não está disponível no seu plano. Faça upgrade Pro para usar este recurso." },
+      { status: 403 }
+    );
+  }
+
   const { data: indicadores, error: errInd } = await supabaseAdmin
     .from("indicadores")
     .select("id, nome, telefone")
@@ -49,11 +63,13 @@ export async function GET() {
     }
   }
 
+  const sanitizeCsv = (v: string) => /^[=+\-@\t\r]/.test(v) ? `\t${v}` : v;
+
   const cabecalho = "nome,telefone,total_indicacoes,fechadas,comissao_total";
   const linhas = indicadores.map((ind) => {
     const agg = mapa[ind.id];
     return [ind.nome ?? "", ind.telefone ?? "", agg.total, agg.fechadas, agg.comissao_total]
-      .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+      .map((v) => `"${sanitizeCsv(String(v)).replace(/"/g, '""')}"`)
       .join(",");
   });
 

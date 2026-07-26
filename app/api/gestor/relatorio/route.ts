@@ -35,8 +35,11 @@ export async function GET(req: NextRequest) {
     .select("consultor_id, status, criado_em")
     .in("consultor_id", ids);
 
-  if (de) query = query.gte("criado_em", de);
-  if (ate) query = query.lte("criado_em", ate + "T23:59:59.999Z");
+  const ISO_DATE = /^\d{4}-\d{2}-\d{2}$/;
+  if (de && ISO_DATE.test(de)) query = query.gte("criado_em", de);
+  if (ate && ISO_DATE.test(ate)) query = query.lte("criado_em", ate + "T23:59:59.999Z");
+  // Limite de seguranca: sem filtro de data aplica ultimos 90 dias para evitar scan completo
+  if (!de) query = query.gte("criado_em", new Date(Date.now() - 90 * 24 * 60 * 60 * 1000).toISOString());
 
   const { data: indicacoes } = await query;
   const lista = indicacoes ?? [];

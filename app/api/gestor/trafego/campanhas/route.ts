@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
 
   const { data: conta } = await supabaseAdmin
     .from("trafego_contas")
-    .select("meta_access_token, meta_ad_account_id, meta_page_id, meta_instagram_actor_id")
+    .select("id, meta_access_token, meta_ad_account_id, meta_page_id, meta_instagram_actor_id")
     .eq("usuario_id", id)
     .eq("usuario_tipo", "gestor")
     .eq("ativo", true)
@@ -56,7 +56,7 @@ export async function POST(req: NextRequest) {
     .insert({
       usuario_id: id,
       usuario_tipo: "gestor",
-      conta_id: (await supabaseAdmin.from("trafego_contas").select("id").eq("usuario_id", id).eq("usuario_tipo", "gestor").single()).data?.id,
+      conta_id: conta.id,
       nome: parsed.data.nome,
       orcamento_diario: parsed.data.orcamento_diario,
       copy_titulo: parsed.data.copy_titulo,

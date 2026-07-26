@@ -42,14 +42,18 @@ export async function POST(req: NextRequest) {
 
   const { nome, email, fone, senha, gestor_id } = parsed.data;
 
-  // Verificar limite do plano
+  // Verificar limite do plano — se config nao existe, nega por seguranca (fail-safe)
   const { data: planoConfig } = await supabaseAdmin
     .from("planos_config_associacao")
     .select("max_consultores")
     .eq("plano", assoc.plano ?? "trial")
     .maybeSingle();
 
-  if (planoConfig?.max_consultores !== null && planoConfig?.max_consultores !== undefined) {
+  if (!planoConfig) {
+    return NextResponse.json({ error: "Configuracao de plano nao encontrada. Contate o suporte." }, { status: 403 });
+  }
+
+  if (planoConfig.max_consultores !== null && planoConfig.max_consultores !== undefined) {
     const { count } = await supabaseAdmin
       .from("consultores")
       .select("id", { count: "exact", head: true })

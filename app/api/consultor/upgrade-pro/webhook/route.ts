@@ -55,7 +55,7 @@ export async function POST(req: NextRequest) {
       .update({ status: "pago", pago_em: new Date().toISOString() })
       .eq("txid", txid)
       .eq("status", "pendente")
-      .select("usuario_id, usuario_tipo")
+      .select("usuario_id, usuario_tipo, tipo_periodo")
       .maybeSingle();
 
     // Se retornou null, o txid ja foi processado ou nao existe — nao faz nada
@@ -64,9 +64,10 @@ export async function POST(req: NextRequest) {
     // Por enquanto so trata consultores; futuramente expandir para outros tipos
     if (cobranca.usuario_tipo !== "consultor") continue;
 
-    // Ativa plano pro por 30 dias
+    // Plano anual = 365 dias; mensal = 30 dias
+    const isAnual = cobranca.tipo_periodo === "anual";
     const planoAte = new Date();
-    planoAte.setDate(planoAte.getDate() + 30);
+    planoAte.setDate(planoAte.getDate() + (isAnual ? 365 : 30));
 
     await supabaseAdmin
       .from("consultores")

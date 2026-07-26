@@ -58,7 +58,11 @@ export async function PATCH(req: NextRequest) {
     if (senhaHash) {
       senhaCorreta = await bcrypt.compare(senha_atual, senhaHash);
     } else {
-      senhaCorreta = senha_atual === (process.env.ASSOCIACAO_MASTER_SENHA ?? "");
+      const masterSenha = process.env.ASSOCIACAO_MASTER_SENHA;
+      // Se a env var nao estiver configurada, nega acesso — nao aceitar string vazia como senha
+      if (masterSenha) {
+        senhaCorreta = senha_atual === masterSenha;
+      }
     }
 
     if (!senhaCorreta) {

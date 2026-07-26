@@ -28,7 +28,7 @@ async function autenticar() {
 export async function GET() {
   if (!(await autenticar())) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-  const { data } = await supabaseAdmin.from("configuracoes").select("*").limit(1).single();
+  const { data } = await supabaseAdmin.from("configuracoes").select("*").limit(1).maybeSingle();
   return NextResponse.json({ config: data ?? null });
 }
 
@@ -41,7 +41,7 @@ export async function PUT(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos", detalhe: parsed.error.flatten() }, { status: 400 });
 
-  const { data: existente } = await supabaseAdmin.from("configuracoes").select("id").limit(1).single();
+  const { data: existente } = await supabaseAdmin.from("configuracoes").select("id").limit(1).maybeSingle();
 
   let error;
   if (existente) {

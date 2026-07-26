@@ -39,12 +39,13 @@ export async function POST(req: NextRequest) {
       .from("indicadores")
       .select("id")
       .eq("email", emailNorm)
-      .single();
+      .maybeSingle();
 
     if (!indicador) return NextResponse.json({ error: "Conta não encontrada" }, { status: 404 });
 
-    const hash = await bcrypt.hash(novaSenha, 10);
-    await supabaseAdmin.from("indicadores").update({ senha: hash }).eq("id", indicador.id);
+    const hash = await bcrypt.hash(novaSenha, 12);
+    const { error: errUpdate } = await supabaseAdmin.from("indicadores").update({ senha: hash }).eq("id", indicador.id);
+    if (errUpdate) return NextResponse.json({ error: "Erro ao redefinir senha" }, { status: 500 });
 
     return NextResponse.json({ ok: true });
   }
@@ -59,7 +60,7 @@ export async function POST(req: NextRequest) {
     .from("indicadores")
     .select("nome, email")
     .eq("email", emailNorm)
-    .single();
+    .maybeSingle();
 
   if (indicador) {
     const codigo = await criarOTP(emailNorm, "indicador");

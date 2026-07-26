@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { autenticarTrafego } from "@/lib/trafego-auth";
-import { validarContaMeta } from "@/lib/meta-api";
+import { validarContaMeta, alterarStatusCampanha } from "@/lib/meta-api";
 import { z } from "zod";
 
 const schema = z.object({
@@ -73,6 +73,29 @@ export async function POST(req: NextRequest) {
 export async function DELETE(req: NextRequest) {
   const id = await autenticarTrafego("gestor");
   if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+
+  // Encerrar campanhas ativas antes de remover a conta (token deixaria de funcionar)
+  const { data: ativas } = await supabaseAdmin
+    .from("trafego_campanhas")
+    .select("id, meta_campaign_id, meta_adset_id, meta_ad_id, trafego_contas(meta_access_token)")
+    .eq("usuario_id", id)
+    .eq("usuario_tipo", "gestor")
+    .eq("status", "ativa");
+
+  if (ativas && ativas.length > 0) {
+    for (const camp of ativas) {
+      const token = (camp.trafego_contas as { meta_access_token?: string } | null)?.meta_access_token;
+      if (token && camp.meta_campaign_id) {
+        await alterarStatusCampanha(token, { campaign_id: camp.meta_campaign_id, adset_id: camp.meta_adset_id, ad_id: camp.meta_ad_id }, "PAUSED").catch(() => {});
+      }
+    }
+    await supabaseAdmin
+      .from("trafego_campanhas")
+      .update({ status: "encerrada" })
+      .eq("usuario_id", id)
+      .eq("usuario_tipo", "gestor")
+      .eq("status", "ativa");
+  }
 
   await supabaseAdmin
     .from("trafego_contas")

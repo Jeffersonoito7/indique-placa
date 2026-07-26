@@ -115,6 +115,7 @@ export default function GestorCadastroPage() {
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [verSenha, setVerSenha] = useState(false);
+  const [aceitouTermos, setAceitouTermos] = useState(false);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(false);
@@ -125,6 +126,7 @@ export default function GestorCadastroPage() {
     const tel = fone.replace(/\D/g, "");
     if (tel.length < 10) { setErro("Digite um WhatsApp válido com DDD"); return; }
     if (senha !== confirmarSenha) { setErro("As senhas não coincidem"); return; }
+    if (!aceitouTermos) { setErro("Voce precisa aceitar os Termos de Uso e a Politica de Privacidade (LGPD) para continuar."); return; }
     setCarregando(true);
     try {
       const res = await fetch("/api/gestor/cadastro", {
@@ -248,7 +250,25 @@ export default function GestorCadastroPage() {
                   required
                   onChange={(e) => setConfirmarSenha(e.target.value)}
                 />
-                <button className="gcad-btn" type="submit" disabled={carregando || !nome || !email || !senha || senha.length < 6}>
+                <label style={{
+                  display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer",
+                  margin: "12px 0 6px", fontSize: 12, color: "rgba(255,255,255,.5)", lineHeight: 1.6, textAlign: "left",
+                }}>
+                  <input
+                    type="checkbox"
+                    checked={aceitouTermos}
+                    onChange={(e) => setAceitouTermos(e.target.checked)}
+                    style={{ marginTop: 2, accentColor: "#06b6d4", width: 15, height: 15, flexShrink: 0, cursor: "pointer" }}
+                  />
+                  <span>
+                    Li e aceito os{" "}
+                    <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color: "#67e8f9", textDecoration: "underline" }}>Termos de Uso</a>
+                    {" "}e a{" "}
+                    <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: "#67e8f9", textDecoration: "underline" }}>Politica de Privacidade</a>
+                    {" "}(LGPD).
+                  </span>
+                </label>
+                <button className="gcad-btn" type="submit" disabled={carregando || !nome || !email || !senha || senha.length < 6 || !aceitouTermos}>
                   {carregando ? "CADASTRANDO..." : "CRIAR CONTA"}
                 </button>
               </form>
@@ -258,12 +278,6 @@ export default function GestorCadastroPage() {
                 <a href="/gestor/login" style={{ color: "rgba(103,232,249,.8)", textDecoration: "none" }}>
                   Entrar
                 </a>
-              </div>
-              <div style={{ marginTop: 10, fontSize: 11, color: "rgba(255,255,255,.2)", textAlign: "center", lineHeight: 1.6 }}>
-                Ao se cadastrar, voce concorda com os{" "}
-                <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(103,232,249,.45)", textDecoration: "underline" }}>Termos de Uso</a>
-                {" "}e a{" "}
-                <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(103,232,249,.45)", textDecoration: "underline" }}>Politica de Privacidade</a>.
               </div>
             </>
           )}

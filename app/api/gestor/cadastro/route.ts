@@ -37,7 +37,7 @@ export async function POST(req: NextRequest) {
     .from("gestores")
     .select("id")
     .eq("email", emailNorm)
-    .single();
+    .maybeSingle();
 
   if (existente) {
     return NextResponse.json({ error: "Este e-mail já está cadastrado" }, { status: 409 });

@@ -15,9 +15,11 @@ export async function GET(req: NextRequest) {
       "id, placa, nome_lead, telefone_lead, tipo_veiculo, status, criado_em, comissao_valor, comissao_paga, comissao_paga_em, consultor_id, consultores(nome)"
     )
     .eq("indicador_id", indicador.id)
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(500);
 
-  if (statusFiltro && statusFiltro !== "todos") {
+  const statusValidos = ["novo", "contato", "fechado", "perdido"];
+  if (statusFiltro && statusFiltro !== "todos" && statusValidos.includes(statusFiltro)) {
     query = query.eq("status", statusFiltro);
   }
 
@@ -31,7 +33,8 @@ export async function GET(req: NextRequest) {
   const { data: todos } = await supabaseAdmin
     .from("indicacoes")
     .select("status, comissao_valor, comissao_paga")
-    .eq("indicador_id", indicador.id);
+    .eq("indicador_id", indicador.id)
+    .limit(2000);
 
   const todosLeads = todos ?? [];
   const total = todosLeads.length;

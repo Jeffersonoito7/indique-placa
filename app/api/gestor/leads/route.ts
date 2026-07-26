@@ -11,7 +11,7 @@ export async function GET(req: NextRequest) {
   const statusFiltro = searchParams.get("status");
   const busca = searchParams.get("busca");
   const page = parseInt(searchParams.get("page") ?? "1", 10);
-  const limit = parseInt(searchParams.get("limit") ?? "50", 10);
+  const limit = Math.min(200, Math.max(1, parseInt(searchParams.get("limit") ?? "50", 10)));
   const offset = (page - 1) * limit;
 
   // Buscar consultores do gestor
@@ -58,29 +58,22 @@ export async function GET(req: NextRequest) {
 
   if (error) return NextResponse.json({ error: "Erro ao buscar leads" }, { status: 500 });
 
-  // Totais aplicando os mesmos filtros da query paginada
-  let totQuery = supabaseAdmin
-    .from("indicacoes")
-    .select("status")
-    .in("consultor_id", ids);
+  // Totais via contagem no banco — evita buscar todas as linhas para contar em memoria
+  const bs = busca ? busca.replace(/[%_,.()"'\\]/g, "\\$&").slice(0, 100) : null;
 
-  if (consultorIdFiltro) {
-    totQuery = totQuery.eq("consultor_id", consultorIdFiltro);
-  }
-  if (statusFiltro && statusFiltro !== "todos") {
-    totQuery = totQuery.eq("status", statusFiltro);
-  }
-  if (busca) {
-    const buscaSegura = busca.replace(/[%_,.()"'\\]/g, "\\$&").slice(0, 100);
-    totQuery = totQuery.or(`placa.ilike.%${buscaSegura}%,nome_lead.ilike.%${buscaSegura}%`);
-  }
+  let totQ1 = supabaseAdmin.from("indicacoes").select("id", { count: "exact", head: true }).in("consultor_id", ids);
+  let totQ2 = supabaseAdmin.from("indicacoes").select("id", { count: "exact", head: true }).in("consultor_id", ids);
+  let totQ3 = supabaseAdmin.from("indicacoes").select("id", { count: "exact", head: true }).in("consultor_id", ids);
+  if (consultorIdFiltro) { totQ1 = totQ1.eq("consultor_id", consultorIdFiltro); totQ2 = totQ2.eq("consultor_id", consultorIdFiltro); totQ3 = totQ3.eq("consultor_id", consultorIdFiltro); }
+  if (bs) { totQ1 = totQ1.or(`placa.ilike.%${bs}%,nome_lead.ilike.%${bs}%`); totQ2 = totQ2.or(`placa.ilike.%${bs}%,nome_lead.ilike.%${bs}%`); totQ3 = totQ3.or(`placa.ilike.%${bs}%,nome_lead.ilike.%${bs}%`); }
+  totQ2 = totQ2.in("status", ["novo", "contato"]);
+  totQ3 = totQ3.eq("status", "fechado");
 
-  const { data: todosLeads } = await totQuery;
+  const [{ count: cTotal }, { count: cEmAndamento }, { count: cFechados }] = await Promise.all([totQ1, totQ2, totQ3]);
 
-  const todos = todosLeads ?? [];
-  const totalGlobal = todos.length;
-  const em_andamento = todos.filter((l) => l.status === "novo" || l.status === "contato").length;
-  const fechados = todos.filter((l) => l.status === "fechado").length;
+  const totalGlobal = cTotal ?? 0;
+  const em_andamento = cEmAndamento ?? 0;
+  const fechados = cFechados ?? 0;
   const taxa = totalGlobal > 0 ? Math.round((fechados / totalGlobal) * 100) : 0;
 
   return NextResponse.json({

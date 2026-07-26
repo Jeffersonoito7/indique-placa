@@ -24,9 +24,13 @@ export async function GET() {
     .from("indicacoes")
     .select("placa, nome_lead, telefone_lead, status, criado_em, comissao_valor, comissao_paga, indicadores(nome)")
     .eq("consultor_id", consultor.id)
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(10000);
 
   if (error) return NextResponse.json({ error: "Erro ao buscar leads" }, { status: 500 });
+
+  // Sanitiza valores para prevenir formula injection em planilhas (Excel/Sheets)
+  const sanitizeCsv = (v: string) => /^[=+\-@\t\r]/.test(v) ? `\t${v}` : v;
 
   const linhas = (data ?? []).map((row) => {
     const indicador = (row.indicadores as any)?.nome ?? "";
@@ -41,7 +45,7 @@ export async function GET() {
       row.comissao_paga ? "sim" : "nao",
       indicador,
     ]
-      .map((v) => `"${String(v).replace(/"/g, '""')}"`)
+      .map((v) => `"${sanitizeCsv(String(v)).replace(/"/g, '""')}"`)
       .join(",");
   });
 

@@ -26,7 +26,13 @@ export async function rateLimit(
 }
 
 export function getRateLimitKey(req: Request, prefix: string): string {
+  // No Vercel, x-real-ip e injetado pela infra e nao pode ser forjado pelo cliente.
+  // Fallback para o ULTIMO IP de x-forwarded-for (tambem injetado pelo Vercel).
+  // Nunca usar o primeiro IP de x-forwarded-for pois o cliente pode forja-lo.
+  const realIp = req.headers.get("x-real-ip");
+  if (realIp) return `${prefix}:${realIp.trim()}`;
+
   const forwarded = req.headers.get("x-forwarded-for");
-  const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+  const ip = forwarded ? forwarded.split(",").at(-1)?.trim() ?? "unknown" : "unknown";
   return `${prefix}:${ip}`;
 }

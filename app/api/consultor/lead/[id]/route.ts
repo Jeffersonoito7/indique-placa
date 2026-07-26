@@ -30,20 +30,13 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .from("indicacoes")
     .select("id, consultor_id, nome_lead, placa, indicador_id, tipo_veiculo")
     .eq("id", id)
-    .single();
+    .maybeSingle();
 
   if (!lead || lead.consultor_id !== consultorId) {
     return NextResponse.json({ error: "Lead não encontrado" }, { status: 404 });
   }
 
-  const { error } = await supabaseAdmin
-    .from("indicacoes")
-    .update({ status: parsed.data.status })
-    .eq("id", id);
-
-  if (error) return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
-
-  // Salva comissao_valor ao fechar venda — usa configuracao do consultor, fallback para padrao
+  // Calcula comissao_valor antes do update para fazer tudo atomicamente num unico UPDATE
   let comissaoValorFinal = 0;
   if (parsed.data.status === "fechado") {
     const tipoVeiculo = (lead as { tipo_veiculo?: string | null }).tipo_veiculo ?? "carro";
@@ -53,16 +46,25 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .select("comissao_indicador")
       .eq("consultor_id", consultorId)
       .eq("tipo", tipoVeiculo)
-      .single();
+      .maybeSingle();
 
     const comissoesFallback: Record<string, number> = { moto: 50, carro: 100, caminhao: 500 };
     comissaoValorFinal = comissaoConfig?.comissao_indicador ?? comissoesFallback[tipoVeiculo] ?? 100;
-
-    await supabaseAdmin
-      .from("indicacoes")
-      .update({ comissao_valor: comissaoValorFinal })
-      .eq("id", id);
   }
+
+  // Um unico UPDATE atomico: status e comissao_valor juntos para evitar estado inconsistente
+  const updatePayload: Record<string, unknown> = { status: parsed.data.status };
+  if (parsed.data.status === "fechado") {
+    updatePayload.comissao_valor = comissaoValorFinal;
+  }
+
+  const { error } = await supabaseAdmin
+    .from("indicacoes")
+    .update(updatePayload)
+    .eq("id", id)
+    .eq("consultor_id", consultorId);
+
+  if (error) return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
 
   // Notifica consultor quando lead é fechado
   let indicadorRetorno: { nome: string; telefone: string | null; chave_pix: string | null; comissao: number | null } | null = null;
@@ -72,7 +74,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
       .from("consultores")
       .select("nome, fone")
       .eq("id", consultorId)
-      .single();
+      .maybeSingle();
     if (consultor) {
       notificarLeadFechado({
         nomeConsultor: consultor.nome,
@@ -87,7 +89,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
         .from("indicadores")
         .select("id, nome, telefone, chave_pix")
         .eq("id", lead.indicador_id)
-        .single();
+        .maybeSingle();
 
       if (indicador) {
         indicadorRetorno = {

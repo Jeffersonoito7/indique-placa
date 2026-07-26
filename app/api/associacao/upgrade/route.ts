@@ -48,6 +48,24 @@ export async function POST(_req: NextRequest) {
   const assoc = await getAssociacaoLogada();
   if (!assoc) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
 
+  // Idempotencia: nao cria novo PIX se ja existe cobranca pendente
+  const { data: cobExistente } = await supabaseAdmin
+    .from("cobrancas")
+    .select("txid, valor")
+    .eq("usuario_id", assoc.id)
+    .eq("usuario_tipo", "associacao")
+    .eq("status", "pendente")
+    .order("criado_em", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (cobExistente) {
+    return NextResponse.json(
+      { error: "Ja existe um PIX pendente para esta conta.", txid: cobExistente.txid },
+      { status: 409 }
+    );
+  }
+
   const { data: mc } = await supabaseAdmin
     .from("configuracoes_master")
     .select("cobranca_associacao_ativa, valor_associacao_trial, valor_associacao_bronze, valor_associacao_prata, valor_associacao_ouro")

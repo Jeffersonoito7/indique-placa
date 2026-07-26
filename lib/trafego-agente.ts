@@ -58,7 +58,11 @@ Retorne um JSON array com 3 objetos, cada um com: titulo, corpo, cta, justificat
   const text = msg.choices[0].message.content ?? "[]";
   const match = text.match(/\[[\s\S]*\]/);
   if (!match) return [];
-  return JSON.parse(match[0]) as CopyGerado[];
+  try {
+    return JSON.parse(match[0]) as CopyGerado[];
+  } catch {
+    return [];
+  }
 }
 
 export type AnaliseAlerta = {
@@ -113,7 +117,11 @@ Retorne JSON com: tipo ("positivo"|"negativo"|"info"), titulo (curto, max 60 cha
     const text = msg.choices[0].message.content ?? "{}";
     const match = text.match(/\{[\s\S]*\}/);
     if (!match) throw new Error("parse");
-    return JSON.parse(match[0]) as AnaliseAlerta;
+    try {
+      return JSON.parse(match[0]) as AnaliseAlerta;
+    } catch {
+      throw new Error("parse");
+    }
   } catch {
     // fallback sem IA
     if (params.ctr < 0.8 && params.impressoes > 500) {

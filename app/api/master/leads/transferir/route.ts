@@ -8,7 +8,7 @@ function auth(req: NextRequest) {
 }
 
 const schema = z.object({
-  indicacao_ids: z.array(z.string().uuid()).min(1),
+  indicacao_ids: z.array(z.string().uuid()).min(1).max(100),
   consultor_destino_id: z.string().uuid(),
   motivo: z.string().optional(),
 });

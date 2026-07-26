@@ -41,7 +41,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .from("indicadores")
       .select("chave_pix")
       .eq("id", indicadorId)
-      .single();
+      .maybeSingle();
     chavePix = indicador?.chave_pix ?? null;
   }
 
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
       .from("consultores")
       .select("associacao_id")
       .eq("id", consultorId)
-      .single();
+      .maybeSingle();
 
     if (consultor?.associacao_id) {
       const { data: assoc } = await supabaseAdmin
@@ -110,16 +110,25 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
     }
   }
 
-  // Registra pagamento no banco
-  const { error } = await supabaseAdmin
+  // Registra pagamento — filtra tambem por comissao_paga=false para garantir idempotencia
+  // mesmo com dois requests concorrentes: apenas um vai encontrar a linha e atualizar
+  const { data: updated, error } = await supabaseAdmin
     .from("indicacoes")
     .update({
       comissao_paga: true,
       comissao_paga_em: new Date().toISOString(),
     })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("consultor_id", consultorId)
+    .eq("comissao_paga", false)
+    .select("id");
 
   if (error) return NextResponse.json({ error: "Erro ao registrar pagamento" }, { status: 500 });
+
+  // Array vazio significa que outro request ja processou (corrida de dados); retorna ok sem reprocessar
+  if (!updated || updated.length === 0) {
+    return NextResponse.json({ ok: true, ja_pago: true });
+  }
 
   return NextResponse.json({
     ok: true,

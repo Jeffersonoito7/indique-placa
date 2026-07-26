@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
 export async function GET(req: NextRequest) {
-  // Verifica token do cron para evitar execucao publica
+  if (!process.env.CRON_SECRET) {
+    console.error("[cron] CRON_SECRET nao configurado — endpoint bloqueado");
+    return NextResponse.json({ error: "Servico indisponivel" }, { status: 503 });
+  }
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
@@ -21,9 +24,13 @@ export async function GET(req: NextRequest) {
   const amanha = new Date();
   amanha.setDate(amanha.getDate() + 1);
 
+  // Filtra tambem por alerta_vencimento_enviado_em para evitar spam no mesmo dia
+  const inicioDoDia = new Date();
+  inicioDoDia.setHours(0, 0, 0, 0);
+
   const { data: consultores } = await supabaseAdmin
     .from("consultores")
-    .select("id, nome, fone, plano_ativo_ate")
+    .select("id, nome, fone, plano_ativo_ate, alerta_vencimento_enviado_em")
     .eq("plano", "pro")
     .lte("plano_ativo_ate", em3Dias.toISOString())
     .gte("plano_ativo_ate", amanha.toISOString());
@@ -34,6 +41,10 @@ export async function GET(req: NextRequest) {
 
   let enviados = 0;
   for (const c of consultores) {
+    // Evita reenvio para o mesmo consultor no mesmo dia (deduplicacao)
+    const ultimoEnvio = c.alerta_vencimento_enviado_em ? new Date(c.alerta_vencimento_enviado_em as string) : null;
+    if (ultimoEnvio && ultimoEnvio >= inicioDoDia) continue;
+
     const diasRestantes = Math.ceil(
       (new Date(c.plano_ativo_ate as string).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
     );
@@ -47,7 +58,14 @@ export async function GET(req: NextRequest) {
         headers: { "Content-Type": "application/json", apikey: apiKey },
         body: JSON.stringify({ number: numeroFormatado, text: msg }),
       });
-      if (res.ok) enviados++;
+      if (res.ok) {
+        enviados++;
+        // Registra data do envio para deduplicacao futura
+        await supabaseAdmin
+          .from("consultores")
+          .update({ alerta_vencimento_enviado_em: new Date().toISOString() })
+          .eq("id", c.id);
+      }
     } catch {
       // ignora erro individual, continua para o proximo
     }

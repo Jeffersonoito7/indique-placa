@@ -9,7 +9,7 @@ async function verificarPosse(gestorId: string, consultorId: string): Promise<bo
     .select("id")
     .eq("id", consultorId)
     .eq("gestor_id", gestorId)
-    .single();
+    .maybeSingle();
   return !!data;
 }
 

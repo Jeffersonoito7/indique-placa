@@ -2,12 +2,16 @@ const RESEND_API_KEY = process.env.RESEND_API_KEY ?? "";
 const FROM = "Indique Placa <noreply@indiqueplaca.com.br>";
 
 async function enviarEmail(to: string, subject: string, html: string): Promise<boolean> {
-  if (!RESEND_API_KEY) return false;
+  if (!RESEND_API_KEY) {
+    console.error("[email] RESEND_API_KEY nao configurada — email descartado:", subject);
+    return false;
+  }
   try {
     const res = await fetch("https://api.resend.com/emails", {
       method: "POST",
       headers: { Authorization: `Bearer ${RESEND_API_KEY}`, "Content-Type": "application/json" },
       body: JSON.stringify({ from: FROM, to, subject, html }),
+      signal: AbortSignal.timeout(8000),
     });
     return res.ok;
   } catch {

@@ -252,6 +252,7 @@ function FormIndicador() {
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [verSenha, setVerSenha] = useState(false);
+  const [aceitouTermos, setAceitouTermos] = useState(false);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState(false);
   const [carregando, setCarregando] = useState(false);
@@ -271,6 +272,7 @@ function FormIndicador() {
     if(tel.length<10){ setErro("Digite um WhatsApp válido com DDD"); return; }
     if(senha.length<6){ setErro("A senha precisa ter pelo menos 6 caracteres"); return; }
     if(senha !== confirmarSenha){ setErro("As senhas não coincidem"); return; }
+    if(!aceitouTermos){ setErro("Voce precisa aceitar os Termos de Uso e a Politica de Privacidade (LGPD) para continuar."); return; }
     setCarregando(true);
     try {
       const res = await fetch("/api/publico/indicador-cadastro",{
@@ -455,19 +457,31 @@ function FormIndicador() {
                       <label className="campo-l">Confirme a senha</label>
                       <input className="campo" type="password" placeholder="Digite a senha novamente" value={confirmarSenha} required onChange={e=>setConfirmarSenha(e.target.value)} />
                     </div>
-                    <button className="btn-cad" type="submit" disabled={carregando}>
+                    <label style={{
+                      display:"flex", alignItems:"flex-start", gap:10, cursor:"pointer",
+                      margin:"12px 0 6px", fontSize:12, color:"rgba(255,255,255,.5)", lineHeight:1.6,
+                    }}>
+                      <input
+                        type="checkbox"
+                        checked={aceitouTermos}
+                        onChange={(e) => setAceitouTermos(e.target.checked)}
+                        style={{ marginTop:2, accentColor:"#f59e0b", width:15, height:15, flexShrink:0, cursor:"pointer" }}
+                      />
+                      <span>
+                        Li e aceito os{" "}
+                        <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color:"rgba(245,158,11,.8)", textDecoration:"underline" }}>Termos de Uso</a>
+                        {" "}e a{" "}
+                        <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color:"rgba(245,158,11,.8)", textDecoration:"underline" }}>Politica de Privacidade</a>
+                        {" "}(LGPD).
+                      </span>
+                    </label>
+                    <button className="btn-cad" type="submit" disabled={carregando || !aceitouTermos}>
                       {carregando?"Cadastrando...":(
                         <>Quero meu painel gratuito <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></>
                       )}
                     </button>
                     <div style={{ marginTop:16, fontSize:12, color:"var(--txt3)", textAlign:"center" }}>
                       Já tem conta?{" "}<a href="/indicador/login" style={{ color:"rgba(245,158,11,.7)", textDecoration:"none" }}>Entrar</a>
-                    </div>
-                    <div style={{ marginTop:10, fontSize:11, color:"rgba(255,255,255,.2)", textAlign:"center", lineHeight:1.6 }}>
-                      Ao se cadastrar, voce concorda com os{" "}
-                      <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color:"rgba(245,158,11,.5)", textDecoration:"underline" }}>Termos de Uso</a>
-                      {" "}e a{" "}
-                      <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color:"rgba(245,158,11,.5)", textDecoration:"underline" }}>Politica de Privacidade</a>.
                     </div>
                   </form>
                 </>

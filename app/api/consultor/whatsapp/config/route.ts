@@ -31,7 +31,10 @@ export async function POST(request: NextRequest) {
   const consultor = await getConsultorLogado();
   if (!consultor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
-  const body = await request.json();
+  let body: Record<string, unknown>;
+  try { body = await request.json(); } catch {
+    return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });
+  }
 
   const campos: Record<string, unknown> = {};
   const permitidos = [

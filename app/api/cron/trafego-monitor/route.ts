@@ -4,9 +4,16 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { buscarInsights, alterarStatusCampanha } from "@/lib/meta-api";
 import { analisarPerformance } from "@/lib/trafego-agente";
 
+// Cron pode processar muitas campanhas; Vercel Pro permite ate 300s para crons
+export const maxDuration = 300;
+
 // Cron chamado pelo Vercel a cada 6h
 // Analisa campanhas ativas, pausa as fracas, gera alertas
 export async function GET(req: NextRequest) {
+  if (!process.env.CRON_SECRET) {
+    console.error("[cron] CRON_SECRET nao configurado — endpoint bloqueado");
+    return NextResponse.json({ error: "Servico indisponivel" }, { status: 503 });
+  }
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
     return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });

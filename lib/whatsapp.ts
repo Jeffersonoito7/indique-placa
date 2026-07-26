@@ -23,6 +23,7 @@ async function enviar(telefone: string, mensagem: string): Promise<boolean> {
         number: numeroFormatado,
         text: mensagem,
       }),
+      signal: AbortSignal.timeout(8000),
     });
     return resp.ok;
   } catch {

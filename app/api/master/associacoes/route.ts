@@ -20,7 +20,8 @@ export async function GET(req: NextRequest) {
       indicadores(id),
       indicacoes(id)
     `)
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(500);
 
   if (error) return NextResponse.json({ error: error.message }, { status: 500 });
 

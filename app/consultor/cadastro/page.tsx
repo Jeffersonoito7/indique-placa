@@ -424,6 +424,7 @@ export default function ConsultorCadastroPage() {
   const [senha, setSenha] = useState("");
   const [confirmarSenha, setConfirmarSenha] = useState("");
   const [verSenha, setVerSenha] = useState(false);
+  const [aceitouTermos, setAceitouTermos] = useState(false);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
   const [sucesso, setSucesso] = useState(false);
@@ -497,6 +498,7 @@ export default function ConsultorCadastroPage() {
     if (!nomeAssoc.trim()) { setErro("Informe a associação"); return; }
     if (senha.length < 6) { setErro("A senha precisa ter no mínimo 6 caracteres"); return; }
     if (senha !== confirmarSenha) { setErro("As senhas não coincidem"); return; }
+    if (!aceitouTermos) { setErro("Voce precisa aceitar os Termos de Uso e a Politica de Privacidade (LGPD) para continuar."); return; }
     setCarregando(true);
     try {
       const payload: Record<string, unknown> = { nome, telefone, email, cidade: `${cidade} - ${estado}`, associacao: nomeAssoc, senha };
@@ -890,18 +892,30 @@ export default function ConsultorCadastroPage() {
                       <input className="campo" type="text" placeholder="Digite o nome" value={associacaoTexto} required onChange={e => setAssociacaoTexto(e.target.value)} />
                     </div>
                   )}
-                  <button className="btn-cad" type="submit" disabled={carregando}>
+                  <label style={{
+                    display: "flex", alignItems: "flex-start", gap: 10, cursor: "pointer",
+                    margin: "12px 0 6px", fontSize: 12, color: "rgba(255,255,255,.5)", lineHeight: 1.6,
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={aceitouTermos}
+                      onChange={(e) => setAceitouTermos(e.target.checked)}
+                      style={{ marginTop: 2, accentColor: "#10b981", width: 15, height: 15, flexShrink: 0, cursor: "pointer" }}
+                    />
+                    <span>
+                      Li e aceito os{" "}
+                      <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(16,185,129,.8)", textDecoration: "underline" }}>Termos de Uso</a>
+                      {" "}e a{" "}
+                      <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(16,185,129,.8)", textDecoration: "underline" }}>Politica de Privacidade</a>
+                      {" "}(LGPD).
+                    </span>
+                  </label>
+                  <button className="btn-cad" type="submit" disabled={carregando || !aceitouTermos}>
                     {carregando ? "Cadastrando..." : <>Quero meu painel gratuito <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg></>}
                   </button>
                   <div style={{ marginTop: 16, textAlign: "center", fontSize: 12, color: "rgba(255,255,255,.25)", lineHeight: 1.6 }}>
                     Ja tem cadastro?{" "}
                     <a href="/consultor/login" style={{ color: "rgba(16,185,129,.6)", textDecoration: "none" }}>Entrar no painel</a>
-                  </div>
-                  <div style={{ marginTop: 10, textAlign: "center", fontSize: 11, color: "rgba(255,255,255,.2)", lineHeight: 1.6 }}>
-                    Ao se cadastrar, voce concorda com os{" "}
-                    <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(16,185,129,.5)", textDecoration: "underline" }}>Termos de Uso</a>
-                    {" "}e a{" "}
-                    <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: "rgba(16,185,129,.5)", textDecoration: "underline" }}>Politica de Privacidade</a>.
                   </div>
                 </form>
               )}

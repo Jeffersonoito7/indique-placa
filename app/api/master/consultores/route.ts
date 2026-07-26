@@ -24,7 +24,8 @@ export async function GET(req: NextRequest) {
        indicacoes(id, status)`,
       { count: "exact" }
     )
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(2000);
 
   if (associacao_id) query = query.eq("associacao_id", associacao_id);
   if (gestor_id) query = query.eq("gestor_id", gestor_id);

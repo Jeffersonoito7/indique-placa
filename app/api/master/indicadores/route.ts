@@ -9,7 +9,8 @@ export async function GET(req: NextRequest) {
   const { data } = await supabaseAdmin
     .from("indicadores")
     .select("id, nome, telefone, criado_em, consultores(nome)")
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(2000);
 
   return NextResponse.json(data ?? []);
 }

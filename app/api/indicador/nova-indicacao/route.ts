@@ -46,7 +46,6 @@ export async function POST(req: NextRequest) {
       {
         error: "Seu consultor está temporariamente bloqueado de receber novas indicações. Entre em contato com ele.",
         consultor_nome: consultorInfo?.nome ?? null,
-        consultor_fone: consultorInfo?.fone ?? null,
       },
       { status: 403 }
     );

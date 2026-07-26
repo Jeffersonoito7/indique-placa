@@ -123,7 +123,9 @@ export async function POST(req: NextRequest) {
   const consultor = await autenticar();
   if (!consultor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
 
-  if (consultor.plano === "pro") {
+  // Considera "ja pro" apenas se o plano ainda estiver dentro da validade
+  const planoAtivo = consultor.plano === "pro" && consultor.plano_ativo_ate && new Date(consultor.plano_ativo_ate) > new Date();
+  if (planoAtivo) {
     return NextResponse.json({ ok: true, ja_pro: true, plano_ativo_ate: consultor.plano_ativo_ate });
   }
 

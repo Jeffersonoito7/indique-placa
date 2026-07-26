@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { getConsultorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
+// Vercel Pro/Enterprise: aumenta o timeout para 60s para suportar campanhas de ate 200 numeros
+export const maxDuration = 60;
+
 const BATCH_SIZE = 5;
 
 async function enviarParaNumero(

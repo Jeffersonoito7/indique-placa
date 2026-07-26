@@ -66,7 +66,9 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   await supabaseAdmin
     .from("trafego_campanhas")
     .update({ status: parsed.data.status, atualizado_em: new Date().toISOString() })
-    .eq("id", campId);
+    .eq("id", campId)
+    .eq("usuario_id", id)
+    .eq("usuario_tipo", "associacao");
 
   return NextResponse.json({ ok: true });
 }
@@ -91,7 +93,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     await alterarStatusCampanha(token, { campaign_id: camp.meta_campaign_id, adset_id: camp.meta_adset_id, ad_id: camp.meta_ad_id }, "PAUSED").catch(() => {});
   }
 
-  await supabaseAdmin.from("trafego_campanhas").update({ status: "encerrada" }).eq("id", campId);
+  await supabaseAdmin.from("trafego_campanhas").update({ status: "encerrada" }).eq("id", campId).eq("usuario_id", id).eq("usuario_tipo", "associacao");
 
   return NextResponse.json({ ok: true });
 }
