@@ -2,7 +2,29 @@
 
 import { useEffect, useRef, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings, Globe, Phone, Mail, MapPin, Building2, Save, CheckCircle2, User, Image, Palette, Link, Copy, Check } from "lucide-react";
+import { Settings, Globe, Phone, Mail, MapPin, Building2, Save, CheckCircle2, User, Image, Palette, Link, Copy, Check, DollarSign } from "lucide-react";
+
+type ConfigMaster = {
+  valor_consultor_mensal: number;
+  valor_consultor_anual: number;
+  cobranca_consultor_ativa: boolean;
+  valor_associacao_trial: number;
+  valor_associacao_bronze: number;
+  valor_associacao_prata: number;
+  valor_associacao_ouro: number;
+  cobranca_associacao_ativa: boolean;
+};
+
+const VAZIO_MASTER: ConfigMaster = {
+  valor_consultor_mensal: 0,
+  valor_consultor_anual: 0,
+  cobranca_consultor_ativa: false,
+  valor_associacao_trial: 0,
+  valor_associacao_bronze: 0,
+  valor_associacao_prata: 0,
+  valor_associacao_ouro: 0,
+  cobranca_associacao_ativa: false,
+};
 
 type Config = {
   nome_plataforma: string;
@@ -45,9 +67,12 @@ const CORES_SUGERIDAS = [
 
 export default function ConfiguracoesPage() {
   const [form, setForm] = useState<Config>(VAZIO);
+  const [formMaster, setFormMaster] = useState<ConfigMaster>(VAZIO_MASTER);
   const [carregando, setCarregando] = useState(true);
   const [salvando, setSalvando] = useState(false);
+  const [salvandoMaster, setSalvandoMaster] = useState(false);
   const [sucesso, setSucesso] = useState(false);
+  const [sucessoMaster, setSucessoMaster] = useState(false);
   const [erro, setErro] = useState("");
   const [copiado, setCopiado] = useState(false);
   const [uploadando, setUploadando] = useState(false);
@@ -56,24 +81,35 @@ export default function ConfiguracoesPage() {
   const linkBase = typeof window !== "undefined" ? `${window.location.origin}/indicador/cadastro` : "https://indiqueplaca.com.br/indicador/cadastro";
 
   useEffect(() => {
-    fetch("/api/master/configuracoes")
-      .then((r) => r.json())
-      .then(({ config }) => {
-        if (config) setForm({
-          nome_plataforma: config.nome_plataforma ?? "",
-          nome_associacao: config.nome_associacao ?? "",
-          slogan: config.slogan ?? "",
-          site: config.site ?? "",
-          email: config.email ?? "",
-          telefone: config.telefone ?? "",
-          endereco: config.endereco ?? "",
-          logo_url: config.logo_url ?? "",
-          cor_primaria: config.cor_primaria ?? "#f59e0b",
-
-          consultor_padrao_id: config.consultor_padrao_id ?? "",
-        });
-      })
-      .finally(() => setCarregando(false));
+    Promise.all([
+      fetch("/api/master/configuracoes").then((r) => r.json()),
+      fetch("/api/master/configuracoes-master").then((r) => r.json()),
+    ]).then(([res, resMaster]) => {
+      const config = res.config;
+      if (config) setForm({
+        nome_plataforma: config.nome_plataforma ?? "",
+        nome_associacao: config.nome_associacao ?? "",
+        slogan: config.slogan ?? "",
+        site: config.site ?? "",
+        email: config.email ?? "",
+        telefone: config.telefone ?? "",
+        endereco: config.endereco ?? "",
+        logo_url: config.logo_url ?? "",
+        cor_primaria: config.cor_primaria ?? "#f59e0b",
+        consultor_padrao_id: config.consultor_padrao_id ?? "",
+      });
+      const cm = resMaster.config;
+      if (cm) setFormMaster({
+        valor_consultor_mensal: Number(cm.valor_consultor_mensal ?? 0),
+        valor_consultor_anual: Number(cm.valor_consultor_anual ?? 0),
+        cobranca_consultor_ativa: Boolean(cm.cobranca_consultor_ativa),
+        valor_associacao_trial: Number(cm.valor_associacao_trial ?? 0),
+        valor_associacao_bronze: Number(cm.valor_associacao_bronze ?? 0),
+        valor_associacao_prata: Number(cm.valor_associacao_prata ?? 0),
+        valor_associacao_ouro: Number(cm.valor_associacao_ouro ?? 0),
+        cobranca_associacao_ativa: Boolean(cm.cobranca_associacao_ativa),
+      });
+    }).finally(() => setCarregando(false));
   }, []);
 
   const salvar = async () => {
@@ -124,6 +160,24 @@ export default function ConfiguracoesPage() {
       setForm(f => ({ ...f, logo_url: data.publicUrl }));
     } finally { setUploadando(false); }
   };
+
+  const salvarMaster = async () => {
+    setSalvandoMaster(true); setErro(""); setSucessoMaster(false);
+    try {
+      const r = await fetch("/api/master/configuracoes-master", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formMaster),
+      });
+      const json = await r.json();
+      if (!r.ok) { setErro(json.error ?? "Erro ao salvar precos"); return; }
+      setSucessoMaster(true);
+      setTimeout(() => setSucessoMaster(false), 3000);
+    } finally { setSalvandoMaster(false); }
+  };
+
+  const setMaster = (field: keyof ConfigMaster, value: boolean | number) =>
+    setFormMaster(f => ({ ...f, [field]: value }));
 
   const set = (field: keyof Config) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm(f => ({ ...f, [field]: e.target.value }));
@@ -341,6 +395,97 @@ export default function ConfiguracoesPage() {
                   <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5" />Endereço</label>
                   <input type="text" value={form.endereco} onChange={set("endereco")} placeholder="Rua das Flores, 100 - Cidade/UF"
                     className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Precos e Cobrancas */}
+            <Card className="shadow-sm">
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <DollarSign className="h-4 w-4 text-muted-foreground" />
+                  Precos e Cobrancas (Master)
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-6 space-y-5">
+                <div>
+                  <p className="text-[11px] text-muted-foreground mb-4">Configure os valores cobrados pelo master. Associacoes podem sobrescrever o valor dos consultores nas proprias configuracoes de cobranca.</p>
+                </div>
+
+                {/* Consultores */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/20">
+                  <div>
+                    <p className="text-sm font-semibold">Cobrar Consultores</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Master cobra consultores sem associacao ativa ou cujas associacoes nao cobram</p>
+                  </div>
+                  <button
+                    onClick={() => setMaster("cobranca_consultor_ativa", !formMaster.cobranca_consultor_ativa)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formMaster.cobranca_consultor_ativa ? "bg-blue-500" : "bg-muted-foreground/30"}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formMaster.cobranca_consultor_ativa ? "translate-x-6" : "translate-x-1"}`} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Valor Mensal Consultor (R$)</label>
+                    <input
+                      type="number" min={0} step={0.01}
+                      value={formMaster.valor_consultor_mensal}
+                      onChange={(e) => setMaster("valor_consultor_mensal", parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">Valor Anual Consultor (R$)</label>
+                    <input
+                      type="number" min={0} step={0.01}
+                      value={formMaster.valor_consultor_anual}
+                      onChange={(e) => setMaster("valor_consultor_anual", parseFloat(e.target.value) || 0)}
+                      className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                    />
+                  </div>
+                </div>
+
+                {/* Associacoes */}
+                <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/20 mt-2">
+                  <div>
+                    <p className="text-sm font-semibold">Cobrar Associacoes</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Master cobra mensalidade das associacoes pelo plano ativo</p>
+                  </div>
+                  <button
+                    onClick={() => setMaster("cobranca_associacao_ativa", !formMaster.cobranca_associacao_ativa)}
+                    className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formMaster.cobranca_associacao_ativa ? "bg-blue-500" : "bg-muted-foreground/30"}`}
+                  >
+                    <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formMaster.cobranca_associacao_ativa ? "translate-x-6" : "translate-x-1"}`} />
+                  </button>
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  {(["trial", "bronze", "prata", "ouro"] as const).map((plano) => (
+                    <div key={plano}>
+                      <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-2 block">
+                        Plano {plano.charAt(0).toUpperCase() + plano.slice(1)} (R$/mes)
+                      </label>
+                      <input
+                        type="number" min={0} step={0.01}
+                        value={formMaster[`valor_associacao_${plano}` as keyof ConfigMaster] as number}
+                        onChange={(e) => setMaster(`valor_associacao_${plano}` as keyof ConfigMaster, parseFloat(e.target.value) || 0)}
+                        className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                      />
+                    </div>
+                  ))}
+                </div>
+
+                <div className="flex justify-end pt-2">
+                  <button
+                    onClick={salvarMaster}
+                    disabled={salvandoMaster}
+                    className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors disabled:opacity-50"
+                  >
+                    {sucessoMaster ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
+                    {salvandoMaster ? "Salvando..." : sucessoMaster ? "Salvo!" : "Salvar Precos"}
+                  </button>
                 </div>
               </CardContent>
             </Card>

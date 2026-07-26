@@ -30,6 +30,7 @@ interface AssociacaoDetalhe extends Associacao {
   logo_url: string | null;
   plano_ativo_ate: string | null;
   cobranca_ativa: boolean;
+  paga_pelo_time: boolean;
   valor_mensalidade_associacao: number;
   valor_mensalidade_gestor: number;
   valor_mensalidade_consultor_pro: number;
@@ -215,6 +216,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
     status: assoc.status,
     plano: assoc.plano,
     cobranca_ativa: assoc.cobranca_ativa,
+    paga_pelo_time: assoc.paga_pelo_time,
     valor_mensalidade_associacao: assoc.valor_mensalidade_associacao,
     valor_mensalidade_gestor: assoc.valor_mensalidade_gestor,
     valor_mensalidade_consultor_pro: assoc.valor_mensalidade_consultor_pro,
@@ -240,6 +242,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
       body: JSON.stringify({
         ...form,
         email: form.email || null,
+        paga_pelo_time: form.paga_pelo_time,
         efi_client_id: form.efi_client_id || null,
         efi_client_secret: form.efi_client_secret || null,
         efi_pix_key: form.efi_pix_key || null,
@@ -351,6 +354,27 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
                     className={cn(
                       "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
                       form.cobranca_ativa ? "translate-x-6" : "translate-x-1"
+                    )}
+                  />
+                </button>
+              </div>
+
+              <div className="col-span-2 flex items-center justify-between p-3 rounded-lg border border-border bg-muted/20">
+                <div>
+                  <p className="text-sm font-semibold">Time Pago pela Associação</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Todos os consultores ganham Pro gratuitamente (a associacao paga ao master)</p>
+                </div>
+                <button
+                  onClick={() => set("paga_pelo_time", !form.paga_pelo_time)}
+                  className={cn(
+                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                    form.paga_pelo_time ? "bg-violet-500" : "bg-muted-foreground/30"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                      form.paga_pelo_time ? "translate-x-6" : "translate-x-1"
                     )}
                   />
                 </button>
