@@ -33,7 +33,8 @@ export async function GET() {
   const sanitizeCsv = (v: string) => /^[=+\-@\t\r]/.test(v) ? `\t${v}` : v;
 
   const linhas = (data ?? []).map((row) => {
-    const indicador = (row.indicadores as any)?.nome ?? "";
+    const ind = row.indicadores as unknown as { nome: string } | null;
+    const indicador = ind?.nome ?? "";
     const data_fmt = new Date(row.criado_em).toLocaleDateString("pt-BR");
     return [
       row.placa ?? "",

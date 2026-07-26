@@ -16,7 +16,7 @@ export default async function GestorFinanceiroProprio() {
   const [leadsRes, configRes, cobrancasRes] = await Promise.all([
     supabaseAdmin
       .from("indicacoes")
-      .select("id, nome_lead, telefone_lead, status, criado_em, comissao_valor, indicadores(nome)")
+      .select("id, nome_lead, telefone_lead, status, criado_em, comissao_valor, indicadores!indicacoes_indicador_id_fkey(nome)")
       .eq("gestor_id", gestor.id)
       .eq("status", "fechado")
       .order("criado_em", { ascending: false }),
@@ -103,7 +103,7 @@ export default async function GestorFinanceiroProprio() {
                     <tr key={l.id} className={`border-b border-border hover:bg-accent/40 transition-colors ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
                       <td className="px-6 py-3.5 text-sm font-medium">{l.nome_lead}</td>
                       <td className="px-6 py-3.5 text-sm text-muted-foreground">
-                        {(l.indicadores as any)?.nome ?? <span className="italic text-muted-foreground/50">direto</span>}
+                        {(l.indicadores as unknown as { nome: string } | null)?.nome ?? <span className="italic text-muted-foreground/50">direto</span>}
                       </td>
                       <td className="px-6 py-3.5">
                         <span className="text-sm font-bold text-emerald-600 dark:text-emerald-400">
