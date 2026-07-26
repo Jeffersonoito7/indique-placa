@@ -58,6 +58,16 @@ export default async function ConsultorDashboard() {
   const taxa = totalLeads > 0 ? Math.round((totalFechados / totalLeads) * 100) : 0;
   const totalIndicadores = indicadores.length;
 
+  // Alerta de vencimento do plano Pro
+  const planoAtivoAte = (consultor as { plano_ativo_ate?: string | null }).plano_ativo_ate;
+  const diasParaVencer = planoAtivoAte
+    ? Math.ceil((new Date(planoAtivoAte).getTime() - Date.now()) / (1000 * 60 * 60 * 24))
+    : null;
+  const alertaVencimento =
+    (consultor as { plano?: string }).plano === "pro" &&
+    diasParaVencer !== null &&
+    diasParaVencer <= 7;
+
   // Ranking de indicadores
   const rankMap: Record<string, { id: string; nome: string; total: number; fechados: number; em_aberto: number }> = {};
   for (const lead of leads) {
@@ -117,6 +127,31 @@ export default async function ConsultorDashboard() {
 
         {/* Onboarding para consultores recem-cadastrados */}
         <OnboardingConsultor totalLeads={totalLeads} totalIndicadores={totalIndicadores} />
+
+        {/* Banner de vencimento do plano Pro */}
+        {alertaVencimento && (
+          <div className="rounded-2xl p-4 bg-violet-600 text-white flex items-center gap-3">
+            <AlertCircle className="h-5 w-5 text-white shrink-0" />
+            <div className="flex-1">
+              <div className="text-sm font-bold leading-tight">
+                {diasParaVencer === 0
+                  ? "Seu plano Pro vence hoje!"
+                  : diasParaVencer! < 0
+                  ? "Seu plano Pro expirou"
+                  : `Seu plano Pro vence em ${diasParaVencer} dia${diasParaVencer === 1 ? "" : "s"}`}
+              </div>
+              <div className="text-xs mt-0.5 text-white/80">
+                Renove agora para manter acesso a campanha WhatsApp, exportacao e todos os recursos Pro.
+              </div>
+            </div>
+            <a
+              href="/consultor/upgrade"
+              className="shrink-0 text-xs font-bold bg-white/20 hover:bg-white/30 text-white rounded-lg px-3 py-2 transition-colors"
+            >
+              Renovar
+            </a>
+          </div>
+        )}
 
         {/* Banner de bloqueio por inadimplencia */}
         {statusBloqueio.bloqueado && (

@@ -3,7 +3,7 @@ import { getConsultorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { redirect } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { DollarSign, TrendingUp, CheckCircle2, Clock } from "lucide-react";
+import { DollarSign, TrendingUp, CheckCircle2, Clock, CreditCard } from "lucide-react";
 
 function moeda(v: number) {
   return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
@@ -13,7 +13,7 @@ export default async function ConsultorFinanceiroPage() {
   const consultor = await getConsultorLogado();
   if (!consultor) redirect("/consultor/login");
 
-  const [leadsRes, configRes] = await Promise.all([
+  const [leadsRes, configRes, cobrancasRes] = await Promise.all([
     supabaseAdmin
       .from("indicacoes")
       .select("id, nome_lead, telefone_lead, status, criado_em, comissao_valor, indicadores(nome)")
@@ -24,12 +24,19 @@ export default async function ConsultorFinanceiroPage() {
       .select("comissao_consultor")
       .limit(1)
       .single(),
+    supabaseAdmin
+      .from("cobrancas")
+      .select("id, valor, status, pago_em, criado_em")
+      .eq("usuario_id", consultor.id)
+      .eq("usuario_tipo", "consultor")
+      .order("criado_em", { ascending: false }),
   ]);
 
   // Fallback de R$100 se a configuracao do master nao estiver definida
   const comissaoPadrao = configRes.data?.comissao_consultor ?? 100;
 
   const todos = leadsRes.data ?? [];
+  const cobrancas = cobrancasRes.data ?? [];
   const fechados = todos.filter((l) => l.status === "fechado");
   const emAndamento = todos.filter((l) => l.status === "contato");
 
@@ -99,6 +106,54 @@ export default async function ConsultorFinanceiroPage() {
                         </span>
                       </td>
                       <td className="px-6 py-3.5 text-xs text-muted-foreground">{new Date(l.criado_em).toLocaleDateString("pt-BR")}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card className="shadow-sm">
+          <CardHeader className="pb-3 border-b border-border">
+            <CardTitle className="text-sm font-semibold flex items-center gap-2">
+              <CreditCard className="h-4 w-4 text-muted-foreground" />
+              Historico de Pagamentos (Plano Pro)
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="p-0">
+            {cobrancas.length === 0 ? (
+              <div className="text-center text-sm text-muted-foreground py-10">
+                Nenhum pagamento registrado.
+              </div>
+            ) : (
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border bg-muted/40">
+                    {["Descricao", "Valor", "Status", "Data"].map((h) => (
+                      <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {cobrancas.map((c, i) => (
+                    <tr key={c.id} className={`border-b border-border hover:bg-accent/40 transition-colors ${i % 2 !== 0 ? "bg-muted/20" : ""}`}>
+                      <td className="px-6 py-3.5 text-sm font-medium">Plano Pro - Indique Placa</td>
+                      <td className="px-6 py-3.5 text-sm font-bold text-foreground">{moeda(Number(c.valor))}</td>
+                      <td className="px-6 py-3.5">
+                        <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                          c.status === "pago"
+                            ? "bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                            : "bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                        }`}>
+                          {c.status === "pago" ? "Pago" : "Pendente"}
+                        </span>
+                      </td>
+                      <td className="px-6 py-3.5 text-xs text-muted-foreground">
+                        {c.pago_em
+                          ? new Date(c.pago_em).toLocaleDateString("pt-BR")
+                          : new Date(c.criado_em).toLocaleDateString("pt-BR")}
+                      </td>
                     </tr>
                   ))}
                 </tbody>

@@ -52,6 +52,7 @@ export async function POST(req: NextRequest) {
     senha_hash,
     ativo: true,
     plano: "free",
+    aceite_termos_em: new Date().toISOString(),
   });
 
   if (error) {

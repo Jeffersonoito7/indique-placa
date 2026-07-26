@@ -4,6 +4,23 @@ import { rateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 
+async function notificarMasterNovaAssociacao(nome: string, email: string, cidade: string, estado: string) {
+  const fone = process.env.MASTER_FONE;
+  const baseUrl = process.env.EVOLUTION_API_URL;
+  const apiKey = process.env.EVOLUTION_API_KEY;
+  const instance = process.env.EVOLUTION_INSTANCE;
+  if (!fone || !baseUrl || !apiKey || !instance) return;
+
+  const numero = fone.replace(/\D/g, "");
+  const msg = `*Nova associacao cadastrada!*\n\nNome: ${nome}\nEmail: ${email}\nCidade: ${cidade}/${estado}\n\nAcesse o painel master para revisar e ativar.`;
+
+  fetch(`${baseUrl}/message/sendText/${instance}`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json", apikey: apiKey },
+    body: JSON.stringify({ number: numero.startsWith("55") ? numero : `55${numero}`, text: msg }),
+  }).catch(() => {});
+}
+
 const schema = z.object({
   nome: z.string().min(2).max(120),
   email: z.string().email().max(200),
@@ -78,11 +95,14 @@ export async function POST(req: NextRequest) {
       senha_hash,
       status: "inativo",
       plano: "trial",
+      aceite_termos_em: new Date().toISOString(),
     });
 
   if (error) {
     return NextResponse.json({ error: "Erro ao criar cadastro. Tente novamente." }, { status: 500 });
   }
+
+  notificarMasterNovaAssociacao(nome.trim(), email.toLowerCase(), cidade.trim(), estado);
 
   return NextResponse.json({ ok: true });
 }

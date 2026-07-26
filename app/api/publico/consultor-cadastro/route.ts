@@ -79,6 +79,7 @@ export async function POST(req: NextRequest) {
     associacao_id: assocIdFinal,
     senha_hash,
     status: "ativo",
+    aceite_termos_em: new Date().toISOString(),
   });
 
   if (error) {

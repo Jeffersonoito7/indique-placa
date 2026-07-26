@@ -72,6 +72,7 @@ export async function POST(req: NextRequest) {
     senha: senha_hash,
     consultor_id: cid,
     status: "ativo",
+    aceite_termos_em: new Date().toISOString(),
   });
 
   if (error) {
