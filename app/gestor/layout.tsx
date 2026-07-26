@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, Users, BarChart2, User, ClipboardList, Link2, TrendingUp, DollarSign, Bell, UserCheck } from "lucide-react";
+import { LayoutDashboard, Users, BarChart2, User, ClipboardList, Link2, TrendingUp, DollarSign, Bell, UserCheck, Megaphone } from "lucide-react";
 
 const navItems = [
   { group: "Painel", items: [
@@ -19,6 +19,7 @@ const navItems = [
   ]},
   { group: "Captacao", items: [
     { href: "/gestor/captura", label: "Link de Captura", icon: Link2 },
+    { href: "/gestor/trafego", label: "Trafego Pago", icon: Megaphone },
   ]},
   { group: "Conta", items: [
     { href: "/gestor/perfil", label: "Meu Perfil", icon: User },
