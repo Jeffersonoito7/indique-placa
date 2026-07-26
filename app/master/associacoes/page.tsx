@@ -497,27 +497,39 @@ export default function AssociacoesPage() {
   const [inativando, setInativando] = useState<string | null>(null);
 
   const carregar = async () => {
-    const res = await fetch("/api/master/associacoes");
-    if (res.ok) {
-      const json = await res.json();
-      setLista(json.lista ?? []);
+    try {
+      const res = await fetch("/api/master/associacoes");
+      if (res.ok) {
+        const json = await res.json();
+        setLista(json.lista ?? []);
+      }
+    } catch {
+      // falha de rede; mantém lista anterior
     }
   };
 
   useEffect(() => { carregar(); }, []);
 
   const abrirEditar = async (id: string) => {
-    const res = await fetch(`/api/master/associacoes/${id}`);
-    if (res.ok) {
-      const json = await res.json();
-      setEditando(json.associacao);
+    try {
+      const res = await fetch(`/api/master/associacoes/${id}`);
+      if (res.ok) {
+        const json = await res.json();
+        setEditando(json.associacao);
+      }
+    } catch {
+      // falha silenciosa; modal nao abre
     }
   };
 
   const inativar = async (id: string, nome: string) => {
     if (!confirm(`Inativar a associacao "${nome}"?`)) return;
     setInativando(id);
-    await fetch(`/api/master/associacoes/${id}`, { method: "DELETE" });
+    try {
+      await fetch(`/api/master/associacoes/${id}`, { method: "DELETE" });
+    } catch {
+      // falha silenciosa; recarrega de qualquer forma para refletir estado real
+    }
     setInativando(null);
     carregar();
   };

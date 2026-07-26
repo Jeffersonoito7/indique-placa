@@ -22,7 +22,8 @@ export async function GET() {
     .from("indicadores")
     .select("id, nome, telefone, consultor_id, criado_em")
     .in("consultor_id", ids)
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(1000);
 
   if (error) {
     console.error("[gestor/indicadores] GET:", error.code, error.message);

@@ -55,7 +55,11 @@ export async function POST(req: NextRequest) {
     transferido_por_tipo: "master",
   }));
 
-  await supabaseAdmin.from("lead_transferencias").insert(registros);
+  try {
+    await supabaseAdmin.from("lead_transferencias").insert(registros);
+  } catch (err) {
+    console.error("[master/transferir] Falha ao registrar log de transferencia:", err);
+  }
 
   return NextResponse.json({ ok: true, transferidos: leads.length });
 }

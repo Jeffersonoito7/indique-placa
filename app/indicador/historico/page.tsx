@@ -84,14 +84,19 @@ export default function IndicadorHistoricoPage() {
 
   const buscar = useCallback(async (status: StatusFiltro) => {
     setCarregando(true);
-    const params = status !== "todos" ? `?status=${status}` : "";
-    const res = await fetch(`/api/indicador/historico${params}`);
-    if (res.ok) {
-      const json = await res.json();
-      setLeads(json.leads ?? []);
-      setTotais(json.totais ?? null);
+    try {
+      const params = status !== "todos" ? `?status=${status}` : "";
+      const res = await fetch(`/api/indicador/historico${params}`);
+      if (res.ok) {
+        const json = await res.json();
+        setLeads(json.leads ?? []);
+        setTotais(json.totais ?? null);
+      }
+    } catch {
+      // falha de rede; mantém dados anteriores na tela
+    } finally {
+      setCarregando(false);
     }
-    setCarregando(false);
   }, []);
 
   useEffect(() => {

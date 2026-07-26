@@ -59,7 +59,7 @@ export async function POST(req: NextRequest) {
 
   if (errUpdate) return NextResponse.json({ error: errUpdate.message }, { status: 500 });
 
-  // Registra historico de transferencia
+  // Registra historico de transferencia (falha nao cancela a transferencia ja realizada)
   const registros = ids.map((id) => ({
     indicacao_id: id,
     consultor_origem_id,
@@ -68,7 +68,11 @@ export async function POST(req: NextRequest) {
     transferido_por_tipo: "gestor",
   }));
 
-  await supabaseAdmin.from("lead_transferencias").insert(registros);
+  try {
+    await supabaseAdmin.from("lead_transferencias").insert(registros);
+  } catch (err) {
+    console.error("[gestor/transferir] Falha ao registrar log de transferencia:", err);
+  }
 
   return NextResponse.json({ ok: true, transferidos: leads.length });
 }

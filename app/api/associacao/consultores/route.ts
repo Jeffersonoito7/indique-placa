@@ -12,7 +12,8 @@ export async function GET() {
     .from("consultores")
     .select("id, nome, email, fone, status, plano, gestor_id, criado_em")
     .eq("associacao_id", assoc.id)
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(500);
 
   if (error) {
     console.error("[associacao/consultores] GET:", error.code, error.message);

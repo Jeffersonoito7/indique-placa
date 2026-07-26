@@ -64,9 +64,10 @@ export async function GET(req: NextRequest) {
     supabaseAdmin.from("associacoes").select("id, nome, plano"),
     supabaseAdmin
       .from("consultores")
-      .select("id, nome, fone, cidade, gestor_id, associacao_id, gestores(nome), associacoes(nome)"),
-    supabaseAdmin.from("gestores").select("id, nome, associacao_id, associacoes(nome)"),
-    supabaseAdmin.from("indicadores").select("id, nome, consultor_id, associacao_id, consultores(nome)"),
+      .select("id, nome, cidade, gestor_id, associacao_id, gestores(nome), associacoes(nome)")
+      .limit(2000),
+    supabaseAdmin.from("gestores").select("id, nome, associacao_id, associacoes(nome)").limit(2000),
+    supabaseAdmin.from("indicadores").select("id, nome, consultor_id, associacao_id, consultores(nome)").limit(5000),
   ]);
 
   if ((indicacoesDoPeriodo?.length ?? 0) >= 1000) {
@@ -82,7 +83,7 @@ export async function GET(req: NextRequest) {
 
   // --- Ranking consultores ---
   const consultorMap: Record<string, {
-    id: string; nome: string; fone: string; associacao: string | null;
+    id: string; nome: string; associacao: string | null;
     gestor: string | null; cidade: string | null;
     total_leads: number; total_fechamentos: number; total_comissoes: number;
   }> = {};
@@ -93,7 +94,6 @@ export async function GET(req: NextRequest) {
     consultorMap[c.id] = {
       id: c.id,
       nome: c.nome,
-      fone: c.fone,
       associacao: assocNome,
       gestor: gestorNome,
       cidade: c.cidade ?? null,

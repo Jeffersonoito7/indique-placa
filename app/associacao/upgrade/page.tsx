@@ -37,17 +37,22 @@ export default function UpgradePage() {
   useEffect(() => {
     fetch("/api/associacao/upgrade")
       .then((r) => r.json())
-      .then(setInfo);
+      .then(setInfo)
+      .catch(() => setErro("Erro ao carregar informacoes do plano"));
   }, []);
 
   useEffect(() => {
     if (!pix?.txid || pago) return;
     const iv = setInterval(async () => {
-      const r = await fetch(`/api/associacao/upgrade?txid=${pix.txid}`);
-      const json = await r.json();
-      if (json.pago) {
-        setPago(true);
-        clearInterval(iv);
+      try {
+        const r = await fetch(`/api/associacao/upgrade?txid=${pix.txid}`);
+        const json = await r.json();
+        if (json.pago) {
+          setPago(true);
+          clearInterval(iv);
+        }
+      } catch {
+        // falha transitoria; tenta novamente no proximo tick
       }
     }, 5000);
     return () => clearInterval(iv);

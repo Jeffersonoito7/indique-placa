@@ -74,17 +74,25 @@ export default function AssociacaoGestoresPage() {
   }
 
   async function toggleAtivo(g: Gestor) {
-    await fetch(`/api/associacao/gestores/${g.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ ativo: !g.ativo }),
-    });
+    try {
+      await fetch(`/api/associacao/gestores/${g.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ativo: !g.ativo }),
+      });
+    } catch {
+      // falha silenciosa; recarrega para refletir estado real
+    }
     await carregar();
   }
 
   async function deletar(g: Gestor) {
     if (!confirm(`Deletar ${g.nome}? Esta acao desvincula os consultores do gestor.`)) return;
-    await fetch(`/api/associacao/gestores/${g.id}`, { method: "DELETE" });
+    try {
+      await fetch(`/api/associacao/gestores/${g.id}`, { method: "DELETE" });
+    } catch {
+      // falha silenciosa; recarrega para refletir estado real
+    }
     await carregar();
   }
 

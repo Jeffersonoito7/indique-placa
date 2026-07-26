@@ -139,13 +139,21 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
   };
 
   const alterarStatus = async (id: string, status: "ativa" | "pausada") => {
-    await fetch(`${base}/campanhas/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    try {
+      await fetch(`${base}/campanhas/${id}`, { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ status }) });
+    } catch {
+      // falha silenciosa; recarrega para refletir estado real
+    }
     void carregar();
   };
 
   const encerrar = async (id: string) => {
     if (!confirm("Encerrar campanha?")) return;
-    await fetch(`${base}/campanhas/${id}`, { method: "DELETE" });
+    try {
+      await fetch(`${base}/campanhas/${id}`, { method: "DELETE" });
+    } catch {
+      // falha silenciosa; recarrega para refletir estado real
+    }
     void carregar();
   };
 

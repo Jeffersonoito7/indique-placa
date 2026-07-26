@@ -118,6 +118,6 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({
     ok: true,
-    consultor: consultor ? { nome: consultor.nome, fone: consultor.fone } : null,
+    consultor: consultor ? { nome: consultor.nome } : null,
   });
 }

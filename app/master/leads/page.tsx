@@ -197,7 +197,11 @@ export default function LeadsCentralPage() {
 
   const apagarSelecionados = async () => {
     if (!confirm(`Apagar ${selecionados.size} lead(s) permanentemente?`)) return;
-    await Promise.all([...selecionados].map((id) => fetch(`/api/master/leads/${id}`, { method: "DELETE" })));
+    try {
+      await Promise.all([...selecionados].map((id) => fetch(`/api/master/leads/${id}`, { method: "DELETE" })));
+    } catch {
+      // falha parcial; recarrega para refletir estado real
+    }
     carregar();
   };
 

@@ -12,7 +12,8 @@ export async function GET() {
     .from("consultores")
     .select("id, nome, email, fone, status, plano, plano_ativo_ate, criado_em")
     .eq("gestor_id", gestor.id)
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(200);
 
   if (error) return NextResponse.json({ error: "Erro ao buscar consultores" }, { status: 500 });
 
@@ -22,7 +23,8 @@ export async function GET() {
   const { data: indicacoes } = await supabaseAdmin
     .from("indicacoes")
     .select("consultor_id, status")
-    .in("consultor_id", ids.length > 0 ? ids : ["00000000-0000-0000-0000-000000000000"]);
+    .in("consultor_id", ids.length > 0 ? ids : ["00000000-0000-0000-0000-000000000000"])
+    .limit(5000);
 
   const contagemMap: Record<string, { leads: number; fechados: number }> = {};
   for (const ind of indicacoes ?? []) {

@@ -10,7 +10,7 @@ export async function GET(req: NextRequest) {
   const statusFiltro = searchParams.get("status");
   const busca = searchParams.get("busca");
   const page = parseInt(searchParams.get("page") ?? "1", 10);
-  const limit = parseInt(searchParams.get("limit") ?? "50", 10);
+  const limit = Math.min(parseInt(searchParams.get("limit") ?? "50", 10), 200);
   const offset = (page - 1) * limit;
 
   // Buscar consultores da associacao

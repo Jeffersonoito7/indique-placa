@@ -50,9 +50,27 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   let pixStatus: string | undefined;
   let pixErro: string | undefined;
 
+  // Marca como pago ANTES de chamar o PIX — UPDATE atomico garante que apenas um
+  // request concorrente prossegue; o segundo retorna ja_pago sem disparar PIX duplo
+  const { data: updated, error: errUpdate } = await supabaseAdmin
+    .from("indicacoes")
+    .update({
+      comissao_paga: true,
+      comissao_paga_em: new Date().toISOString(),
+    })
+    .eq("id", id)
+    .eq("consultor_id", consultorId)
+    .eq("comissao_paga", false)
+    .select("id");
+
+  if (errUpdate) return NextResponse.json({ error: "Erro ao registrar pagamento" }, { status: 500 });
+
+  if (!updated || updated.length === 0) {
+    return NextResponse.json({ ok: true, ja_pago: true });
+  }
+
   // Tenta envio PIX automatico se indicador tem chave PIX e valor > 0
   if (chavePix && valorComissao > 0) {
-    // Busca credenciais Efi da associacao do consultor
     const { data: consultor } = await supabaseAdmin
       .from("consultores")
       .select("associacao_id")
@@ -93,47 +111,21 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
           pixStatus = resultado.status;
           if (!resultado.ok) {
             pixErro = resultado.erro ?? `Status Efi: ${resultado.status}`;
+            console.error("[pagar-comissao] PIX falhou apos marcar pago", id, pixErro);
           }
         } catch (err: unknown) {
           pixErro = err instanceof Error ? err.message : "Erro ao enviar PIX";
-          console.error("[pagar-comissao] Erro Efi pixSend:", err);
-        }
-
-        // Se o envio falhou, retorna erro sem marcar como pago
-        if (!pixEnviado) {
-          return NextResponse.json({
-            error: `Falha ao enviar PIX: ${pixErro}. Tente novamente ou registre o pagamento manual.`,
-            pix_erro: pixErro,
-          }, { status: 502 });
+          console.error("[pagar-comissao] Excecao Efi pixSend:", err);
         }
       }
     }
-  }
-
-  // Registra pagamento — filtra tambem por comissao_paga=false para garantir idempotencia
-  // mesmo com dois requests concorrentes: apenas um vai encontrar a linha e atualizar
-  const { data: updated, error } = await supabaseAdmin
-    .from("indicacoes")
-    .update({
-      comissao_paga: true,
-      comissao_paga_em: new Date().toISOString(),
-    })
-    .eq("id", id)
-    .eq("consultor_id", consultorId)
-    .eq("comissao_paga", false)
-    .select("id");
-
-  if (error) return NextResponse.json({ error: "Erro ao registrar pagamento" }, { status: 500 });
-
-  // Array vazio significa que outro request ja processou (corrida de dados); retorna ok sem reprocessar
-  if (!updated || updated.length === 0) {
-    return NextResponse.json({ ok: true, ja_pago: true });
   }
 
   return NextResponse.json({
     ok: true,
     pix_enviado: pixEnviado,
     pix_status: pixStatus,
+    pix_erro: pixErro,
     sem_chave_pix: !chavePix,
     sem_configuracao: !pixEnviado && !pixErro,
   });

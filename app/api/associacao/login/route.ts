@@ -4,7 +4,11 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { criarSessao } from "@/lib/sessoes";
 import { rateLimit } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
+import { timingSafeEqual } from "crypto";
 import { z } from "zod";
+
+// Hash dummy para comparar quando associacao nao existe (evita timing oracle que revela emails validos)
+const DUMMY_HASH = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
 
 const schema = z.object({
   email: z.string().email(),
@@ -30,33 +34,38 @@ export async function POST(req: NextRequest) {
     .from("associacoes")
     .select("id, nome, email, status, senha_hash")
     .eq("email", email.toLowerCase())
-    .single();
-
-  if (!assoc) {
-    return NextResponse.json({ error: "Email ou senha incorretos" }, { status: 401 });
-  }
-
-  if (assoc.status === "inativo" || assoc.status === "suspenso") {
-    return NextResponse.json({ error: "Conta inativa ou suspensa. Entre em contato com o suporte." }, { status: 403 });
-  }
+    .maybeSingle();
 
   // Validacao: se tiver senha_hash usa bcrypt, senao usa env var
-  const senhaHash = (assoc as Record<string, unknown>).senha_hash as string | null | undefined;
+  // Sempre executa alguma comparacao para nao revelar por timing se o email existe
+  const senhaHash = (assoc as Record<string, unknown> | null)?.senha_hash as string | null | undefined;
   let senhaCorreta = false;
 
   if (senhaHash) {
     senhaCorreta = await bcrypt.compare(senha, senhaHash);
   } else {
     const masterSenha = process.env.ASSOCIACAO_MASTER_SENHA;
-    if (!masterSenha) {
-      console.error("[associacao/login] ASSOCIACAO_MASTER_SENHA nao configurada e sem senha_hash");
-      return NextResponse.json({ error: "Configuracao de autenticacao pendente" }, { status: 500 });
+    if (masterSenha) {
+      try {
+        const a = Buffer.from(senha);
+        const b = Buffer.from(masterSenha);
+        senhaCorreta = a.length === b.length && timingSafeEqual(a, b);
+      } catch {
+        senhaCorreta = false;
+      }
+    } else {
+      // Executa bcrypt dummy para nao vazar timing quando nao ha senha_hash nem env var
+      await bcrypt.compare(senha, DUMMY_HASH);
+      senhaCorreta = false;
     }
-    senhaCorreta = senha === masterSenha;
   }
 
-  if (!senhaCorreta) {
+  if (!assoc || !senhaCorreta) {
     return NextResponse.json({ error: "Email ou senha incorretos" }, { status: 401 });
+  }
+
+  if (assoc.status === "inativo" || assoc.status === "suspenso") {
+    return NextResponse.json({ error: "Conta inativa ou suspensa. Entre em contato com o suporte." }, { status: 403 });
   }
 
   const token = await criarSessao(assoc.id, "associacao");

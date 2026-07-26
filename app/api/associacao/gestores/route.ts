@@ -12,7 +12,8 @@ export async function GET() {
     .from("gestores")
     .select("id, nome, email, fone, ativo, criado_em")
     .eq("associacao_id", assoc.id)
-    .order("criado_em", { ascending: false });
+    .order("criado_em", { ascending: false })
+    .limit(200);
 
   if (error) {
     console.error("[associacao/gestores] GET:", error.code, error.message);

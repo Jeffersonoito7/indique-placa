@@ -1,6 +1,15 @@
 const RESEND_API_KEY = process.env.RESEND_API_KEY ?? "";
 const FROM = "Indique Placa <noreply@indiqueplaca.com.br>";
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#x27;");
+}
+
 async function enviarEmail(to: string, subject: string, html: string): Promise<boolean> {
   if (!RESEND_API_KEY) {
     console.error("[email] RESEND_API_KEY nao configurada — email descartado:", subject);
@@ -28,6 +37,7 @@ export async function enviarEmailBoasVindas({
   nome: string;
   tipo: "consultor" | "indicador" | "gestor";
 }) {
+  const nomeSeguro = escapeHtml(nome);
   const labelTipo = tipo === "consultor" ? "Consultor" : tipo === "gestor" ? "Gestor" : "Indicador";
   const linkAccesso = tipo === "consultor"
     ? "https://indiqueplaca.com.br/consultor/login"
@@ -49,7 +59,7 @@ export async function enviarEmailBoasVindas({
           <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">Sistema de indicacoes</div>
         </div>
         <p style="color:rgba(255,255,255,.7);font-size:14px;line-height:1.6;margin:0 0 16px">
-          Ola, <strong style="color:#fff">${nome}</strong>!
+          Ola, <strong style="color:#fff">${nomeSeguro}</strong>!
         </p>
         <p style="color:rgba(255,255,255,.7);font-size:14px;line-height:1.6;margin:0 0 24px">
           Seu cadastro como <strong style="color:#f59e0b">${labelTipo}</strong> foi realizado com sucesso. ${mensagemTipo}
@@ -72,7 +82,7 @@ export async function enviarEmailBoasVindas({
     </div>
   `;
 
-  return enviarEmail(email, `Bem-vindo ao Indique Placa, ${nome}!`, html);
+  return enviarEmail(email, `Bem-vindo ao Indique Placa, ${nomeSeguro}!`, html);
 }
 
 export async function enviarEmailOTP({
@@ -92,7 +102,7 @@ export async function enviarEmailOTP({
           <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">Sistema de indicações</div>
         </div>
         <p style="color:rgba(255,255,255,.7);font-size:14px;line-height:1.6;margin:0 0 24px">
-          ${nome ? `Olá, <strong style="color:#fff">${nome}</strong>!<br><br>` : ""}
+          ${nome ? `Olá, <strong style="color:#fff">${escapeHtml(nome)}</strong>!<br><br>` : ""}
           Recebemos uma solicitação para redefinir sua senha. Use o código abaixo:
         </p>
         <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.3);border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">

@@ -92,17 +92,25 @@ export default function AssociacaoConsultoresPage() {
   }
 
   async function toggleStatus(c: Consultor) {
-    await fetch(`/api/associacao/consultores/${c.id}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: c.status === "ativo" ? "inativo" : "ativo" }),
-    });
+    try {
+      await fetch(`/api/associacao/consultores/${c.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: c.status === "ativo" ? "inativo" : "ativo" }),
+      });
+    } catch {
+      // falha silenciosa; recarrega para refletir estado real
+    }
     await carregar();
   }
 
   async function inativar(c: Consultor) {
     if (!confirm(`Inativar e desvincular ${c.nome}?`)) return;
-    await fetch(`/api/associacao/consultores/${c.id}`, { method: "DELETE" });
+    try {
+      await fetch(`/api/associacao/consultores/${c.id}`, { method: "DELETE" });
+    } catch {
+      // falha silenciosa; recarrega para refletir estado real
+    }
     await carregar();
   }
 

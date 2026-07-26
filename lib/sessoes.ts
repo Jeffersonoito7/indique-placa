@@ -61,6 +61,12 @@ export async function revogarSessao(token: string): Promise<void> {
     const dot = token.lastIndexOf(".");
     if (dot === -1) return;
     const b64 = token.slice(0, dot);
+    const sig = token.slice(dot + 1);
+
+    // Verifica assinatura antes de confiar no payload
+    const sigEsperada = assinar(b64);
+    if (sig.length !== sigEsperada.length || !timingSafeEqual(Buffer.from(sig), Buffer.from(sigEsperada))) return;
+
     const payload = JSON.parse(Buffer.from(b64, "base64url").toString());
     if (payload.id && payload.expira) {
       await supabaseAdmin.from("sessoes_revogadas").insert({

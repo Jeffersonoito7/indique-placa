@@ -22,7 +22,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   // Verificar se o lead pertence ao consultor e está fechado
   const { data: lead } = await supabaseAdmin
     .from("indicacoes")
-    .select("id, consultor_id, indicador_id, status")
+    .select("id, consultor_id, indicador_id, status, pago_em")
     .eq("id", id)
     .single();
 
@@ -31,6 +31,9 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
   if (lead.status !== "fechado") {
     return NextResponse.json({ error: "Só é possível registrar pagamento em leads fechados" }, { status: 400 });
+  }
+  if ((lead as Record<string, unknown>).pago_em) {
+    return NextResponse.json({ ok: true, ja_pago: true }, { status: 200 });
   }
   if (!lead.indicador_id) {
     return NextResponse.json({ error: "Este lead não tem indicador vinculado" }, { status: 400 });

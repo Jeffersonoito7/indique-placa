@@ -60,10 +60,18 @@ export async function POST(req: NextRequest) {
     const planoAte = new Date();
     planoAte.setDate(planoAte.getDate() + 30);
 
-    await supabaseAdmin
-      .from("associacoes")
-      .update({ status: "ativo", plano_ativo_ate: planoAte.toISOString() })
-      .eq("id", cobranca.usuario_id);
+    try {
+      const { error: errRenovar } = await supabaseAdmin
+        .from("associacoes")
+        .update({ status: "ativo", plano_ativo_ate: planoAte.toISOString() })
+        .eq("id", cobranca.usuario_id);
+
+      if (errRenovar) {
+        console.error("[webhook/efi] Falha ao renovar plano da associacao", cobranca.usuario_id, errRenovar.message);
+      }
+    } catch (err) {
+      console.error("[webhook/efi] Excecao ao renovar plano da associacao", cobranca.usuario_id, err);
+    }
   }
 
   return NextResponse.json({ ok: true });

@@ -55,10 +55,15 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (!pertence) return NextResponse.json({ error: "Gestor nao encontrado" }, { status: 404 });
 
   // Desvincular consultores antes de deletar
-  await supabaseAdmin
+  const { error: errDesvincular } = await supabaseAdmin
     .from("consultores")
     .update({ gestor_id: null })
     .eq("gestor_id", id);
+
+  if (errDesvincular) {
+    console.error("[associacao/gestores/id] Falha ao desvincular consultores:", errDesvincular.message);
+    return NextResponse.json({ error: "Erro ao desvincular consultores do gestor" }, { status: 500 });
+  }
 
   const { error } = await supabaseAdmin
     .from("gestores")

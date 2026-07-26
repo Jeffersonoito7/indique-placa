@@ -14,7 +14,8 @@ export async function GET(req: NextRequest) {
   const { data: consultores } = await supabaseAdmin
     .from("consultores")
     .select("id, nome, email, fone, status, plano")
-    .eq("gestor_id", gestor.id);
+    .eq("gestor_id", gestor.id)
+    .limit(200);
 
   const consultoresLista = consultores ?? [];
   const ids = consultoresLista.map((c) => c.id);

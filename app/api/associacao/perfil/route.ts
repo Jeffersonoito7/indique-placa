@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getAssociacaoLogada } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import bcrypt from "bcryptjs";
+import { timingSafeEqual } from "crypto";
 import { z } from "zod";
 
 const schemaPatch = z.object({
@@ -59,9 +60,14 @@ export async function PATCH(req: NextRequest) {
       senhaCorreta = await bcrypt.compare(senha_atual, senhaHash);
     } else {
       const masterSenha = process.env.ASSOCIACAO_MASTER_SENHA;
-      // Se a env var nao estiver configurada, nega acesso — nao aceitar string vazia como senha
       if (masterSenha) {
-        senhaCorreta = senha_atual === masterSenha;
+        try {
+          const a = Buffer.from(senha_atual);
+          const b = Buffer.from(masterSenha);
+          senhaCorreta = a.length === b.length && timingSafeEqual(a, b);
+        } catch {
+          senhaCorreta = false;
+        }
       }
     }
 
