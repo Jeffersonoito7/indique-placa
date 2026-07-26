@@ -68,11 +68,9 @@ export async function PUT(req: NextRequest) {
   if (tipo === "associacao") {
     const parsed = schemaAssociacao.safeParse(dados);
     if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
-    const { plano, ...rest } = parsed.data;
     const { error } = await supabaseAdmin
       .from("planos_config_associacao")
-      .update({ ...rest, atualizado_em: new Date().toISOString() })
-      .eq("plano", plano);
+      .upsert({ ...parsed.data, atualizado_em: new Date().toISOString() }, { onConflict: "plano" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
@@ -80,11 +78,9 @@ export async function PUT(req: NextRequest) {
   if (tipo === "consultor") {
     const parsed = schemaConsultor.safeParse(dados);
     if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
-    const { plano, ...rest } = parsed.data;
     const { error } = await supabaseAdmin
       .from("planos_config_consultor")
-      .update({ ...rest, atualizado_em: new Date().toISOString() })
-      .eq("plano", plano);
+      .upsert({ ...parsed.data, atualizado_em: new Date().toISOString() }, { onConflict: "plano" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
@@ -92,11 +88,9 @@ export async function PUT(req: NextRequest) {
   if (tipo === "gestor") {
     const parsed = schemaGestor.safeParse(dados);
     if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
-    const { plano, ...rest } = parsed.data;
     const { error } = await supabaseAdmin
       .from("planos_config_gestor")
-      .update({ ...rest, atualizado_em: new Date().toISOString() })
-      .eq("plano", plano);
+      .upsert({ ...parsed.data, atualizado_em: new Date().toISOString() }, { onConflict: "plano" });
     if (error) return NextResponse.json({ error: error.message }, { status: 500 });
     return NextResponse.json({ ok: true });
   }
