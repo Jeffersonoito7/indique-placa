@@ -113,6 +113,7 @@ export default function GestorCadastroPage() {
   const [email, setEmail] = useState("");
   const [fone, setFone] = useState("");
   const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
   const [verSenha, setVerSenha] = useState(false);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState(false);
@@ -121,6 +122,9 @@ export default function GestorCadastroPage() {
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro("");
+    const tel = fone.replace(/\D/g, "");
+    if (tel.length < 10) { setErro("Digite um WhatsApp válido com DDD"); return; }
+    if (senha !== confirmarSenha) { setErro("As senhas não coincidem"); return; }
     setCarregando(true);
     try {
       const res = await fetch("/api/gestor/cadastro", {
@@ -236,6 +240,14 @@ export default function GestorCadastroPage() {
                     )}
                   </button>
                 </div>
+                <input
+                  className="gcad-campo"
+                  type="password"
+                  placeholder="Confirme a senha"
+                  value={confirmarSenha}
+                  required
+                  onChange={(e) => setConfirmarSenha(e.target.value)}
+                />
                 <button className="gcad-btn" type="submit" disabled={carregando || !nome || !email || !senha || senha.length < 6}>
                   {carregando ? "CADASTRANDO..." : "CRIAR CONTA"}
                 </button>

@@ -422,6 +422,7 @@ export default function ConsultorCadastroPage() {
   const [associacaoTexto, setAssociacaoTexto] = useState("");
   const [associacoes, setAssociacoes] = useState<Associacao[]>([]);
   const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
   const [verSenha, setVerSenha] = useState(false);
   const [erro, setErro] = useState("");
   const [carregando, setCarregando] = useState(false);
@@ -495,6 +496,7 @@ export default function ConsultorCadastroPage() {
     const nomeAssoc = associacaoId === "outra" ? associacaoTexto : associacaoNome;
     if (!nomeAssoc.trim()) { setErro("Informe a associação"); return; }
     if (senha.length < 6) { setErro("A senha precisa ter no mínimo 6 caracteres"); return; }
+    if (senha !== confirmarSenha) { setErro("As senhas não coincidem"); return; }
     setCarregando(true);
     try {
       const payload: Record<string, unknown> = { nome, telefone, email, cidade: `${cidade} - ${estado}`, associacao: nomeAssoc, senha };
@@ -860,6 +862,10 @@ export default function ConsultorCadastroPage() {
                         </svg>
                       </button>
                     </div>
+                  </div>
+                  <div className="campo-group">
+                    <label className="campo-label">Confirme a senha</label>
+                    <input className="campo" type="password" placeholder="Digite a senha novamente" value={confirmarSenha} required onChange={e => setConfirmarSenha(e.target.value)} />
                   </div>
                   <div className="campo-group">
                     <label className="campo-label">Nome da empresa</label>

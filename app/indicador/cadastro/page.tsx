@@ -250,6 +250,7 @@ function FormIndicador() {
   const [telefone, setTelefone] = useState("");
   const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
+  const [confirmarSenha, setConfirmarSenha] = useState("");
   const [verSenha, setVerSenha] = useState(false);
   const [erro, setErro] = useState("");
   const [sucesso, setSucesso] = useState(false);
@@ -269,6 +270,7 @@ function FormIndicador() {
     const tel = telefone.replace(/\D/g,"");
     if(tel.length<10){ setErro("Digite um WhatsApp válido com DDD"); return; }
     if(senha.length<6){ setErro("A senha precisa ter pelo menos 6 caracteres"); return; }
+    if(senha !== confirmarSenha){ setErro("As senhas não coincidem"); return; }
     setCarregando(true);
     try {
       const res = await fetch("/api/publico/indicador-cadastro",{
@@ -443,11 +445,15 @@ function FormIndicador() {
                       <input className="campo" type="email" placeholder="seu@email.com" value={email} required onChange={e=>setEmail(e.target.value)} />
                     </div>
                     <div className="campo-g">
-                      <label className="campo-l">Crie uma senha</label>
+                      <label className="campo-l">Crie uma senha (mínimo 6 caracteres)</label>
                       <div className="pw-wrap">
                         <input className="campo" type={verSenha?"text":"password"} placeholder="Mínimo 6 caracteres" value={senha} required minLength={6} onChange={e=>setSenha(e.target.value)} />
                         <button type="button" className="pw-btn" onClick={()=>setVerSenha(v=>!v)} tabIndex={-1}>{icone(verSenha)}</button>
                       </div>
+                    </div>
+                    <div className="campo-g">
+                      <label className="campo-l">Confirme a senha</label>
+                      <input className="campo" type="password" placeholder="Digite a senha novamente" value={confirmarSenha} required onChange={e=>setConfirmarSenha(e.target.value)} />
                     </div>
                     <button className="btn-cad" type="submit" disabled={carregando}>
                       {carregando?"Cadastrando...":(
