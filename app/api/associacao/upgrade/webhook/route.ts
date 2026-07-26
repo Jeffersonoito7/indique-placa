@@ -3,7 +3,13 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 import { timingSafeEqual } from "crypto";
 
 // Webhook da Efi para pagamentos de associacoes ao master
-// Configurar no painel Efi do master: POST /api/associacao/upgrade/webhook
+// A Efi faz GET para validar a URL antes de registrar
+export async function GET(req: NextRequest) {
+  const challenge = req.nextUrl.searchParams.get("challenge");
+  if (challenge) return NextResponse.json({ challenge });
+  return new NextResponse(null, { status: 200 });
+}
+
 export async function POST(req: NextRequest) {
   const webhookToken = process.env.WEBHOOK_EFI_TOKEN;
   if (!webhookToken) {
