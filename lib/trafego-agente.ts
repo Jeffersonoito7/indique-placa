@@ -1,7 +1,9 @@
 import "server-only";
 import OpenAI from "openai";
 
-const client = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
+function criarCliente(apiKey: string) {
+  return new OpenAI({ apiKey });
+}
 
 export type CopyGerado = {
   titulo: string;
@@ -34,7 +36,9 @@ export async function gerarCopyVariacoes(params: {
   tipo_veiculo: string;
   localizacao?: string;
   diferencial?: string;
+  openai_api_key: string;
 }): Promise<CopyGerado[]> {
+  const client = criarCliente(params.openai_api_key);
   const userMsg = `Gere 3 variações de copy para campanha Instagram de proteção veicular.
 Tipo de veículo foco: ${params.tipo_veiculo}
 Localização: ${params.localizacao ?? "Brasil"}
@@ -73,6 +77,7 @@ export async function analisarPerformance(params: {
   gasto: number;
   leads: number;
   orcamento_diario: number;
+  openai_api_key: string;
 }): Promise<AnaliseAlerta> {
   const custo_por_lead = params.leads > 0 ? params.gasto / params.leads : null;
 
@@ -98,6 +103,7 @@ Regras de classificação:
 Retorne JSON com: tipo ("positivo"|"negativo"|"info"), titulo (curto, max 60 chars), mensagem (explicação em 1-2 frases com dica prática), acao_tomada (o que o sistema fez automaticamente, se fez algo).`;
 
   try {
+    const client = criarCliente(params.openai_api_key);
     const msg = await client.chat.completions.create({
       model: "gpt-4o-mini",
       max_tokens: 512,

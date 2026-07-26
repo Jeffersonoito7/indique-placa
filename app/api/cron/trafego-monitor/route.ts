@@ -14,7 +14,7 @@ export async function GET(req: NextRequest) {
 
   const { data: campanhas } = await supabaseAdmin
     .from("trafego_campanhas")
-    .select("id, nome, status, orcamento_diario, usuario_id, usuario_tipo, meta_campaign_id, meta_adset_id, meta_ad_id, trafego_contas(meta_access_token)")
+    .select("id, nome, status, orcamento_diario, usuario_id, usuario_tipo, meta_campaign_id, meta_adset_id, meta_ad_id, trafego_contas(meta_access_token, openai_api_key)")
     .eq("status", "ativa")
     .not("meta_campaign_id", "is", null);
 
@@ -27,7 +27,9 @@ export async function GET(req: NextRequest) {
 
   for (const camp of campanhas) {
     try {
-      const token = (camp.trafego_contas as { meta_access_token?: string } | null)?.meta_access_token;
+      const conta = camp.trafego_contas as { meta_access_token?: string; openai_api_key?: string } | null;
+      const token = conta?.meta_access_token;
+      const openaiKey = conta?.openai_api_key;
       if (!token || !camp.meta_campaign_id) continue;
 
       const insights = await buscarInsights(token, camp.meta_campaign_id, 1);
@@ -87,7 +89,7 @@ export async function GET(req: NextRequest) {
         continue;
       }
 
-      // Analise com IA para gerar alerta informativo
+      // Analise com IA (so se o usuario tem chave OpenAI configurada)
       const alerta = await analisarPerformance({
         nome_campanha: camp.nome,
         impressoes: insights.impressoes,
@@ -97,6 +99,7 @@ export async function GET(req: NextRequest) {
         gasto: insights.gasto,
         leads: insights.leads,
         orcamento_diario: Number(camp.orcamento_diario),
+        openai_api_key: openaiKey ?? "",
       });
 
       // Evita alertas duplicados do mesmo dia para a mesma campanha

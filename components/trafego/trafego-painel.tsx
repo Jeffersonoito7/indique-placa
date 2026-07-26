@@ -74,7 +74,7 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
   const [diferencial, setDiferencial] = useState("");
 
   // Formulário conta
-  const [formConta, setFormConta] = useState({ meta_access_token: "", meta_ad_account_id: "", meta_page_id: "", meta_instagram_actor_id: "" });
+  const [formConta, setFormConta] = useState({ meta_access_token: "", meta_ad_account_id: "", meta_page_id: "", meta_instagram_actor_id: "", openai_api_key: "" });
   const [salvandoConta, setSalvandoConta] = useState(false);
   const [erroConta, setErroConta] = useState("");
   const [sucessoConta, setSucessoConta] = useState("");
@@ -483,6 +483,11 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
                   <div>
                     <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 block">ID do Instagram (opcional)</label>
                     <input className="w-full text-sm bg-background border border-border rounded-lg px-3 py-2 font-mono" placeholder="17841400000000000" value={formConta.meta_instagram_actor_id} onChange={e => setFormConta(f => ({ ...f, meta_instagram_actor_id: e.target.value }))} />
+                  </div>
+                  <div>
+                    <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 block">Chave OpenAI (para agente de copy)</label>
+                    <input type="password" className="w-full text-sm bg-background border border-border rounded-lg px-3 py-2 font-mono" placeholder="sk-..." value={formConta.openai_api_key} onChange={e => setFormConta(f => ({ ...f, openai_api_key: e.target.value }))} />
+                    <p className="text-[10px] text-muted-foreground mt-1">Sua chave pessoal em platform.openai.com. Opcional — sem ela o agente de copy fica indisponivel.</p>
                   </div>
 
                   <button type="submit" disabled={salvandoConta} className="w-full py-2.5 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-sm font-bold transition-colors disabled:opacity-50">

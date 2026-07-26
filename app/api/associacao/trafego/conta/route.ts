@@ -9,6 +9,7 @@ const schema = z.object({
   meta_ad_account_id: z.string().min(4),
   meta_page_id: z.string().min(4),
   meta_instagram_actor_id: z.string().optional(),
+  openai_api_key: z.string().min(10).optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -35,7 +36,7 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
 
-  const { meta_access_token, meta_ad_account_id, meta_page_id, meta_instagram_actor_id } = parsed.data;
+  const { meta_access_token, meta_ad_account_id, meta_page_id, meta_instagram_actor_id, openai_api_key } = parsed.data;
 
   const validacao = await validarContaMeta({
     access_token: meta_access_token,
@@ -56,6 +57,7 @@ export async function POST(req: NextRequest) {
       meta_ad_account_id,
       meta_page_id,
       meta_instagram_actor_id: meta_instagram_actor_id ?? null,
+      openai_api_key: openai_api_key ?? null,
       nome_conta: validacao.nome ?? meta_ad_account_id,
       ativo: true,
       atualizado_em: new Date().toISOString(),
