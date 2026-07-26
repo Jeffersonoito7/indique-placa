@@ -1,5 +1,6 @@
 import "server-only";
 import { createHmac, timingSafeEqual } from "crypto";
+import { supabaseAdmin } from "./supabase-server";
 
 const DURACAO_HORAS = 8;
 
@@ -17,12 +18,6 @@ function getSecret(): string {
 function assinar(payload: string): string {
   return createHmac("sha256", getSecret()).update(payload).digest("hex");
 }
-
-// Blocklist de sessoes revogadas (IDs de sessao).
-// Limitacao: em memoria por instancia — nao persiste entre reinicializacoes nem
-// funciona em multi-instancia (ex: Vercel com multiplas regioes). Para producao
-// de alta disponibilidade, substituir por Upstash Redis ou similar.
-const sessoesBloqueadas = new Set<string>();
 
 export async function criarSessao(usuario_id: string, tipo: "consultor" | "indicador" | "gestor" | "associacao"): Promise<string> {
   const expira = Date.now() + DURACAO_HORAS * 60 * 60 * 1000;
@@ -46,9 +41,14 @@ export async function validarSessao(token: string, tipo: "consultor" | "indicado
     if (payload.tipo !== tipo) return null;
     if (Date.now() > payload.expira) return null;
 
-    // Verifica blocklist apenas se a sessao tem id (sessoes antigas sem id sao
-    // aceitas mas nao podem ser individualmente revogadas)
-    if (payload.id && sessoesBloqueadas.has(payload.id)) return null;
+    if (payload.id) {
+      const { data } = await supabaseAdmin
+        .from("sessoes_revogadas")
+        .select("id")
+        .eq("session_id", payload.id)
+        .maybeSingle();
+      if (data) return null;
+    }
 
     return payload.usuario_id;
   } catch {
@@ -62,8 +62,11 @@ export async function revogarSessao(token: string): Promise<void> {
     if (dot === -1) return;
     const b64 = token.slice(0, dot);
     const payload = JSON.parse(Buffer.from(b64, "base64url").toString());
-    if (payload.id) {
-      sessoesBloqueadas.add(payload.id);
+    if (payload.id && payload.expira) {
+      await supabaseAdmin.from("sessoes_revogadas").insert({
+        session_id: payload.id,
+        expira_em: new Date(payload.expira).toISOString(),
+      });
     }
   } catch {
     // Token malformado; nao ha o que revogar
