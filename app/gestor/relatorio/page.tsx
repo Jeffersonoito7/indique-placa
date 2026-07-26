@@ -2,7 +2,7 @@
 
 import { useEffect, useState, useCallback } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { BarChart2, Download, Users, ClipboardList, CheckCircle2, TrendingUp } from "lucide-react";
+import { BarChart2, Download, Users, ClipboardList, CheckCircle2, TrendingUp, Lock } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type ConsultorRelatorio = {
@@ -23,6 +23,7 @@ type Relatorio = {
   total_fechamentos: number;
   taxa_conversao: number;
   ranking: ConsultorRelatorio[];
+  permite_csv: boolean;
 };
 
 function exportarCSV(dados: ConsultorRelatorio[]) {
@@ -50,6 +51,7 @@ function exportarCSV(dados: ConsultorRelatorio[]) {
 export default function GestorRelatorioPage() {
   const [relatorio, setRelatorio] = useState<Relatorio | null>(null);
   const [carregando, setCarregando] = useState(true);
+  const [bloqueado, setBloqueado] = useState(false);
   const [de, setDe] = useState("");
   const [ate, setAte] = useState("");
 
@@ -60,6 +62,7 @@ export default function GestorRelatorioPage() {
       if (de) params.set("de", de);
       if (ate) params.set("ate", ate);
       const res = await fetch(`/api/gestor/relatorio?${params.toString()}`);
+      if (res.status === 403) { setBloqueado(true); return; }
       if (res.ok) setRelatorio(await res.json());
     } finally {
       setCarregando(false);
@@ -77,6 +80,21 @@ export default function GestorRelatorioPage() {
       ]
     : [];
 
+  if (bloqueado) {
+    return (
+      <div className="flex-1 flex flex-col items-center justify-center p-8 text-center">
+        <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
+          <Lock className="h-8 w-8 text-muted-foreground" />
+        </div>
+        <h2 className="text-base font-bold text-foreground mb-2">Relatorios nao disponiveis no seu plano</h2>
+        <p className="text-sm text-muted-foreground max-w-sm">
+          O acesso a relatorios de equipe nao esta incluido no seu plano atual.
+          Entre em contato com o administrador para solicitar upgrade.
+        </p>
+      </div>
+    );
+  }
+
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border flex items-center justify-between">
@@ -84,7 +102,7 @@ export default function GestorRelatorioPage() {
           <h1 className="text-base font-bold text-foreground">Relatorio da Equipe</h1>
           <p className="text-[11px] text-muted-foreground mt-0.5">Desempenho consolidado por periodo</p>
         </div>
-        {relatorio && relatorio.ranking.length > 0 && (
+        {relatorio && relatorio.ranking.length > 0 && relatorio.permite_csv && (
           <button
             onClick={() => exportarCSV(relatorio.ranking)}
             className="flex items-center gap-2 px-4 py-2 rounded-xl border border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10 text-sm font-semibold transition-colors"

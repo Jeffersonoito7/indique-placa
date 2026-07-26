@@ -59,6 +59,30 @@ export async function POST(req: NextRequest) {
   const parsed = postSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
+  // Verificar limite do plano antes de criar consultor
+  const { data: planoConfig } = await supabaseAdmin
+    .from("planos_config_gestor")
+    .select("max_consultores")
+    .eq("plano", (gestor as { plano?: string }).plano ?? "free")
+    .maybeSingle();
+
+  if (!planoConfig) {
+    return NextResponse.json({ error: "Configuracao de plano nao encontrada. Contate o suporte." }, { status: 403 });
+  }
+
+  if (planoConfig.max_consultores !== null && planoConfig.max_consultores !== undefined) {
+    const { count } = await supabaseAdmin
+      .from("consultores")
+      .select("id", { count: "exact", head: true })
+      .eq("gestor_id", gestor.id);
+    if ((count ?? 0) >= planoConfig.max_consultores) {
+      return NextResponse.json(
+        { error: `Limite de ${planoConfig.max_consultores} consultores na equipe atingido no seu plano. Solicite upgrade ao administrador.` },
+        { status: 403 }
+      );
+    }
+  }
+
   const { nome, email, fone, senha } = parsed.data;
   const tel = fone.replace(/\D/g, "");
   const senhaHash = await bcrypt.hash(senha, 12);

@@ -6,6 +6,20 @@ export async function GET(req: NextRequest) {
   const gestor = await getGestorLogado();
   if (!gestor) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
 
+  // Verificar permissoes do plano
+  const { data: planoConfig } = await supabaseAdmin
+    .from("planos_config_gestor")
+    .select("relatorios_equipe, exportar_csv")
+    .eq("plano", (gestor as { plano?: string }).plano ?? "free")
+    .maybeSingle();
+
+  if (!planoConfig?.relatorios_equipe) {
+    return NextResponse.json(
+      { error: "Relatorios de equipe nao estao disponiveis no seu plano. Entre em contato com o administrador para upgrade." },
+      { status: 403 }
+    );
+  }
+
   const { searchParams } = new URL(req.url);
   const de = searchParams.get("de");
   const ate = searchParams.get("ate");
@@ -80,5 +94,6 @@ export async function GET(req: NextRequest) {
     taxa_conversao,
     ranking,
     leads_por_consultor: ranking,
+    permite_csv: planoConfig.exportar_csv ?? false,
   });
 }
