@@ -495,15 +495,135 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
                   </button>
                 </form>
 
-                <div className="mt-4 p-3 rounded-lg bg-muted/40 border border-border">
-                  <p className="text-[10px] font-semibold text-muted-foreground mb-1">Como obter as credenciais:</p>
-                  <ol className="text-[10px] text-muted-foreground space-y-1 list-decimal list-inside">
-                    <li>Acesse business.facebook.com</li>
-                    <li>Vá em Configuracoes de Negocio &gt; Tokens de Acesso do Sistema</li>
-                    <li>Crie um token com permissoes: ads_management, ads_read</li>
-                    <li>O ID da conta fica em Gerenciador de Anuncios (formato act_XXXXXXX)</li>
-                  </ol>
-                </div>
+              </CardContent>
+            </Card>
+
+            {/* Guia Meta */}
+            <Card>
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-blue-500 flex items-center justify-center text-white text-[10px] font-black shrink-0">f</span>
+                  Como obter o Token e IDs do Meta
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5 space-y-4">
+                <p className="text-xs text-muted-foreground">Siga os passos abaixo. Voce precisara de uma conta no <strong className="text-foreground">Meta Business Suite</strong> e de uma pagina do Facebook ativa.</p>
+
+                {[
+                  {
+                    n: "1",
+                    titulo: "Crie sua conta no Meta Business Suite",
+                    desc: "Acesse business.facebook.com e clique em \"Criar conta\". Use seu perfil pessoal do Facebook para entrar. Preencha nome da empresa, seu nome e e-mail comercial.",
+                    link: "https://business.facebook.com",
+                    linkLabel: "Abrir Meta Business Suite",
+                    cor: "bg-blue-500/10 border-blue-500/20",
+                  },
+                  {
+                    n: "2",
+                    titulo: "Crie uma conta de anuncios",
+                    desc: "Dentro do Business Suite, va em Configuracoes > Contas > Contas de Anuncios > Adicionar. Escolha \"Criar nova conta de anuncios\". O ID aparece no formato act_XXXXXXXXX — copie este numero.",
+                    dica: "ID da conta de anuncios = act_XXXXXXXXX",
+                    cor: "bg-violet-500/10 border-violet-500/20",
+                  },
+                  {
+                    n: "3",
+                    titulo: "Conecte sua pagina do Facebook e Instagram",
+                    desc: "Em Configuracoes > Contas > Paginas, adicione sua pagina do Facebook. Depois va em Contas > Contas do Instagram e conecte seu perfil do Instagram. O ID da pagina do Facebook aparece na URL da pagina ou em Configuracoes da pagina > Sobre.",
+                    dica: "ID da pagina = numero de 15 digitos na URL da sua pagina",
+                    cor: "bg-pink-500/10 border-pink-500/20",
+                  },
+                  {
+                    n: "4",
+                    titulo: "Gere o Access Token",
+                    desc: "Va em Configuracoes > Usuarios > Usuarios do Sistema. Crie um usuario do sistema (Admin). Clique em \"Gerar novo token\", selecione sua conta de anuncios e marque as permissoes: ads_management e ads_read. Clique em Gerar Token e copie — ele aparece apenas uma vez.",
+                    dica: "Guarde o token em local seguro. Comeca com EAAxxxxxxx",
+                    cor: "bg-amber-500/10 border-amber-500/20",
+                  },
+                  {
+                    n: "5",
+                    titulo: "Adicione credito de pagamento",
+                    desc: "Va em Faturamento no menu lateral e adicione um cartao de credito ou metodo de pagamento. Os anuncios so rodam quando ha limite disponivel na conta.",
+                    cor: "bg-emerald-500/10 border-emerald-500/20",
+                  },
+                ].map(step => (
+                  <div key={step.n} className={`p-4 rounded-xl border ${step.cor}`}>
+                    <div className="flex items-start gap-3">
+                      <span className="w-6 h-6 rounded-full bg-foreground/10 flex items-center justify-center text-xs font-black text-foreground shrink-0 mt-0.5">{step.n}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-foreground">{step.titulo}</p>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">{step.desc}</p>
+                        {step.dica && (
+                          <p className="text-[10px] font-mono bg-background border border-border rounded px-2 py-1 mt-2 text-muted-foreground">{step.dica}</p>
+                        )}
+                        {step.link && (
+                          <a href={step.link} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-[11px] text-blue-400 hover:text-blue-300 underline underline-offset-2">{step.linkLabel} →</a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </CardContent>
+            </Card>
+
+            {/* Guia OpenAI */}
+            <Card>
+              <CardHeader className="pb-3 border-b border-border">
+                <CardTitle className="text-sm font-semibold flex items-center gap-2">
+                  <span className="w-5 h-5 rounded-full bg-emerald-500 flex items-center justify-center shrink-0">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="white"><path d="M22.2819 9.8211a5.9847 5.9847 0 0 0-.5157-4.9108 6.0462 6.0462 0 0 0-6.5098-2.9A6.0651 6.0651 0 0 0 4.9807 4.1818a5.9847 5.9847 0 0 0-3.9977 2.9 6.0462 6.0462 0 0 0 .7427 7.0966 5.98 5.98 0 0 0 .511 4.9107 6.051 6.051 0 0 0 6.5146 2.9001A5.9847 5.9847 0 0 0 13.2599 24a6.0557 6.0557 0 0 0 5.7718-4.2058 5.9894 5.9894 0 0 0 3.9977-2.9001 6.0557 6.0557 0 0 0-.7475-7.0729zm-9.022 12.6081a4.4755 4.4755 0 0 1-2.8764-1.0408l.1419-.0804 4.7783-2.7582a.7948.7948 0 0 0 .3927-.6813v-6.7369l2.02 1.1686a.071.071 0 0 1 .038.052v5.5826a4.504 4.504 0 0 1-4.4945 4.4944zm-9.6607-4.1254a4.4708 4.4708 0 0 1-.5346-3.0137l.142.0852 4.783 2.7582a.7712.7712 0 0 0 .7806 0l5.8428-3.3685v2.3324a.0804.0804 0 0 1-.0332.0615L9.74 19.9502a4.4992 4.4992 0 0 1-6.1408-1.6464zM2.3408 7.8956a4.485 4.485 0 0 1 2.3655-1.9728V11.6a.7664.7664 0 0 0 .3879.6765l5.8144 3.3543-2.0201 1.1685a.0757.0757 0 0 1-.071 0l-4.8303-2.7865A4.504 4.504 0 0 1 2.3408 7.872zm16.5963 3.8558L13.1038 8.364 15.1192 7.2a.0757.0757 0 0 1 .071 0l4.8303 2.7913a4.4944 4.4944 0 0 1-.6765 8.1042v-5.6772a.79.79 0 0 0-.407-.667zm2.0107-3.0231l-.142-.0852-4.7735-2.7818a.7759.7759 0 0 0-.7854 0L9.409 9.2297V6.8974a.0662.0662 0 0 1 .0284-.0615l4.8303-2.7866a4.4992 4.4992 0 0 1 6.6802 4.66zM8.3065 12.863l-2.02-1.1638a.0804.0804 0 0 1-.038-.0567V6.0742a4.4992 4.4992 0 0 1 7.3757-3.4537l-.142.0805L8.704 5.459a.7948.7948 0 0 0-.3927.6813zm1.0976-2.3654l2.602-1.4998 2.6069 1.4998v2.9994l-2.5974 1.4997-2.6067-1.4997Z"/></svg>
+                  </span>
+                  Como criar conta OpenAI e obter sua chave de API
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-5 space-y-4">
+                <p className="text-xs text-muted-foreground">A chave OpenAI e opcional. Ela ativa o agente que gera textos de anuncio automaticamente. Voce paga apenas pelo que usar — em media menos de R$ 0,10 por geracao de copy.</p>
+
+                {[
+                  {
+                    n: "1",
+                    titulo: "Crie sua conta na OpenAI",
+                    desc: "Acesse platform.openai.com e clique em \"Sign up\". Voce pode entrar com Google, Microsoft ou e-mail. Confirme seu e-mail quando solicitado.",
+                    link: "https://platform.openai.com/signup",
+                    linkLabel: "Criar conta OpenAI",
+                    cor: "bg-emerald-500/10 border-emerald-500/20",
+                  },
+                  {
+                    n: "2",
+                    titulo: "Adicione credito (minimo USD 5)",
+                    desc: "Apos logar, va em Settings > Billing > Add payment method. Adicione um cartao de credito. Depois clique em \"Add to credit balance\" e adicione pelo menos USD 5,00 (equivale a centenas de geracoes de copy).",
+                    dica: "USD 5 = ~R$ 25. Suficiente para meses de uso normal.",
+                    cor: "bg-blue-500/10 border-blue-500/20",
+                  },
+                  {
+                    n: "3",
+                    titulo: "Gere sua chave de API",
+                    desc: "Va em API Keys no menu lateral (ou acesse platform.openai.com/api-keys). Clique em \"Create new secret key\". Copie a chave que aparece — ela comeca com sk-... e e mostrada apenas uma vez.",
+                    dica: "Chave no formato: sk-proj-xxxxxxxxxxxxxxxxxx",
+                    cor: "bg-amber-500/10 border-amber-500/20",
+                  },
+                  {
+                    n: "4",
+                    titulo: "Cole a chave aqui no painel",
+                    desc: "No formulario acima, campo \"Chave OpenAI\", cole a chave copiada e salve. Pronto — o botao \"Gerar 3 variacoes de copy\" estara disponivel ao criar uma campanha.",
+                    cor: "bg-violet-500/10 border-violet-500/20",
+                  },
+                ].map(step => (
+                  <div key={step.n} className={`p-4 rounded-xl border ${step.cor}`}>
+                    <div className="flex items-start gap-3">
+                      <span className="w-6 h-6 rounded-full bg-foreground/10 flex items-center justify-center text-xs font-black text-foreground shrink-0 mt-0.5">{step.n}</span>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-bold text-foreground">{step.titulo}</p>
+                        <p className="text-[11px] text-muted-foreground mt-1 leading-relaxed">{step.desc}</p>
+                        {step.dica && (
+                          <p className="text-[10px] font-mono bg-background border border-border rounded px-2 py-1 mt-2 text-muted-foreground">{step.dica}</p>
+                        )}
+                        {step.link && (
+                          <a href={step.link} target="_blank" rel="noopener noreferrer" className="inline-block mt-2 text-[11px] text-emerald-400 hover:text-emerald-300 underline underline-offset-2">{step.linkLabel} →</a>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                ))}
               </CardContent>
             </Card>
           </div>
