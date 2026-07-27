@@ -44,7 +44,8 @@ export async function GET(req: NextRequest) {
   }
 
   if (busca) {
-    query = query.or(`placa.ilike.%${busca}%,nome_lead.ilike.%${busca}%`);
+    const buscaSegura = busca.replace(/[%_,.()"'\\]/g, "\\$&").slice(0, 100);
+    query = query.or(`placa.ilike.%${buscaSegura}%,nome_lead.ilike.%${buscaSegura}%`);
   }
 
   const { data: leads, count } = await query;
@@ -59,7 +60,8 @@ export async function GET(req: NextRequest) {
     totQuery = totQuery.eq("status", statusFiltro);
   }
   if (busca) {
-    totQuery = totQuery.or(`placa.ilike.%${busca}%,nome_lead.ilike.%${busca}%`);
+    const buscaSegura = busca.replace(/[%_,.()"'\\]/g, "\\$&").slice(0, 100);
+    totQuery = totQuery.or(`placa.ilike.%${buscaSegura}%,nome_lead.ilike.%${buscaSegura}%`);
   }
 
   const { data: totRaw } = await totQuery;
@@ -67,7 +69,8 @@ export async function GET(req: NextRequest) {
   const tot = totRaw ?? [];
   const total = tot.length;
   const novos = tot.filter((r) => r.status === "novo").length;
-  const em_andamento = tot.filter((r) => r.status === "em_andamento").length;
+  // "contato" e o status real no banco para leads em andamento
+  const em_andamento = tot.filter((r) => r.status === "contato").length;
   const fechados = tot.filter((r) => r.status === "fechado").length;
   const taxa = total > 0 ? Math.round((fechados / total) * 100) : 0;
 

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
+import { rateLimit } from "@/lib/rate-limit";
 import { z } from "zod";
 
 const schema = z.object({
@@ -11,6 +12,12 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const ip = req.headers.get("x-forwarded-for") ?? "unknown";
+  const { allowed } = await rateLimit(`captura-gestor:${ip}`, 10, 60 * 1000);
+  if (!allowed) {
+    return NextResponse.json({ error: "Muitas tentativas. Aguarde 1 minuto." }, { status: 429 });
+  }
+
   let body: unknown;
   try { body = await req.json(); } catch {
     return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });
