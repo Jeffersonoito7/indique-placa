@@ -2,7 +2,7 @@
 
 import { useState, useEffect, use } from "react";
 
-const TIPOS_VEICULO = ["Carro", "Moto", "Caminhonete", "Caminhao", "Van", "Onibus", "Outro"];
+const TIPOS_VEICULO = ["Carro", "Moto", "Caminhonete", "Caminhão", "Van", "Ônibus", "Outro"];
 
 const STYLES = `
   @keyframes gradientShift {
@@ -91,10 +91,10 @@ export default function CapturaGestorPage({ params }: { params: Promise<{ id: st
         }),
       });
       const json = await res.json();
-      if (!res.ok) setErro(json.error ?? "Erro ao enviar indicacao");
+      if (!res.ok) setErro(json.error ?? "Erro ao enviar indicação.");
       else setSucesso(true);
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCarregando(false);
     }
@@ -110,7 +110,7 @@ export default function CapturaGestorPage({ params }: { params: Promise<{ id: st
               <img src="/logo-indique.png" style={{ width: 100, height: 100, objectFit: "contain" }} alt="Indique Placa" />
             </div>
             {linkInvalido ? (
-              <div style={{ color: "#f87171", fontSize: 14 }}>Link invalido ou expirado.</div>
+              <div style={{ color: "#f87171", fontSize: 14 }}>Link inválido ou expirado.</div>
             ) : (
               <>
                 <div style={{
@@ -120,11 +120,11 @@ export default function CapturaGestorPage({ params }: { params: Promise<{ id: st
                   letterSpacing: 1, color: "#67e8f9", textTransform: "uppercase", marginBottom: 8,
                 }}>GESTOR</div>
                 <div style={{ color: "#fff", fontWeight: 700, fontSize: 18, marginBottom: 4 }}>
-                  Indicar Veiculo
+                  Indicar Veículo
                 </div>
                 {nomeGestor && (
                   <div style={{ color: "rgba(255,255,255,.5)", fontSize: 13 }}>
-                    Indicacao para <strong style={{ color: "rgba(103,232,249,.9)" }}>{nomeGestor}</strong>
+                    Indicação para <strong style={{ color: "rgba(103,232,249,.9)" }}>{nomeGestor}</strong>
                   </div>
                 )}
               </>
@@ -143,7 +143,7 @@ export default function CapturaGestorPage({ params }: { params: Promise<{ id: st
                 <input
                   className="cap-campo"
                   type="text"
-                  placeholder="Nome do proprietario"
+                  placeholder="Nome do proprietário"
                   value={nomeLead}
                   required
                   onChange={(e) => setNomeLead(e.target.value)}
@@ -159,7 +159,7 @@ export default function CapturaGestorPage({ params }: { params: Promise<{ id: st
                 <input
                   className="cap-campo"
                   type="text"
-                  placeholder="Placa do veiculo (ex: ABC1D23)"
+                  placeholder="Placa do veículo (ex: ABC1D23)"
                   value={placa}
                   required
                   maxLength={8}
@@ -173,13 +173,13 @@ export default function CapturaGestorPage({ params }: { params: Promise<{ id: st
                   onChange={(e) => setTipoVeiculo(e.target.value)}
                   style={{ appearance: "none" }}
                 >
-                  <option value="">Tipo de veiculo</option>
+                  <option value="">Tipo de veículo</option>
                   {TIPOS_VEICULO.map((t) => (
                     <option key={t} value={t}>{t}</option>
                   ))}
                 </select>
                 <button className="cap-btn" type="submit" disabled={carregando}>
-                  {carregando ? "ENVIANDO..." : "ENVIAR INDICACAO"}
+                  {carregando ? "ENVIANDO..." : "ENVIAR INDICAÇÃO"}
                 </button>
               </form>
             </>
@@ -193,9 +193,9 @@ export default function CapturaGestorPage({ params }: { params: Promise<{ id: st
                   <path d="M7 12.5l3.5 3.5 6.5-7" stroke="#67e8f9" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
               </div>
-              <div style={{ color: "#fff", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Indicacao enviada!</div>
+              <div style={{ color: "#fff", fontWeight: 700, fontSize: 18, marginBottom: 8 }}>Indicação enviada!</div>
               <div style={{ color: "rgba(255,255,255,.6)", fontSize: 13 }}>
-                Obrigado. A indicacao foi registrada com sucesso.
+                Obrigado. A indicação foi registrada com sucesso.
               </div>
             </div>
           )}
