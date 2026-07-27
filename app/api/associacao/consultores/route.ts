@@ -10,9 +10,9 @@ export async function GET() {
 
   const { data, error } = await supabaseAdmin
     .from("consultores")
-    .select("id, nome, email, fone, status, plano, gestor_id, criado_em")
+    .select("id, nome, email, fone, status, plano, gestor_id, created_at")
     .eq("associacao_id", assoc.id)
-    .order("criado_em", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(500);
 
   if (error) {
@@ -93,7 +93,7 @@ export async function POST(req: NextRequest) {
       status: "ativo",
       plano: "free",
     })
-    .select("id, nome, email, fone, status, plano, criado_em")
+    .select("id, nome, email, fone, status, plano, created_at")
     .single();
 
   if (error) {

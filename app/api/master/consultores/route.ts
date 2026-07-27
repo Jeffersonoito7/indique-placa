@@ -18,13 +18,13 @@ export async function GET(req: NextRequest) {
   let query = supabaseAdmin
     .from("consultores")
     .select(
-      `id, nome, email, fone, status, plano, criado_em,
+      `id, nome, email, fone, status, plano, created_at,
        associacoes(id, nome),
        gestores(id, nome),
        indicacoes(id, status)`,
       { count: "exact" }
     )
-    .order("criado_em", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(2000);
 
   if (associacao_id) query = query.eq("associacao_id", associacao_id);
@@ -45,7 +45,7 @@ export async function GET(req: NextRequest) {
       fone: c.fone,
       status: c.status,
       plano: c.plano,
-      criado_em: c.criado_em,
+      criado_em: (c as unknown as { created_at: string }).created_at,
       associacao: (c.associacoes as unknown as { id: string; nome: string } | null)?.nome ?? null,
       associacao_id: (c.associacoes as unknown as { id: string; nome: string } | null)?.id ?? null,
       gestor: (c.gestores as unknown as { id: string; nome: string } | null)?.nome ?? null,

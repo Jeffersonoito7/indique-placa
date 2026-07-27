@@ -10,10 +10,10 @@ export async function GET() {
 
   const { data: consultores, error } = await supabaseAdmin
     .from("consultores")
-    .select("id, nome, email, fone, status, plano, plano_ativo_ate, criado_em")
+    .select("id, nome, email, fone, status, plano, plano_ativo_ate, created_at")
     .eq("gestor_id", gestor.id)
     .neq("status", "inativo")
-    .order("criado_em", { ascending: false })
+    .order("created_at", { ascending: false })
     .limit(200);
 
   if (error) return NextResponse.json({ error: "Erro ao buscar consultores" }, { status: 500 });
@@ -100,7 +100,7 @@ export async function POST(req: NextRequest) {
       status: "ativo",
       plano: "free",
     })
-    .select("id, nome, email, fone, status, plano, criado_em")
+    .select("id, nome, email, fone, status, plano, created_at")
     .single();
 
   if (error) {
