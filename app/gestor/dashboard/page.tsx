@@ -15,6 +15,7 @@ export default async function GestorDashboard() {
     .from("consultores")
     .select("id, nome, email, fone, status, plano")
     .eq("gestor_id", gestor.id)
+    .neq("status", "inativo")
     .order("nome");
 
   const consultoresLista = consultores ?? [];

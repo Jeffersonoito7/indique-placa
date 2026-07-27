@@ -12,6 +12,7 @@ export async function GET() {
     .from("consultores")
     .select("id, nome, email, fone, status, plano, plano_ativo_ate, criado_em")
     .eq("gestor_id", gestor.id)
+    .neq("status", "inativo")
     .order("criado_em", { ascending: false })
     .limit(200);
 
@@ -74,7 +75,8 @@ export async function POST(req: NextRequest) {
     const { count } = await supabaseAdmin
       .from("consultores")
       .select("id", { count: "exact", head: true })
-      .eq("gestor_id", gestor.id);
+      .eq("gestor_id", gestor.id)
+      .neq("status", "inativo");
     if ((count ?? 0) >= planoConfig.max_consultores) {
       return NextResponse.json(
         { error: `Limite de ${planoConfig.max_consultores} consultores na equipe atingido no seu plano. Solicite upgrade ao administrador.` },
