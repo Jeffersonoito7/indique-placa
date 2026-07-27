@@ -60,6 +60,8 @@ export default function ParceirosPage() {
   const router = useRouter();
   const [uf, setUf] = useState("");
   const [cidade, setCidade] = useState("");
+  const [cidades, setCidades] = useState<string[]>([]);
+  const [carregandoCidades, setCarregandoCidades] = useState(false);
   const [segmento, setSegmento] = useState(SEGMENTOS[0]);
   const [buscando, setBuscando] = useState(false);
   const [resultados, setResultados] = useState<Parceiro[]>([]);
@@ -74,6 +76,25 @@ export default function ParceirosPage() {
       .then((r) => { if (r.status === 401) router.replace("/gestor/login"); })
       .catch(() => {});
   }, [router]);
+
+  async function selecionarUf(novoUf: string) {
+    setUf(novoUf);
+    setCidade("");
+    setCidades([]);
+    setResultados([]);
+    setTotal(null);
+    if (!novoUf) return;
+    setCarregandoCidades(true);
+    try {
+      const res = await fetch(`https://servicodados.ibge.gov.br/api/v1/localidades/estados/${novoUf}/municipios?orderBy=nome`);
+      const data = await res.json() as Array<{ nome: string }>;
+      setCidades(data.map((m) => m.nome));
+    } catch {
+      setCidades([]);
+    } finally {
+      setCarregandoCidades(false);
+    }
+  }
 
   async function buscar() {
     if (!uf || !cidade.trim()) return;
@@ -147,7 +168,7 @@ export default function ParceirosPage() {
                 </label>
                 <select
                   value={uf}
-                  onChange={(e) => { setUf(e.target.value); setCidade(""); setResultados([]); setTotal(null); }}
+                  onChange={(e) => void selecionarUf(e.target.value)}
                   className={inputClass}
                 >
                   <option value="">Selecione...</option>
@@ -158,17 +179,19 @@ export default function ParceirosPage() {
               </div>
               <div>
                 <label className="text-xs font-medium text-[var(--foreground)] block mb-1">
-                  Cidade
+                  Cidade {carregandoCidades && <span className="text-violet-400 font-normal">(carregando...)</span>}
                 </label>
-                <input
-                  type="text"
-                  placeholder={uf ? "Digite a cidade..." : "Selecione o estado primeiro"}
+                <select
                   value={cidade}
-                  disabled={!uf}
+                  disabled={!uf || carregandoCidades}
                   onChange={(e) => setCidade(e.target.value)}
-                  onKeyDown={(e) => { if (e.key === "Enter") buscar(); }}
                   className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed`}
-                />
+                >
+                  <option value="">{uf ? (carregandoCidades ? "Carregando..." : "Selecione a cidade...") : "Selecione o estado primeiro"}</option>
+                  {cidades.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className="text-xs font-medium text-[var(--foreground)] block mb-1">
@@ -187,7 +210,7 @@ export default function ParceirosPage() {
               <div className="flex items-end">
                 <button
                   onClick={buscar}
-                  disabled={buscando || !uf || !cidade.trim()}
+                  disabled={buscando || !uf || !cidade}
                   className={`${btnBase} bg-violet-600 hover:bg-violet-700 text-white flex items-center gap-2 w-full justify-center`}
                 >
                   <Search className="h-4 w-4" />
