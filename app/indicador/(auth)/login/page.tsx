@@ -167,10 +167,10 @@ export default function IndicadorLoginPage() {
         body: JSON.stringify({ telefone, senha }),
       });
       const json = await res.json();
-      if (!res.ok) setErro(json.error ?? "Credenciais invalidas");
+      if (!res.ok) setErro(json.error ?? "Credenciais inválidas");
       else router.push("/indicador/dashboard");
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCarregando(false);
     }

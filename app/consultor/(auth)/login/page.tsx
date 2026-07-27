@@ -167,10 +167,10 @@ export default function ConsultorLoginPage() {
         body: JSON.stringify({ telefone, senha }),
       });
       const json = await res.json();
-      if (!res.ok) setErro(json.error ?? "Credenciais invalidas");
+      if (!res.ok) setErro(json.error ?? "Credenciais inválidas");
       else router.push("/consultor/dashboard");
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCarregando(false);
     }
@@ -225,7 +225,7 @@ export default function ConsultorLoginPage() {
           <div className="lp-links">
             <a href="/consultor/recuperar-senha">Esqueci minha senha</a>
             <br />
-            E indicador? <a href="https://indicador.indiqueplaca.com.br">Acesse aqui</a>
+            É indicador? <a href="/indicador/login">Acesse aqui</a>
           </div>
         </div>
       </div>

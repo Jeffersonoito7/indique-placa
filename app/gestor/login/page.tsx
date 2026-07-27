@@ -159,10 +159,10 @@ export default function GestorLoginPage() {
         body: JSON.stringify({ email: email.trim(), senha }),
       });
       const json = await res.json();
-      if (!res.ok) setErro(json.error ?? "Credenciais invalidas");
+      if (!res.ok) setErro(json.error ?? "Credenciais inválidas");
       else router.push("/gestor/dashboard");
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCarregando(false);
     }
