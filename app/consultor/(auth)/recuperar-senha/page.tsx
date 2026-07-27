@@ -86,7 +86,9 @@ export default function RecuperarSenhaConsultorPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email }),
       });
+      const json = await res.json();
       if (!res.ok) { setErro("Erro ao enviar código. Tente novamente."); return; }
+      if (!json.enviado) { setErro("E-mail não encontrado. Verifique se digitou corretamente."); return; }
       setEtapa("otp");
     } catch { setErro("Erro de conexão. Tente novamente."); }
     finally { setCarregando(false); }

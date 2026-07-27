@@ -62,10 +62,12 @@ export async function POST(req: NextRequest) {
     .eq("email", emailNorm)
     .maybeSingle();
 
-  if (indicador) {
-    const codigo = await criarOTP(emailNorm, "indicador");
-    await enviarEmailOTP({ email: emailNorm, codigo, nome: indicador.nome });
+  if (!indicador) {
+    return NextResponse.json({ ok: true, enviado: false });
   }
 
-  return NextResponse.json({ ok: true });
+  const codigo = await criarOTP(emailNorm, "indicador");
+  await enviarEmailOTP({ email: emailNorm, codigo, nome: indicador.nome });
+
+  return NextResponse.json({ ok: true, enviado: true });
 }

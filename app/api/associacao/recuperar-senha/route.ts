@@ -63,10 +63,12 @@ export async function POST(req: NextRequest) {
     .eq("email", emailNorm)
     .single();
 
-  if (assoc && assoc.status !== "inativo" && assoc.status !== "suspenso") {
-    const codigo = await criarOTP(emailNorm, "associacao");
-    await enviarEmailOTP({ email: emailNorm, codigo, nome: assoc.nome });
+  if (!assoc || assoc.status === "inativo" || assoc.status === "suspenso") {
+    return NextResponse.json({ ok: true, enviado: false });
   }
 
-  return NextResponse.json({ ok: true });
+  const codigo = await criarOTP(emailNorm, "associacao");
+  await enviarEmailOTP({ email: emailNorm, codigo, nome: assoc.nome });
+
+  return NextResponse.json({ ok: true, enviado: true });
 }

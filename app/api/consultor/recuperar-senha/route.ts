@@ -61,10 +61,12 @@ export async function POST(req: NextRequest) {
     .eq("email", emailNorm)
     .single();
 
-  if (consultor) {
-    const codigo = await criarOTP(emailNorm, "consultor");
-    await enviarEmailOTP({ email: emailNorm, codigo, nome: consultor.nome });
+  if (!consultor) {
+    return NextResponse.json({ ok: true, enviado: false });
   }
 
-  return NextResponse.json({ ok: true });
+  const codigo = await criarOTP(emailNorm, "consultor");
+  await enviarEmailOTP({ email: emailNorm, codigo, nome: consultor.nome });
+
+  return NextResponse.json({ ok: true, enviado: true });
 }

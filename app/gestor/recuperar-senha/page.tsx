@@ -90,6 +90,7 @@ export default function GestorRecuperarSenhaPage() {
       });
       const json = await res.json();
       if (!res.ok) { setErro(json.error ?? "Erro ao enviar codigo"); return; }
+      if (!json.enviado) { setErro("E-mail nao encontrado. Verifique se digitou corretamente."); return; }
       setEtapa("codigo");
     } catch {
       setErro("Erro de conexao. Tente novamente.");
