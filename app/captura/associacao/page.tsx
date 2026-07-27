@@ -189,7 +189,7 @@ const BENEFITS = [
       </svg>
     ),
     title: "Rede de consultores indicando 24h por dia",
-    desc: "Crie um time de consultores e indicadores que trabalham pelos proprios contatos, trazendo leads de veiculo sem voce precisar ligar para ninguem.",
+    desc: "Crie um time de consultores e indicadores que trabalham pelos próprios contatos, trazendo leads de veículo sem você precisar ligar para ninguém.",
   },
   {
     icon: (
@@ -198,7 +198,7 @@ const BENEFITS = [
       </svg>
     ),
     title: "Acompanhe cada lead em tempo real",
-    desc: "Veja o status de cada indicacao no funil, quem indicou, quando entrou em contato e se a venda foi fechada. Zero planilha, zero WhatsApp perdido.",
+    desc: "Veja o status de cada indicação no funil, quem indicou, quando entrou em contato e se a venda foi fechada. Zero planilha, zero WhatsApp perdido.",
   },
   {
     icon: (
@@ -206,8 +206,8 @@ const BENEFITS = [
         <rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/>
       </svg>
     ),
-    title: "Comissoes automaticas via PIX",
-    desc: "Configure o valor da comissao por venda fechada e o sistema paga o consultor ou indicador direto na chave PIX, sem retrabalho manual.",
+    title: "Comissões automáticas via PIX",
+    desc: "Configure o valor da comissão por venda fechada e o sistema paga o consultor ou indicador direto na chave PIX, sem retrabalho manual.",
   },
   {
     icon: (
@@ -216,7 +216,7 @@ const BENEFITS = [
       </svg>
     ),
     title: "Multi-tenant com gestores e indicadores",
-    desc: "Cada associacao tem seu proprio painel isolado. Crie gestores que supervisionam times de consultores e indicadores vinculados a cada consultor.",
+    desc: "Cada associação tem seu próprio painel isolado. Crie gestores que supervisionam times de consultores e indicadores vinculados a cada consultor.",
   },
 ];
 
@@ -273,13 +273,13 @@ export default function CapturaAssociacaoPage() {
   const enviar = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro("");
-    if (!nome.trim() || nome.trim().length < 2) { setErro("Informe o nome da associacao."); return; }
-    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setErro("Informe um e-mail valido."); return; }
+    if (!nome.trim() || nome.trim().length < 2) { setErro("Informe o nome da associação."); return; }
+    if (!email.trim() || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email.trim())) { setErro("Informe um e-mail válido."); return; }
     if (!fone.replace(/\D/g, "") || fone.replace(/\D/g, "").length < 10) { setErro("Informe o WhatsApp com DDD."); return; }
     if (!estado) { setErro("Selecione o estado."); return; }
     if (!cidade) { setErro("Selecione a cidade."); return; }
-    if (!senha || senha.length < 6) { setErro("A senha deve ter no minimo 6 caracteres."); return; }
-    if (!aceitouTermos) { setErro("Voce precisa aceitar os Termos de Uso e a Politica de Privacidade (LGPD) para continuar."); return; }
+    if (!senha || senha.length < 6) { setErro("A senha deve ter no mínimo 6 caracteres."); return; }
+    if (!aceitouTermos) { setErro("Você precisa aceitar os Termos de Uso e a Política de Privacidade (LGPD) para continuar."); return; }
     setCarregando(true);
     try {
       const res = await fetch("/api/publico/captura-associacao", {
@@ -288,10 +288,10 @@ export default function CapturaAssociacaoPage() {
         body: JSON.stringify({ nome, email, fone, estado, cidade, senha }),
       });
       const json = await res.json();
-      if (!res.ok) setErro(json.error ?? "Erro ao cadastrar");
+      if (!res.ok) setErro(json.error ?? "Erro ao cadastrar.");
       else setSucesso(true);
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCarregando(false);
     }
@@ -312,7 +312,7 @@ export default function CapturaAssociacaoPage() {
           <div className="cap-pitch">
             <div className="cap-badge">
               <span className="cap-badge-dot" />
-              Para associacoes de protecao veicular
+              Para associações de proteção veicular
             </div>
 
             <h1 className="cap-headline">
@@ -321,9 +321,9 @@ export default function CapturaAssociacaoPage() {
             </h1>
 
             <p className="cap-sub">
-              O Indique Placa transforma seus consultores e indicadores em uma maquina de leads.
-              Cada um compartilha um link proprio, o sistema captura, organiza e acompanha cada
-              indicacao ate o fechamento.
+              O Indique Placa transforma seus consultores e indicadores em uma máquina de leads.
+              Cada um compartilha um link próprio, o sistema captura, organiza e acompanha cada
+              indicação até o fechamento.
             </p>
 
             <div className="cap-benefits">
@@ -349,7 +349,7 @@ export default function CapturaAssociacaoPage() {
               </div>
               <div className="cap-stat">
                 <div className="cap-stat-num" style={{ animationDelay: ".4s" }}>32%</div>
-                <div className="cap-stat-lbl">Conversao media</div>
+                <div className="cap-stat-lbl">Conversão média</div>
               </div>
             </div>
           </div>
@@ -366,10 +366,10 @@ export default function CapturaAssociacaoPage() {
                     <span style={{ fontSize: 11, fontWeight: 800, letterSpacing: 1.2, color: "#34d399", textTransform: "uppercase" }}>Indique Placa</span>
                   </div>
                   <div style={{ color: "#f1f5f9", fontWeight: 800, fontSize: 18, marginBottom: 4, letterSpacing: "-.2px" }}>
-                    Comece agora, e gratuito
+                    Comece agora, é gratuito
                   </div>
                   <div style={{ color: "rgba(255,255,255,.35)", fontSize: 12, lineHeight: 1.6 }}>
-                    Preencha os dados da sua associacao. Nossa equipe ativa sua conta em ate 24h.
+                    Preencha os dados da sua associação. Nossa equipe ativa sua conta em até 24h.
                   </div>
                 </div>
 
@@ -384,7 +384,7 @@ export default function CapturaAssociacaoPage() {
                   <input
                     className="cap-campo"
                     type="text"
-                    placeholder="Nome da associacao (ex: AVP Protecao Veicular)"
+                    placeholder="Nome da associação (ex: AVP Proteção Veicular)"
                     value={nome}
                     onChange={(e) => setNome(e.target.value)}
                   />
@@ -469,13 +469,13 @@ export default function CapturaAssociacaoPage() {
                       Li e aceito os{" "}
                       <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color: "#34d399", textDecoration: "underline" }}>Termos de Uso</a>
                       {" "}e a{" "}
-                      <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: "#34d399", textDecoration: "underline" }}>Politica de Privacidade</a>
+                      <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: "#34d399", textDecoration: "underline" }}>Política de Privacidade</a>
                       {" "}(LGPD).
                     </span>
                   </label>
 
                   <button className="cap-btn" type="submit" disabled={carregando || !aceitouTermos}>
-                    {carregando ? "ENVIANDO..." : "QUERO COMECAR AGORA"}
+                    {carregando ? "ENVIANDO..." : "QUERO COMEÇAR AGORA"}
                   </button>
                 </form>
 
@@ -502,7 +502,7 @@ export default function CapturaAssociacaoPage() {
                   Cadastro recebido!
                 </div>
                 <div style={{ color: "rgba(255,255,255,.42)", fontSize: 13, lineHeight: 1.75 }}>
-                  Nossa equipe analisara seu cadastro e entrara em contato pelo WhatsApp informado para ativar sua conta em ate 24h.
+                  Nossa equipe analisará seu cadastro e entrará em contato pelo WhatsApp informado para ativar sua conta em até 24h.
                 </div>
               </div>
             )}
