@@ -95,10 +95,10 @@ export async function POST(req: NextRequest) {
       senha_hash,
       status: "inativo",
       plano: "trial",
-      aceite_termos_em: new Date().toISOString(),
     });
 
   if (error) {
+    console.error("[captura-associacao] insert error:", error.message);
     return NextResponse.json({ error: "Erro ao criar cadastro. Tente novamente." }, { status: 500 });
   }
 
