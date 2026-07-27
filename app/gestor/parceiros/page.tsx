@@ -126,7 +126,7 @@ export default function ParceirosPage() {
 
   function mensagemWhatsApp(parceiro: Parceiro) {
     const msg = encodeURIComponent(
-      `Ola! Sou consultor de protecao veicular e gostaria de apresentar uma oportunidade de parceria. Podemos conversar?`
+      `Olá! Sou consultor de proteção veicular e gostaria de apresentar uma oportunidade de parceria. Podemos conversar?`
     );
     const fone = parceiro.telefone.replace(/\D/g, "");
     return fone ? `https://wa.me/55${fone}?text=${msg}` : `https://wa.me/?text=${msg}`;
