@@ -34,9 +34,13 @@ const schemaConsultor = z.object({
 const schemaGestor = z.object({
   plano: z.enum(["free", "pro"]),
   max_consultores: z.number().int().min(1).nullable(),
-  relatorios_equipe: z.boolean(),
+  max_indicadores: z.number().int().min(1).nullable(),
+  campanha_whatsapp: z.boolean(),
   exportar_csv: z.boolean(),
+  metas_bonus: z.boolean(),
   link_captura_proprio: z.boolean(),
+  ranking_visivel: z.boolean(),
+  relatorios_equipe: z.boolean(),
 });
 
 export async function GET(req: NextRequest) {

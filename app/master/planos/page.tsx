@@ -31,9 +31,13 @@ interface PlanoConsultor {
 interface PlanoGestor {
   plano: string;
   max_consultores: number | null;
-  relatorios_equipe: boolean;
+  max_indicadores: number | null;
+  campanha_whatsapp: boolean;
   exportar_csv: boolean;
+  metas_bonus: boolean;
   link_captura_proprio: boolean;
+  ranking_visivel: boolean;
+  relatorios_equipe: boolean;
 }
 
 type Aba = "associacao" | "consultor" | "gestor";
@@ -373,14 +377,26 @@ export default function PlanosPage() {
                     <PermRow label="Máx. Consultores na equipe">
                       <NumInput value={p.max_consultores} onChange={(v) => updGestor(p.plano, "max_consultores", v)} />
                     </PermRow>
-                    <PermRow label="Relatórios de equipe">
-                      <Toggle value={p.relatorios_equipe} onChange={(v) => updGestor(p.plano, "relatorios_equipe", v)} />
+                    <PermRow label="Máx. Indicadores próprios">
+                      <NumInput value={p.max_indicadores} onChange={(v) => updGestor(p.plano, "max_indicadores", v)} />
+                    </PermRow>
+                    <PermRow label="Campanha WhatsApp">
+                      <Toggle value={p.campanha_whatsapp} onChange={(v) => updGestor(p.plano, "campanha_whatsapp", v)} />
                     </PermRow>
                     <PermRow label="Exportar CSV">
                       <Toggle value={p.exportar_csv} onChange={(v) => updGestor(p.plano, "exportar_csv", v)} />
                     </PermRow>
+                    <PermRow label="Metas e Bônus">
+                      <Toggle value={p.metas_bonus} onChange={(v) => updGestor(p.plano, "metas_bonus", v)} />
+                    </PermRow>
                     <PermRow label="Link de captura próprio">
                       <Toggle value={p.link_captura_proprio} onChange={(v) => updGestor(p.plano, "link_captura_proprio", v)} />
+                    </PermRow>
+                    <PermRow label="Aparece no ranking">
+                      <Toggle value={p.ranking_visivel} onChange={(v) => updGestor(p.plano, "ranking_visivel", v)} />
+                    </PermRow>
+                    <PermRow label="Relatórios de equipe">
+                      <Toggle value={p.relatorios_equipe} onChange={(v) => updGestor(p.plano, "relatorios_equipe", v)} />
                     </PermRow>
                   </CardContent>
                 </Card>
