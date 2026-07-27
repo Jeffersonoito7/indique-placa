@@ -8,6 +8,7 @@ import {
   Building2, CheckCircle2, Clock, XCircle, Plus, Search,
   Pencil, Eye, Ban, X, Eye as EyeIcon, EyeOff,
 } from "lucide-react";
+import { ESTADOS_NOMES, ESTADOS_CIDADES } from "@/lib/cidades-brasil";
 
 interface Associacao {
   id: string;
@@ -73,9 +74,13 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
     setForm((f) => {
       const next = { ...f, [k]: v };
       if (k === "nome") next.slug = gerarSlug(v);
+      if (k === "estado") next.cidade = "";
       return next;
     });
   };
+
+  const estadosOrdenados = Object.entries(ESTADOS_NOMES).sort((a, b) => a[1].localeCompare(b[1]));
+  const cidadesDoEstado = form.estado ? (ESTADOS_CIDADES[form.estado] ?? []) : [];
 
   const salvar = async () => {
     setSalvando(true);
@@ -143,22 +148,31 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
             />
           </div>
           <div>
-            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Cidade</label>
-            <input
-              className="w-full h-9 px-3 rounded-lg border border-border bg-muted/30 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-              value={form.cidade}
-              onChange={(e) => set("cidade", e.target.value)}
-            />
-          </div>
-          <div>
-            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Estado</label>
-            <input
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Estado (UF)</label>
+            <select
               className="w-full h-9 px-3 rounded-lg border border-border bg-muted/30 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40"
               value={form.estado}
               onChange={(e) => set("estado", e.target.value)}
-              placeholder="PE"
-              maxLength={2}
-            />
+            >
+              <option value="">Selecione...</option>
+              {estadosOrdenados.map(([uf, nome]) => (
+                <option key={uf} value={uf}>{uf} — {nome}</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Cidade</label>
+            <select
+              className="w-full h-9 px-3 rounded-lg border border-border bg-muted/30 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40 disabled:opacity-50"
+              value={form.cidade}
+              disabled={!form.estado}
+              onChange={(e) => set("cidade", e.target.value)}
+            >
+              <option value="">{form.estado ? "Selecione a cidade" : "Selecione o estado primeiro"}</option>
+              {cidadesDoEstado.map((c) => (
+                <option key={c} value={c}>{c}</option>
+              ))}
+            </select>
           </div>
           <div className="col-span-2">
             <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Plano</label>
@@ -231,7 +245,10 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
   const [erro, setErro] = useState("");
 
   const set = (k: string, v: string | boolean | number) =>
-    setForm((f) => ({ ...f, [k]: v }));
+    setForm((f) => ({ ...f, [k]: v, ...(k === "estado" ? { cidade: "" } : {}) }));
+
+  const estadosOrdenados = Object.entries(ESTADOS_NOMES).sort((a, b) => a[1].localeCompare(b[1]));
+  const cidadesDoEstado = form.estado ? (ESTADOS_CIDADES[form.estado] ?? []) : [];
 
   const salvar = async () => {
     setSalvando(true);
@@ -308,12 +325,22 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
                 <input className={inputCls} value={form.fone} onChange={(e) => set("fone", e.target.value)} />
               </div>
               <div>
-                <label className={labelCls}>Cidade</label>
-                <input className={inputCls} value={form.cidade} onChange={(e) => set("cidade", e.target.value)} />
+                <label className={labelCls}>Estado (UF)</label>
+                <select className={inputCls} value={form.estado} onChange={(e) => set("estado", e.target.value)}>
+                  <option value="">Selecione...</option>
+                  {estadosOrdenados.map(([uf, nome]) => (
+                    <option key={uf} value={uf}>{uf} — {nome}</option>
+                  ))}
+                </select>
               </div>
               <div>
-                <label className={labelCls}>Estado</label>
-                <input className={inputCls} value={form.estado} onChange={(e) => set("estado", e.target.value)} maxLength={2} />
+                <label className={labelCls}>Cidade</label>
+                <select className={cn(inputCls, !form.estado && "opacity-50")} value={form.cidade} disabled={!form.estado} onChange={(e) => set("cidade", e.target.value)}>
+                  <option value="">{form.estado ? "Selecione a cidade" : "Selecione o estado primeiro"}</option>
+                  {cidadesDoEstado.map((c) => (
+                    <option key={c} value={c}>{c}</option>
+                  ))}
+                </select>
               </div>
               <div>
                 <label className={labelCls}>Status</label>

@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Building2, Save, KeyRound, Eye, EyeOff } from "lucide-react";
+import { ESTADOS_NOMES, ESTADOS_CIDADES } from "@/lib/cidades-brasil";
 
 function fmtTelBR(v: string): string {
   const n = v.replace(/\D/g, "").slice(0, 11);
@@ -29,6 +30,7 @@ export default function AssociacaoPerfilPage() {
   const [fone, setFone] = useState("");
   const [cidade, setCidade] = useState("");
   const [estado, setEstado] = useState("");
+  const estadosOrdenados = Object.entries(ESTADOS_NOMES).sort((a, b) => a[1].localeCompare(b[1]));
   const [senhaAtual, setSenhaAtual] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [verSenhaAtual, setVerSenhaAtual] = useState(false);
@@ -58,8 +60,8 @@ export default function AssociacaoPerfilPage() {
       const body: Record<string, unknown> = {
         nome: nome.trim(),
         fone,
-        cidade: cidade.trim() || null,
-        estado: estado.trim().toUpperCase().slice(0, 2) || null,
+        cidade: cidade || null,
+        estado: estado || null,
       };
       if (novaSenha) {
         body.nova_senha = novaSenha;
@@ -135,35 +137,43 @@ export default function AssociacaoPerfilPage() {
                   className={inputCls}
                 />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Telefone</label>
-                  <input
-                    value={fone}
-                    onChange={(e) => setFone(fmtTelBR(e.target.value))}
-                    required
-                    className={inputCls}
-                  />
-                </div>
-                <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Estado (UF)</label>
-                  <input
-                    value={estado}
-                    onChange={(e) => setEstado(e.target.value.toUpperCase().slice(0, 2))}
-                    maxLength={2}
-                    placeholder="SP"
-                    className={inputCls}
-                  />
-                </div>
-              </div>
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Cidade</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Telefone</label>
                 <input
-                  value={cidade}
-                  onChange={(e) => setCidade(e.target.value)}
-                  maxLength={100}
+                  value={fone}
+                  onChange={(e) => setFone(fmtTelBR(e.target.value))}
+                  required
                   className={inputCls}
                 />
+              </div>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Estado (UF)</label>
+                  <select
+                    value={estado}
+                    onChange={(e) => { setEstado(e.target.value); setCidade(""); }}
+                    className={inputCls}
+                  >
+                    <option value="">Selecione...</option>
+                    {estadosOrdenados.map(([uf, nome]) => (
+                      <option key={uf} value={uf}>{uf} — {nome}</option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Cidade</label>
+                  <select
+                    value={cidade}
+                    disabled={!estado}
+                    onChange={(e) => setCidade(e.target.value)}
+                    className={`${inputCls} disabled:opacity-50`}
+                  >
+                    <option value="">{estado ? "Selecione..." : "Selecione o estado"}</option>
+                    {(ESTADOS_CIDADES[estado] ?? []).map((c) => (
+                      <option key={c} value={c}>{c}</option>
+                    ))}
+                  </select>
+                </div>
               </div>
               <div className="flex gap-3">
                 <div className="flex-1 px-3 py-2 rounded-md border border-border bg-muted/50">
