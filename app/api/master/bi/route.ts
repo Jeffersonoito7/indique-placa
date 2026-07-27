@@ -41,10 +41,10 @@ export async function GET(req: NextRequest) {
     { data: gestoresList },
     { data: indicadoresList },
   ] = await Promise.all([
-    supabaseAdmin.from("associacoes").select("*", { count: "exact", head: true }),
-    supabaseAdmin.from("gestores").select("*", { count: "exact", head: true }),
-    supabaseAdmin.from("consultores").select("*", { count: "exact", head: true }),
-    supabaseAdmin.from("indicadores").select("*", { count: "exact", head: true }),
+    supabaseAdmin.from("associacoes").select("*", { count: "exact", head: true }).neq("status", "inativo"),
+    supabaseAdmin.from("gestores").select("*", { count: "exact", head: true }).eq("ativo", true),
+    supabaseAdmin.from("consultores").select("*", { count: "exact", head: true }).neq("status", "inativo"),
+    supabaseAdmin.from("indicadores").select("*", { count: "exact", head: true }).neq("status", "inativo"),
     supabaseAdmin
       .from("indicacoes")
       .select("id, consultor_id, associacao_id, status, comissao_valor, criado_em")

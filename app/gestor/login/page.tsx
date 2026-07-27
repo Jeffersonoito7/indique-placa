@@ -115,7 +115,7 @@ export default function GestorLoginPage() {
       const res = await fetch("/api/gestor/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, senha }),
+        body: JSON.stringify({ email: email.trim(), senha }),
       });
       const json = await res.json();
       if (!res.ok) setErro(json.error ?? "Credenciais invalidas");
