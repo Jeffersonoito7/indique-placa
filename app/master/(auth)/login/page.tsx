@@ -50,13 +50,13 @@ const CSS = `
     100% { top:100%; opacity:0; }
   }
   @keyframes borderGlow {
-    0%,100% { border-color:rgba(245,158,11,.2); box-shadow:0 0 30px rgba(245,158,11,.05),0 24px 80px rgba(0,0,0,.7); }
-    50%      { border-color:rgba(245,158,11,.45); box-shadow:0 0 50px rgba(245,158,11,.12),0 24px 80px rgba(0,0,0,.7); }
+    0%,100% { border-color:rgba(34,211,238,.2); box-shadow:0 0 30px rgba(34,211,238,.05),0 24px 80px rgba(0,0,0,.7); }
+    50%      { border-color:rgba(52,211,153,.45); box-shadow:0 0 50px rgba(52,211,153,.12),0 24px 80px rgba(0,0,0,.7); }
   }
   .lp-root {
     min-height:100vh; display:flex; align-items:center; justify-content:center;
     padding:20px; position:relative; overflow:hidden;
-    background:linear-gradient(135deg,#0c0800,#1a1000,#150d00,#0c0800,#110a00);
+    background:linear-gradient(135deg,#020c10,#041a14,#020e18,#031510,#020c10);
     background-size:400% 400%;
     animation:bgShift 16s ease infinite;
     font-family:Inter,system-ui,sans-serif;
@@ -64,42 +64,42 @@ const CSS = `
   .lp-grid {
     position:absolute; inset:0; pointer-events:none;
     background-image:
-      linear-gradient(rgba(245,158,11,.04) 1px,transparent 1px),
-      linear-gradient(90deg,rgba(245,158,11,.04) 1px,transparent 1px);
+      linear-gradient(rgba(34,211,238,.04) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(52,211,153,.04) 1px,transparent 1px);
     background-size:48px 48px;
   }
   .lp-node {
     position:absolute; border-radius:50%;
-    background:rgba(245,158,11,.9);
+    background:rgba(52,211,153,.9);
     animation:nodePulse ease-in-out infinite;
     pointer-events:none;
   }
   .lp-stream {
     position:absolute; top:0; width:1px; height:30%;
-    background:linear-gradient(to bottom,transparent,rgba(245,158,11,.45),transparent);
+    background:linear-gradient(to bottom,transparent,rgba(34,211,238,.5),transparent);
     animation:streamFall linear infinite;
     pointer-events:none;
   }
   .lp-card {
     position:relative; width:100%; max-width:390px; text-align:center;
-    background:rgba(245,158,11,.03); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
-    border:1px solid rgba(245,158,11,.2); border-radius:24px;
+    background:rgba(34,211,238,.03); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
+    border:1px solid rgba(34,211,238,.2); border-radius:24px;
     padding:40px 32px 36px;
     animation:fadeUp .55s ease both, borderGlow 4s ease-in-out infinite;
     overflow:hidden;
   }
   .lp-scan {
     position:absolute; left:0; right:0; height:2px;
-    background:linear-gradient(90deg,transparent,rgba(245,158,11,.4),transparent);
+    background:linear-gradient(90deg,transparent,rgba(52,211,153,.5),rgba(34,211,238,.5),transparent);
     animation:scanLine 3.5s linear infinite;
     pointer-events:none;
   }
   .lp-logo { display:flex; justify-content:center; margin-bottom:10px; animation:floatLogo 4s ease-in-out infinite; }
   .lp-badge {
     display:inline-flex; align-items:center;
-    background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.35);
+    background:rgba(34,211,238,.1); border:1px solid rgba(34,211,238,.35);
     border-radius:6px; padding:3px 12px; font-size:10px; font-weight:700;
-    letter-spacing:1.5px; color:#fcd34d; text-transform:uppercase; margin-bottom:8px;
+    letter-spacing:1.5px; color:#67e8f9; text-transform:uppercase; margin-bottom:8px;
   }
   .lp-sub { font-size:12px; color:rgba(255,255,255,.4); margin-bottom:24px; }
   .lp-erro {
@@ -113,9 +113,9 @@ const CSS = `
     font-family:inherit; transition:border-color .2s,background .2s,box-shadow .2s;
   }
   .lp-campo:focus {
-    border-color:rgba(245,158,11,.55);
-    background:rgba(245,158,11,.05);
-    box-shadow:0 0 0 3px rgba(245,158,11,.07);
+    border-color:rgba(34,211,238,.55);
+    background:rgba(34,211,238,.05);
+    box-shadow:0 0 0 3px rgba(34,211,238,.07);
   }
   .lp-campo::placeholder { color:rgba(255,255,255,.28); }
   .lp-pw-wrap { position:relative; margin-bottom:18px; }
@@ -125,15 +125,15 @@ const CSS = `
     background:none; border:none; cursor:pointer; color:rgba(255,255,255,.35);
     display:flex; align-items:center; padding:4px; transition:color .15s;
   }
-  .lp-eye:hover { color:rgba(245,158,11,.8); }
+  .lp-eye:hover { color:rgba(52,211,153,.9); }
   .lp-btn {
     width:100%; padding:14px; border:none; border-radius:12px;
-    background:linear-gradient(135deg,#b45309,#d97706,#f59e0b);
-    box-shadow:0 4px 24px rgba(245,158,11,.4);
+    background:linear-gradient(135deg,#065f46,#059669,#34d399,#22d3ee,#0891b2);
+    box-shadow:0 4px 24px rgba(34,211,238,.35);
     color:#fff; font-size:13px; font-weight:800; letter-spacing:1.5px;
     cursor:pointer; font-family:inherit; transition:opacity .15s,transform .1s,box-shadow .15s;
   }
-  .lp-btn:hover:not(:disabled) { opacity:.9; transform:translateY(-1px); box-shadow:0 6px 32px rgba(245,158,11,.55); }
+  .lp-btn:hover:not(:disabled) { opacity:.9; transform:translateY(-1px); box-shadow:0 6px 32px rgba(52,211,153,.5); }
   .lp-btn:disabled { opacity:.5; cursor:not-allowed; }
   .lp-links { margin-top:18px; font-size:12px; color:rgba(255,255,255,.28); line-height:2; }
 `;
