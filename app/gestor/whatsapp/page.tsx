@@ -388,25 +388,35 @@ export default function WhatsAppPage() {
                       <label className="text-xs font-medium text-[var(--foreground)] block mb-2">
                         Modo de envio
                       </label>
-                      <div className="flex gap-4">
-                        {[
-                          { value: "evolution", label: "Evolution (automatico)" },
-                          { value: "manual", label: "WhatsApp Web (manual)" },
-                        ].map((opt) => (
-                          <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
-                            <input
-                              type="radio"
-                              name="modo_envio"
-                              value={opt.value}
-                              checked={config.modo_envio === opt.value}
-                              onChange={() =>
-                                setConfig((p) => ({ ...p, modo_envio: opt.value }))
-                              }
-                              className="accent-emerald-500"
-                            />
-                            <span className="text-sm text-[var(--foreground)]">{opt.label}</span>
-                          </label>
-                        ))}
+                      <div className="flex flex-col gap-3">
+                        <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border border-[var(--border)] hover:border-emerald-500/40 transition-colors">
+                          <input
+                            type="radio"
+                            name="modo_envio"
+                            value="evolution"
+                            checked={config.modo_envio === "evolution"}
+                            onChange={() => setConfig((p) => ({ ...p, modo_envio: "evolution" }))}
+                            className="accent-emerald-500 mt-0.5"
+                          />
+                          <div>
+                            <span className="text-sm font-semibold text-[var(--foreground)]">Evolution API (automatico)</span>
+                            <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">Envia automaticamente com intervalo aleatorio entre as mensagens. Limite de 20 numeros por campanha para evitar bloqueio do WhatsApp.</p>
+                          </div>
+                        </label>
+                        <label className="flex items-start gap-3 cursor-pointer p-3 rounded-lg border border-[var(--border)] hover:border-emerald-500/40 transition-colors">
+                          <input
+                            type="radio"
+                            name="modo_envio"
+                            value="manual"
+                            checked={config.modo_envio === "manual"}
+                            onChange={() => setConfig((p) => ({ ...p, modo_envio: "manual" }))}
+                            className="accent-emerald-500 mt-0.5"
+                          />
+                          <div>
+                            <span className="text-sm font-semibold text-[var(--foreground)]">WhatsApp Web (manual)</span>
+                            <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">Gera links prontos para voce clicar um a um. Voce controla o ritmo. Recomendado para campanhas maiores (ate 200 numeros).</p>
+                          </div>
+                        </label>
                       </div>
                     </div>
 
@@ -469,37 +479,43 @@ export default function WhatsAppPage() {
                       </div>
                     </div>
 
-                    <div className="grid grid-cols-2 gap-4">
-                      <div>
-                        <label className="text-xs font-medium text-[var(--foreground)] block mb-1">
-                          Intervalo minimo (seg): {config.intervalo_min}s
-                        </label>
-                        <input
-                          type="range"
-                          min={10}
-                          max={config.intervalo_max}
-                          value={config.intervalo_min}
-                          onChange={(e) =>
-                            setConfig((p) => ({ ...p, intervalo_min: Number(e.target.value) }))
-                          }
-                          className="w-full accent-emerald-500"
-                        />
+                    <div className={config.modo_envio === "manual" ? "opacity-40 pointer-events-none" : ""}>
+                      <p className="text-xs font-medium text-[var(--foreground)] mb-3">
+                        Intervalo entre mensagens <span className="text-[var(--muted-foreground)] font-normal">(apenas Evolution — o sistema aguarda um tempo aleatorio entre cada envio)</span>
+                      </p>
+                      <div className="grid grid-cols-2 gap-4">
+                        <div>
+                          <label className="text-xs text-[var(--muted-foreground)] block mb-1">
+                            Minimo: <strong className="text-[var(--foreground)]">{config.intervalo_min}s</strong>
+                          </label>
+                          <input
+                            type="range"
+                            min={3}
+                            max={config.intervalo_max}
+                            value={config.intervalo_min}
+                            onChange={(e) =>
+                              setConfig((p) => ({ ...p, intervalo_min: Number(e.target.value) }))
+                            }
+                            className="w-full accent-emerald-500"
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-[var(--muted-foreground)] block mb-1">
+                            Maximo: <strong className="text-[var(--foreground)]">{config.intervalo_max}s</strong>
+                          </label>
+                          <input
+                            type="range"
+                            min={config.intervalo_min}
+                            max={30}
+                            value={config.intervalo_max}
+                            onChange={(e) =>
+                              setConfig((p) => ({ ...p, intervalo_max: Number(e.target.value) }))
+                            }
+                            className="w-full accent-emerald-500"
+                          />
+                        </div>
                       </div>
-                      <div>
-                        <label className="text-xs font-medium text-[var(--foreground)] block mb-1">
-                          Intervalo maximo (seg): {config.intervalo_max}s
-                        </label>
-                        <input
-                          type="range"
-                          min={config.intervalo_min}
-                          max={300}
-                          value={config.intervalo_max}
-                          onChange={(e) =>
-                            setConfig((p) => ({ ...p, intervalo_max: Number(e.target.value) }))
-                          }
-                          className="w-full accent-emerald-500"
-                        />
-                      </div>
+                      <p className="text-[10px] text-[var(--muted-foreground)] mt-1">Recomendado: 5s a 15s. Quanto maior o intervalo, menor o risco de bloqueio.</p>
                     </div>
 
                     <div>

@@ -2,10 +2,14 @@ import { NextRequest, NextResponse } from "next/server";
 import { getGestorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 
-// Vercel Pro/Enterprise: aumenta o timeout para 60s para suportar campanhas de ate 200 numeros
-export const maxDuration = 60;
+export const maxDuration = 300;
 
-const BATCH_SIZE = 5;
+const EVOLUTION_MAX_NUMEROS = 20;
+// Delay aleatorio entre MIN e MAX ms para simular comportamento humano
+function delayAleatorio(minS: number, maxS: number): Promise<void> {
+  const ms = Math.floor(Math.random() * (maxS - minS + 1) + minS) * 1000;
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
 
 async function enviarParaNumero(
   numeroLimpo: string,
@@ -56,10 +60,12 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
   }
 
-  const MAX_NUMEROS = 200;
-  if (numeros.length > MAX_NUMEROS) {
+  const maxPermitido = modo === "evolution" ? EVOLUTION_MAX_NUMEROS : 200;
+  if (numeros.length > maxPermitido) {
     return NextResponse.json(
-      { error: `Limite de ${MAX_NUMEROS} números por campanha` },
+      { error: modo === "evolution"
+          ? `Modo Evolution suporta no maximo ${EVOLUTION_MAX_NUMEROS} numeros por vez para evitar bloqueio. Use o modo Manual para campanhas maiores.`
+          : `Limite de 200 numeros por campanha` },
       { status: 400 }
     );
   }
@@ -91,18 +97,29 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ links, enviados: 0 });
   }
 
-  // Modo evolution: batches paralelos de BATCH_SIZE sem delay artificial
-  // Delay no servidor causaria timeout serverless (limite 60-300s)
+  // Busca config de intervalos do gestor
+  const { data: wppConfig } = await supabaseAdmin
+    .from("gestor_whatsapp_config")
+    .select("intervalo_min, intervalo_max")
+    .eq("gestor_id", gestor.id)
+    .maybeSingle();
+
+  // Intervalo em segundos configurado pelo gestor (min 3s, max 30s para caber no timeout)
+  const intervaloMin = Math.max(3, Math.min(wppConfig?.intervalo_min ?? 5, 30));
+  const intervaloMax = Math.max(intervaloMin, Math.min(wppConfig?.intervalo_max ?? 10, 30));
+
   const instanceName = `gestor-${gestor.id}`;
   const numerosLimpos = numeros.map((n) => String(n).replace(/\D/g, ""));
   const resultados: Array<"ok" | "erro"> = [];
 
-  for (let i = 0; i < numerosLimpos.length; i += BATCH_SIZE) {
-    const batch = numerosLimpos.slice(i, i + BATCH_SIZE);
-    const batchResults = await Promise.all(
-      batch.map((n) => enviarParaNumero(n, mensagem, instanceName))
-    );
-    resultados.push(...batchResults);
+  // Envio sequencial com delay aleatorio entre cada mensagem
+  for (let i = 0; i < numerosLimpos.length; i++) {
+    const resultado = await enviarParaNumero(numerosLimpos[i], mensagem, instanceName);
+    resultados.push(resultado);
+    // Aguarda intervalo aleatorio entre mensagens (exceto apos o ultimo)
+    if (i < numerosLimpos.length - 1) {
+      await delayAleatorio(intervaloMin, intervaloMax);
+    }
   }
 
   const enviados = resultados.filter((r) => r === "ok").length;
