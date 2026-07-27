@@ -3,99 +3,139 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-const PARTICLES = [
-  { w:4, left:"10%", delay:"0s",  dur:"8s"  },
-  { w:6, left:"25%", delay:"2s",  dur:"11s" },
-  { w:3, left:"50%", delay:"4s",  dur:"7s"  },
-  { w:5, left:"70%", delay:"1s",  dur:"10s" },
-  { w:4, left:"85%", delay:"3s",  dur:"9s"  },
-  { w:7, left:"40%", delay:"5s",  dur:"13s" },
+const NODES = [
+  { x:"6%",  y:"12%", s:3, delay:"0s",   dur:"4s"  },
+  { x:"18%", y:"78%", s:2, delay:"1.3s", dur:"5.2s"},
+  { x:"42%", y:"5%",  s:4, delay:"0.5s", dur:"3.6s"},
+  { x:"65%", y:"58%", s:2, delay:"2.2s", dur:"6s"  },
+  { x:"80%", y:"22%", s:3, delay:"0.8s", dur:"4.8s"},
+  { x:"93%", y:"85%", s:2, delay:"1.7s", dur:"5.3s"},
+  { x:"30%", y:"92%", s:3, delay:"0.6s", dur:"4.1s"},
+  { x:"55%", y:"40%", s:2, delay:"2.8s", dur:"3.9s"},
 ];
 
-const STYLES = `
-  @keyframes gradientShift {
-    0%   { background-position: 0% 50%; }
-    50%  { background-position: 100% 50%; }
-    100% { background-position: 0% 50%; }
-  }
-  @keyframes floatLogo {
-    0%, 100% { transform: translateY(0px); }
-    50%       { transform: translateY(-10px); }
-  }
-  @keyframes glowPulse {
-    0%, 100% { opacity: 0.4; transform: scale(1); }
-    50%       { opacity: 0.8; transform: scale(1.08); }
+const STREAMS = [
+  { left:"11%", delay:"0s",   dur:"7s"  },
+  { left:"29%", delay:"1.6s", dur:"9s"  },
+  { left:"52%", delay:"3s",   dur:"6.2s"},
+  { left:"76%", delay:"1s",   dur:"8.5s"},
+  { left:"89%", delay:"2.4s", dur:"7.2s"},
+];
+
+const CSS = `
+  @keyframes bgShift {
+    0%,100% { background-position:0% 50%; }
+    50%      { background-position:100% 50%; }
   }
   @keyframes fadeUp {
-    from { opacity: 0; transform: translateY(24px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from { opacity:0; transform:translateY(28px); }
+    to   { opacity:1; transform:translateY(0); }
   }
-  @keyframes particle {
-    0%   { transform: translateY(0) translateX(0) scale(1); opacity: 0.6; }
-    100% { transform: translateY(-100vh) translateX(20px) scale(0); opacity: 0; }
+  @keyframes floatLogo {
+    0%,100% { transform:translateY(0); }
+    50%      { transform:translateY(-8px); }
   }
-  .login-page {
-    min-height: 100vh; display: flex; align-items: center; justify-content: center;
-    padding: 20px; position: relative; overflow: hidden;
-    background: linear-gradient(135deg, #031a2e, #0a2a4a, #063d20, #021a0e, #0a2a4a, #031a2e);
-    background-size: 400% 400%;
-    animation: gradientShift 12s ease infinite;
-    font-family: Inter, system-ui, sans-serif;
+  @keyframes nodePulse {
+    0%,100% { opacity:.2; transform:scale(1); }
+    50%      { opacity:.65; transform:scale(1.6); }
   }
-  .login-glow {
-    position: absolute; width: 500px; height: 500px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(16,185,129,.18) 0%, transparent 70%);
-    top: -100px; left: -100px;
-    animation: glowPulse 6s ease-in-out infinite;
-    pointer-events: none;
+  @keyframes streamFall {
+    0%   { transform:translateY(-100%); opacity:0; }
+    10%  { opacity:.55; }
+    90%  { opacity:.35; }
+    100% { transform:translateY(100vh); opacity:0; }
   }
-  .login-glow2 {
-    position: absolute; width: 400px; height: 400px; border-radius: 50%;
-    background: radial-gradient(circle, rgba(108,143,212,.15) 0%, transparent 70%);
-    bottom: -80px; right: -80px;
-    animation: glowPulse 8s ease-in-out infinite reverse;
-    pointer-events: none;
+  @keyframes scanLine {
+    0%   { top:-2px; opacity:.4; }
+    100% { top:100%; opacity:0; }
   }
-  .particle {
-    position: absolute; border-radius: 50%;
-    background: rgba(255,255,255,.15);
-    animation: particle linear infinite;
-    pointer-events: none;
+  @keyframes borderGlow {
+    0%,100% { border-color:rgba(245,158,11,.2); box-shadow:0 0 30px rgba(245,158,11,.05),0 24px 80px rgba(0,0,0,.7); }
+    50%      { border-color:rgba(245,158,11,.45); box-shadow:0 0 50px rgba(245,158,11,.12),0 24px 80px rgba(0,0,0,.7); }
   }
-  .login-card {
-    position: relative; width: 100%; max-width: 380px; text-align: center;
-    background: rgba(255,255,255,.07); backdrop-filter: blur(24px);
-    -webkit-backdrop-filter: blur(24px);
-    border: 1px solid rgba(255,255,255,.13); border-radius: 28px;
-    padding: 40px 32px 36px; box-shadow: 0 24px 80px rgba(0,0,0,.6);
-    animation: fadeUp .6s ease both;
+  .lp-root {
+    min-height:100vh; display:flex; align-items:center; justify-content:center;
+    padding:20px; position:relative; overflow:hidden;
+    background:linear-gradient(135deg,#0c0800,#1a1000,#150d00,#0c0800,#110a00);
+    background-size:400% 400%;
+    animation:bgShift 16s ease infinite;
+    font-family:Inter,system-ui,sans-serif;
   }
-  .logo-wrap { display: flex; justify-content: center; margin-bottom: 10px; animation: floatLogo 4s ease-in-out infinite; }
-  .campo-login {
-    width: 100%; padding: 12px 14px; margin-bottom: 12px; box-sizing: border-box;
-    background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.15);
-    border-radius: 10px; font-size: 14px; color: #fff; outline: none;
-    font-family: inherit; transition: border-color .2s, background .2s;
+  .lp-grid {
+    position:absolute; inset:0; pointer-events:none;
+    background-image:
+      linear-gradient(rgba(245,158,11,.04) 1px,transparent 1px),
+      linear-gradient(90deg,rgba(245,158,11,.04) 1px,transparent 1px);
+    background-size:48px 48px;
   }
-  .campo-login:focus { border-color: rgba(255,255,255,.45); background: rgba(255,255,255,.13); }
-  .campo-login::placeholder { color: rgba(255,255,255,.38); }
-  .senha-wrap { position: relative; margin-bottom: 16px; }
-  .senha-wrap .campo-login { margin-bottom: 0; padding-right: 44px; }
-  .olho-btn {
-    position: absolute; right: 12px; top: 50%; transform: translateY(-50%);
-    background: none; border: none; cursor: pointer; color: rgba(255,255,255,.45);
-    display: flex; align-items: center; padding: 4px;
-    transition: color .15s;
+  .lp-node {
+    position:absolute; border-radius:50%;
+    background:rgba(245,158,11,.9);
+    animation:nodePulse ease-in-out infinite;
+    pointer-events:none;
   }
-  .olho-btn:hover { color: rgba(255,255,255,.8); }
-  .btn-entrar {
-    width: 100%; padding: 14px; border: none; border-radius: 10px;
-    background: linear-gradient(135deg,#1a0080,#2222CC);
-    color: #fff; font-size: 14px; font-weight: 800; letter-spacing: 1px;
-    cursor: pointer; font-family: inherit; transition: opacity .15s, transform .1s;
+  .lp-stream {
+    position:absolute; top:0; width:1px; height:30%;
+    background:linear-gradient(to bottom,transparent,rgba(245,158,11,.45),transparent);
+    animation:streamFall linear infinite;
+    pointer-events:none;
   }
-  .btn-entrar:hover:not(:disabled) { opacity: .88; transform: translateY(-1px); }
-  .btn-entrar:disabled { opacity: .6; cursor: not-allowed; }
+  .lp-card {
+    position:relative; width:100%; max-width:390px; text-align:center;
+    background:rgba(245,158,11,.03); backdrop-filter:blur(28px); -webkit-backdrop-filter:blur(28px);
+    border:1px solid rgba(245,158,11,.2); border-radius:24px;
+    padding:40px 32px 36px;
+    animation:fadeUp .55s ease both, borderGlow 4s ease-in-out infinite;
+    overflow:hidden;
+  }
+  .lp-scan {
+    position:absolute; left:0; right:0; height:2px;
+    background:linear-gradient(90deg,transparent,rgba(245,158,11,.4),transparent);
+    animation:scanLine 3.5s linear infinite;
+    pointer-events:none;
+  }
+  .lp-logo { display:flex; justify-content:center; margin-bottom:10px; animation:floatLogo 4s ease-in-out infinite; }
+  .lp-badge {
+    display:inline-flex; align-items:center;
+    background:rgba(245,158,11,.12); border:1px solid rgba(245,158,11,.35);
+    border-radius:6px; padding:3px 12px; font-size:10px; font-weight:700;
+    letter-spacing:1.5px; color:#fcd34d; text-transform:uppercase; margin-bottom:8px;
+  }
+  .lp-sub { font-size:12px; color:rgba(255,255,255,.4); margin-bottom:24px; }
+  .lp-erro {
+    background:rgba(239,68,68,.12); border:1px solid rgba(239,68,68,.3);
+    border-radius:10px; padding:9px 14px; font-size:12px; color:#f87171; margin-bottom:14px;
+  }
+  .lp-campo {
+    width:100%; padding:13px 15px; margin-bottom:12px; box-sizing:border-box;
+    background:rgba(255,255,255,.05); border:1px solid rgba(255,255,255,.1);
+    border-radius:12px; font-size:14px; color:#e2e8f0; outline:none;
+    font-family:inherit; transition:border-color .2s,background .2s,box-shadow .2s;
+  }
+  .lp-campo:focus {
+    border-color:rgba(245,158,11,.55);
+    background:rgba(245,158,11,.05);
+    box-shadow:0 0 0 3px rgba(245,158,11,.07);
+  }
+  .lp-campo::placeholder { color:rgba(255,255,255,.28); }
+  .lp-pw-wrap { position:relative; margin-bottom:18px; }
+  .lp-pw-wrap .lp-campo { margin-bottom:0; padding-right:46px; }
+  .lp-eye {
+    position:absolute; right:13px; top:50%; transform:translateY(-50%);
+    background:none; border:none; cursor:pointer; color:rgba(255,255,255,.35);
+    display:flex; align-items:center; padding:4px; transition:color .15s;
+  }
+  .lp-eye:hover { color:rgba(245,158,11,.8); }
+  .lp-btn {
+    width:100%; padding:14px; border:none; border-radius:12px;
+    background:linear-gradient(135deg,#b45309,#d97706,#f59e0b);
+    box-shadow:0 4px 24px rgba(245,158,11,.4);
+    color:#fff; font-size:13px; font-weight:800; letter-spacing:1.5px;
+    cursor:pointer; font-family:inherit; transition:opacity .15s,transform .1s,box-shadow .15s;
+  }
+  .lp-btn:hover:not(:disabled) { opacity:.9; transform:translateY(-1px); box-shadow:0 6px 32px rgba(245,158,11,.55); }
+  .lp-btn:disabled { opacity:.5; cursor:not-allowed; }
+  .lp-links { margin-top:18px; font-size:12px; color:rgba(255,255,255,.28); line-height:2; }
 `;
 
 export default function MasterLoginPage() {
@@ -114,13 +154,13 @@ export default function MasterLoginPage() {
       const res = await fetch("/api/master/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ usuario, senha }),
+        body: JSON.stringify({ usuario: usuario.trim(), senha }),
       });
       const json = await res.json();
-      if (!res.ok) setErro(json.error ?? "Credenciais inválidas");
+      if (!res.ok) setErro(json.error ?? "Credenciais invalidas");
       else router.push("/master/dashboard");
     } catch {
-      setErro("Erro de conexão. Tente novamente.");
+      setErro("Erro de conexao. Tente novamente.");
     } finally {
       setCarregando(false);
     }
@@ -128,65 +168,53 @@ export default function MasterLoginPage() {
 
   return (
     <>
-      <style>{STYLES}</style>
-      <div className="login-page">
-        <div className="login-glow" />
-        <div className="login-glow2" />
-        {PARTICLES.map((p, i) => (
-          <div key={i} className="particle" style={{
-            width: p.w, height: p.w, left: p.left, bottom: "-20px",
-            animationDelay: p.delay, animationDuration: p.dur,
+      <style>{CSS}</style>
+      <div className="lp-root">
+        <div className="lp-grid" />
+        {NODES.map((n, i) => (
+          <div key={i} className="lp-node" style={{
+            left: n.x, top: n.y, width: n.s, height: n.s,
+            animationDelay: n.delay, animationDuration: n.dur,
+          }} />
+        ))}
+        {STREAMS.map((s, i) => (
+          <div key={i} className="lp-stream" style={{
+            left: s.left, animationDelay: s.delay, animationDuration: s.dur,
           }} />
         ))}
 
-        <div className="login-card">
-          <div className="logo-wrap">
-            <img src="/logo-indique.png" style={{ width: 140, height: 140, objectFit: "contain" }} alt="Indique Placa" />
+        <div className="lp-card">
+          <div className="lp-scan" />
+          <div className="lp-logo">
+            <img src="/logo-indique.png" style={{ width: 120, height: 120, objectFit: "contain" }} alt="Indique Placa" />
           </div>
+          <div className="lp-badge">Master</div>
+          <div className="lp-sub">Acesso Restrito ao Administrador</div>
 
-          <div style={{
-            display: "inline-flex", alignItems: "center", gap: 5,
-            background: "rgba(108,143,212,.2)", border: "1px solid rgba(108,143,212,.4)",
-            borderRadius: 6, padding: "3px 10px", fontSize: 10, fontWeight: 700,
-            letterSpacing: 1, color: "#6C8FD4", textTransform: "uppercase", marginBottom: 8,
-          }}>MASTER</div>
+          {erro && <div className="lp-erro">{erro}</div>}
 
-          <div style={{ fontSize: 12, color: "rgba(255,255,255,.5)", marginBottom: 22 }}>
-            Painel administrativo da plataforma
-          </div>
-
-          {erro && (
-            <div style={{
-              background: "rgba(239,68,68,.15)", border: "1px solid rgba(239,68,68,.3)",
-              borderRadius: 8, padding: "8px 12px", fontSize: 12, color: "#f87171", marginBottom: 12,
-            }}>{erro}</div>
-          )}
-
-          <form onSubmit={entrar}>
-            <input className="campo-login" type="text" placeholder="Usuario" value={usuario} required
+          <form onSubmit={entrar} noValidate>
+            <input className="lp-campo" type="text" placeholder="Usuario"
+              value={usuario} required autoComplete="username"
               onChange={(e) => setUsuario(e.target.value)} />
-            <div className="senha-wrap">
-              <input className="campo-login" type={verSenha ? "text" : "password"} placeholder="Senha" value={senha} required
-                onChange={(e) => setSenha(e.target.value)} />
-              <button type="button" className="olho-btn" onClick={() => setVerSenha(v => !v)} tabIndex={-1}>
-                {verSenha ? (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/>
-                    <path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/>
-                    <line x1="1" y1="1" x2="23" y2="23"/>
-                  </svg>
-                ) : (
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
-                    <circle cx="12" cy="12" r="3"/>
-                  </svg>
-                )}
+            <div className="lp-pw-wrap">
+              <input className="lp-campo" type={verSenha ? "text" : "password"} placeholder="Senha"
+                value={senha} required onChange={(e) => setSenha(e.target.value)} />
+              <button type="button" className="lp-eye" onClick={() => setVerSenha(v => !v)} tabIndex={-1}>
+                {verSenha
+                  ? <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94"/><path d="M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19"/><line x1="1" y1="1" x2="23" y2="23"/></svg>
+                  : <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                }
               </button>
             </div>
-            <button className="btn-entrar" type="submit" disabled={carregando}>
+            <button className="lp-btn" type="submit" disabled={carregando || !usuario || !senha}>
               {carregando ? "ENTRANDO..." : "ENTRAR"}
             </button>
           </form>
+
+          <div className="lp-links">
+            Acesso exclusivo para administradores do sistema.
+          </div>
         </div>
       </div>
     </>
