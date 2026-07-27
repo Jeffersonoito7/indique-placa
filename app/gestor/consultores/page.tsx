@@ -458,7 +458,7 @@ export default function GestorConsultoresPage() {
               <div>
                 <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Email</label>
                 <input
-                  type="email"
+                  type="text" inputMode="email"
                   required
                   placeholder="email@exemplo.com"
                   value={form.email}

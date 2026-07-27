@@ -200,7 +200,7 @@ export default function RecuperarSenhaConsultorPage() {
                 {erro && <div className="crp-erro">{erro}</div>}
                 <input
                   className="crp-campo"
-                  type="email"
+                  type="text" inputMode="email"
                   placeholder="seu@email.com"
                   value={email}
                   required

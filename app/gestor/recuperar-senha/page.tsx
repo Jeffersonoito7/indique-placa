@@ -185,7 +185,7 @@ export default function GestorRecuperarSenhaPage() {
             <form onSubmit={enviarEmail}>
               <input
                 className="grec-campo"
-                type="email"
+                type="text" inputMode="email"
                 placeholder="seu@email.com"
                 value={email}
                 required

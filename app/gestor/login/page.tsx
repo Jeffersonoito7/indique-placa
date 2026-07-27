@@ -166,7 +166,7 @@ export default function GestorLoginPage() {
           <form onSubmit={entrar}>
             <input
               className="gestor-campo"
-              type="email"
+              type="text" inputMode="email"
               placeholder="seu@email.com"
               value={email}
               required

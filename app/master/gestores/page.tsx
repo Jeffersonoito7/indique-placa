@@ -65,7 +65,7 @@ function ModalCriar({ associacoes, onClose, onFeito }: { associacoes: Associacao
 
         <div className="flex flex-col gap-3">
           <input className={campo} placeholder="Nome completo" value={nome} onChange={(e) => setNome(e.target.value)} />
-          <input className={campo} placeholder="E-mail" type="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
+          <input className={campo} placeholder="E-mail" type="text" inputMode="email" value={email} onChange={(e) => setEmail(e.target.value)} autoComplete="off" />
           <input className={campo} placeholder="WhatsApp (opcional)" value={fone} onChange={(e) => setFone(e.target.value)} />
           <input className={campo} placeholder="Senha inicial (min. 6 caracteres)" type="password" value={senha} onChange={(e) => setSenha(e.target.value)} />
           <select className={campo} value={plano} onChange={(e) => setPlano(e.target.value)}>

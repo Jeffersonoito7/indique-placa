@@ -202,7 +202,7 @@ export default function GestorCadastroPage() {
                 />
                 <input
                   className="gcad-campo"
-                  type="email"
+                  type="text" inputMode="email"
                   placeholder="seu@email.com"
                   value={email}
                   required

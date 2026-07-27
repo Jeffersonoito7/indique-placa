@@ -199,7 +199,7 @@ export default function IndicadorRecuperarSenhaPage() {
                 {erro && <div className="rp-erro">{erro}</div>}
                 <input
                   className="rp-campo"
-                  type="email"
+                  type="text" inputMode="email"
                   placeholder="seu@email.com"
                   value={email}
                   required

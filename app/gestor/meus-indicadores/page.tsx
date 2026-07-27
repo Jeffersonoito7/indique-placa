@@ -343,7 +343,7 @@ export default function MeusIndicadoresPage() {
                   Email (opcional)
                 </label>
                 <input
-                  type="email"
+                  type="text" inputMode="email"
                   placeholder="email@exemplo.com"
                   value={formAdicionar.email}
                   onChange={(e) => setFormAdicionar((f) => ({ ...f, email: e.target.value }))}

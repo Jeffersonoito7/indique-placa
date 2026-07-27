@@ -166,7 +166,7 @@ export default function AssociacaoLoginPage() {
           <form onSubmit={entrar}>
             <input
               className="assoc-campo"
-              type="email"
+              type="text" inputMode="email"
               placeholder="seu@email.com"
               value={email}
               required

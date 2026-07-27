@@ -834,7 +834,7 @@ export default function ConsultorCadastroPage() {
                   </div>
                   <div className="campo-group">
                     <label className="campo-label">Email (para recuperar sua senha)</label>
-                    <input className="campo" type="email" placeholder="seu@email.com" value={email} required onChange={e => setEmail(e.target.value)} />
+                    <input className="campo" type="text" inputMode="email" placeholder="seu@email.com" value={email} required onChange={e => setEmail(e.target.value)} />
                   </div>
                   <div className="campo-group">
                     <label className="campo-label">Estado</label>

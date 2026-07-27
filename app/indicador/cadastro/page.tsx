@@ -444,7 +444,7 @@ function FormIndicador() {
                     </div>
                     <div className="campo-g">
                       <label className="campo-l">Email (para recuperar senha)</label>
-                      <input className="campo" type="email" placeholder="seu@email.com" value={email} required onChange={e=>setEmail(e.target.value)} />
+                      <input className="campo" type="text" inputMode="email" placeholder="seu@email.com" value={email} required onChange={e=>setEmail(e.target.value)} />
                     </div>
                     <div className="campo-g">
                       <label className="campo-l">Crie uma senha (mínimo 6 caracteres)</label>

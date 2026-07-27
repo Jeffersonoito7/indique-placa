@@ -130,7 +130,7 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
               value={form.email}
               onChange={(e) => set("email", e.target.value)}
               placeholder="email@exemplo.com"
-              type="email"
+              type="text" inputMode="email"
             />
           </div>
           <div>
@@ -301,7 +301,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
               </div>
               <div>
                 <label className={labelCls}>Email</label>
-                <input className={inputCls} value={form.email} onChange={(e) => set("email", e.target.value)} type="email" />
+                <input className={inputCls} value={form.email} onChange={(e) => set("email", e.target.value)} type="text" inputMode="email" />
               </div>
               <div>
                 <label className={labelCls}>Telefone</label>

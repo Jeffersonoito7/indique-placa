@@ -377,7 +377,7 @@ export default function ConfiguracoesPage() {
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-2 flex items-center gap-1.5"><Mail className="h-3.5 w-3.5" />Email</label>
-                    <input type="email" value={form.email} onChange={set("email")} placeholder="contato@associacao.com.br"
+                    <input type="text" inputMode="email" value={form.email} onChange={set("email")} placeholder="contato@associacao.com.br"
                       className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all" />
                   </div>
                   <div>
