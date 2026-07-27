@@ -23,6 +23,7 @@ export async function POST() {
           .digest("hex")
           .slice(0, 32),
         qrcode: true,
+        integration: "WHATSAPP-BAILEYS",
       }),
     });
 

@@ -87,13 +87,20 @@ export default function WhatsAppPage() {
   async function conectar() {
     setLoadingQr(true);
     setQrcode(null);
+    setErroWpp(null);
     try {
       const res = await fetch("/api/gestor/whatsapp/qrcode", { method: "POST" });
-      const data = await res.json();
+      const data = await res.json() as { qrcode?: string; error?: string; detail?: string };
+      if (!res.ok || data.error) {
+        setErroWpp(data.error ?? "Erro ao gerar QR Code. Tente novamente.");
+        return;
+      }
       if (data.qrcode) {
         setQrcode(data.qrcode);
         iniciarPoll();
       }
+    } catch {
+      setErroWpp("Erro de conexao ao gerar QR Code.");
     } finally {
       setLoadingQr(false);
     }
