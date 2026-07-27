@@ -392,12 +392,12 @@ export default function GestorMeusLeadsPage() {
   // Carrega kanban
   // ---------------------------------------------------------------------------
   useEffect(() => {
-    fetch("/api/gestor/meus-leads")
+    fetch("/api/gestor/meus-leads?limit=200")
       .then((r) => {
         if (!r.ok) throw new Error("Erro ao carregar leads");
-        return r.json() as Promise<Lead[]>;
+        return r.json() as Promise<{ leads: Lead[] } | Lead[]>;
       })
-      .then((data) => setLeadsKanban(data))
+      .then((data) => setLeadsKanban(Array.isArray(data) ? data : (data as { leads: Lead[] }).leads ?? []))
       .catch((e: Error) => setErroKanban(e.message))
       .finally(() => setCarregandoKanban(false));
   }, []);
