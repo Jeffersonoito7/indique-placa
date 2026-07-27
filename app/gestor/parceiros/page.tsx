@@ -6,6 +6,18 @@ import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useRouter } from "next/navigation";
 
+const ESTADOS = [
+  { uf: "AC", nome: "Acre" }, { uf: "AL", nome: "Alagoas" }, { uf: "AP", nome: "Amapá" },
+  { uf: "AM", nome: "Amazonas" }, { uf: "BA", nome: "Bahia" }, { uf: "CE", nome: "Ceará" },
+  { uf: "DF", nome: "Distrito Federal" }, { uf: "ES", nome: "Espírito Santo" }, { uf: "GO", nome: "Goiás" },
+  { uf: "MA", nome: "Maranhão" }, { uf: "MT", nome: "Mato Grosso" }, { uf: "MS", nome: "Mato Grosso do Sul" },
+  { uf: "MG", nome: "Minas Gerais" }, { uf: "PA", nome: "Pará" }, { uf: "PB", nome: "Paraíba" },
+  { uf: "PR", nome: "Paraná" }, { uf: "PE", nome: "Pernambuco" }, { uf: "PI", nome: "Piauí" },
+  { uf: "RJ", nome: "Rio de Janeiro" }, { uf: "RN", nome: "Rio Grande do Norte" }, { uf: "RS", nome: "Rio Grande do Sul" },
+  { uf: "RO", nome: "Rondônia" }, { uf: "RR", nome: "Roraima" }, { uf: "SC", nome: "Santa Catarina" },
+  { uf: "SP", nome: "São Paulo" }, { uf: "SE", nome: "Sergipe" }, { uf: "TO", nome: "Tocantins" },
+];
+
 const SEGMENTOS = [
   "Oficinas mecanicas",
   "Concessionarias",
@@ -46,6 +58,7 @@ function Estrelas({ rating }: { rating: number | null }) {
 
 export default function ParceirosPage() {
   const router = useRouter();
+  const [uf, setUf] = useState("");
   const [cidade, setCidade] = useState("");
   const [segmento, setSegmento] = useState(SEGMENTOS[0]);
   const [buscando, setBuscando] = useState(false);
@@ -63,13 +76,14 @@ export default function ParceirosPage() {
   }, [router]);
 
   async function buscar() {
-    if (!cidade.trim()) return;
+    if (!uf || !cidade.trim()) return;
     setBuscando(true);
     setErro(null);
     setResultados([]);
     setTotal(null);
+    const cidadeCompleta = `${cidade.trim()}, ${uf}`;
     try {
-      const params = new URLSearchParams({ cidade: cidade.trim(), tipo: segmento });
+      const params = new URLSearchParams({ cidade: cidadeCompleta, tipo: segmento });
       const res = await fetch(`/api/gestor/buscar-parceiros?${params}`);
       const data = await res.json();
       if (!res.ok) {
@@ -82,7 +96,7 @@ export default function ParceirosPage() {
       }
       setResultados(data.resultados ?? []);
       setTotal(data.total ?? 0);
-      setCidadeBuscada(cidade.trim());
+      setCidadeBuscada(cidadeCompleta);
       setIsMock(!!data.mock);
     } finally {
       setBuscando(false);
@@ -126,21 +140,37 @@ export default function ParceirosPage() {
             <CardTitle className="text-sm font-semibold">Pesquisar</CardTitle>
           </CardHeader>
           <CardContent className="pt-4 space-y-4">
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
-              <div className="sm:col-span-1">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-4">
+              <div>
+                <label className="text-xs font-medium text-[var(--foreground)] block mb-1">
+                  Estado (UF)
+                </label>
+                <select
+                  value={uf}
+                  onChange={(e) => { setUf(e.target.value); setCidade(""); setResultados([]); setTotal(null); }}
+                  className={inputClass}
+                >
+                  <option value="">Selecione...</option>
+                  {ESTADOS.map((e) => (
+                    <option key={e.uf} value={e.uf}>{e.uf} — {e.nome}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
                 <label className="text-xs font-medium text-[var(--foreground)] block mb-1">
                   Cidade
                 </label>
                 <input
                   type="text"
-                  placeholder="Ex: São Paulo SP"
+                  placeholder={uf ? "Digite a cidade..." : "Selecione o estado primeiro"}
                   value={cidade}
+                  disabled={!uf}
                   onChange={(e) => setCidade(e.target.value)}
                   onKeyDown={(e) => { if (e.key === "Enter") buscar(); }}
-                  className={inputClass}
+                  className={`${inputClass} disabled:opacity-50 disabled:cursor-not-allowed`}
                 />
               </div>
-              <div className="sm:col-span-1">
+              <div>
                 <label className="text-xs font-medium text-[var(--foreground)] block mb-1">
                   Segmento
                 </label>
@@ -157,7 +187,7 @@ export default function ParceirosPage() {
               <div className="flex items-end">
                 <button
                   onClick={buscar}
-                  disabled={buscando || !cidade.trim()}
+                  disabled={buscando || !uf || !cidade.trim()}
                   className={`${btnBase} bg-violet-600 hover:bg-violet-700 text-white flex items-center gap-2 w-full justify-center`}
                 >
                   <Search className="h-4 w-4" />
