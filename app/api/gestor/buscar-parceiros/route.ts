@@ -50,46 +50,43 @@ export async function GET(req: NextRequest) {
   }
 
   try {
-    const query = encodeURIComponent(`${tipo} em ${cidade}`);
-    const url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${query}&key=${apiKey}&language=pt-BR`;
+    const res = await fetch("https://places.googleapis.com/v1/places:searchText", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        "X-Goog-Api-Key": apiKey,
+        "X-Goog-FieldMask": "places.displayName,places.formattedAddress,places.nationalPhoneNumber,places.rating,places.userRatingCount,places.id",
+      },
+      body: JSON.stringify({ textQuery: `${tipo} em ${cidade}`, languageCode: "pt-BR" }),
+    });
 
-    const res = await fetch(url, { next: { revalidate: 0 } });
     if (!res.ok) {
+      const text = await res.text();
+      console.error("[buscar-parceiros] Google Places erro:", text);
       return NextResponse.json({ error: "Erro ao consultar Google Places" }, { status: 502 });
     }
 
     const data = await res.json() as {
-      results: Array<{
-        name?: string;
-        formatted_address?: string;
-        formatted_phone_number?: string;
+      places?: Array<{
+        id?: string;
+        displayName?: { text?: string };
+        formattedAddress?: string;
+        nationalPhoneNumber?: string;
         rating?: number;
-        user_ratings_total?: number;
-        place_id?: string;
+        userRatingCount?: number;
       }>;
-      next_page_token?: string;
-      status?: string;
     };
 
-    if (data.status !== "OK" && data.status !== "ZERO_RESULTS") {
-      console.error("[buscar-parceiros] Google Places status:", data.status);
-      return NextResponse.json({ error: `Google Places: ${data.status}` }, { status: 502 });
-    }
-
-    const resultados: Parceiro[] = (data.results ?? []).map((r) => ({
-      nome: r.name ?? "",
-      endereco: r.formatted_address ?? "",
-      telefone: r.formatted_phone_number ?? "",
+    const resultados: Parceiro[] = (data.places ?? []).map((r) => ({
+      nome: r.displayName?.text ?? "",
+      endereco: r.formattedAddress ?? "",
+      telefone: r.nationalPhoneNumber ?? "",
       rating: r.rating ?? null,
-      total_avaliacoes: r.user_ratings_total ?? 0,
-      place_id: r.place_id ?? "",
+      total_avaliacoes: r.userRatingCount ?? 0,
+      place_id: r.id ?? "",
     }));
 
-    return NextResponse.json({
-      resultados,
-      total: resultados.length,
-      proximo_token: data.next_page_token ?? null,
-    });
+    return NextResponse.json({ resultados, total: resultados.length });
   } catch (err) {
     console.error("[buscar-parceiros] Erro:", err);
     return NextResponse.json({ error: "Erro interno ao buscar parceiros" }, { status: 500 });
