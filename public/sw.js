@@ -1,6 +1,7 @@
-const CACHE = "ip-v3";
+const CACHE = "ip-v4";
 const STATIC = ["/", "/favicon-indique.png", "/icon-192.png", "/icon-512.png", "/manifest.json"];
-const SKIP = ["/api/", "/master", "/consultor", "/indicador"];
+// Apenas a API e o master ficam fora do cache — os paineis de usuario sao incluidos
+const SKIP = ["/api/", "/master"];
 
 self.addEventListener("install", (e) => {
   e.waitUntil(
@@ -44,10 +45,10 @@ self.addEventListener("fetch", (e) => {
 self.addEventListener('push', (event) => {
   const data = event.data?.json() ?? {};
   event.waitUntil(
-    self.registration.showNotification(data.title ?? 'Nova indicacao!', {
-      body: data.body ?? 'Voce recebeu uma nova indicacao.',
-      icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
+    self.registration.showNotification(data.title ?? 'Nova indicação!', {
+      body: data.body ?? 'Você recebeu uma nova indicação.',
+      icon: '/icon-192.png',
+      badge: '/icon-192.png',
       vibrate: [200, 100, 200],
       tag: 'nova-indicacao',
       renotify: true,

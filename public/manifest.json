@@ -2,7 +2,7 @@
   "name": "Indique Placa",
   "short_name": "IndiquePlaca",
   "description": "Indique uma placa e ganhe dinheiro",
-  "start_url": "/",
+  "start_url": "/consultor/login",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
@@ -35,6 +35,29 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Consultor",
+      "short_name": "Consultor",
+      "description": "Acessar painel do consultor",
+      "url": "/consultor/login",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Indicador",
+      "short_name": "Indicador",
+      "description": "Acessar painel do indicador",
+      "url": "/indicador/login",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Gestor",
+      "short_name": "Gestor",
+      "description": "Acessar painel do gestor",
+      "url": "/gestor/login",
+      "icons": [{ "src": "/icon-192.png", "sizes": "192x192" }]
     }
   ]
 }
