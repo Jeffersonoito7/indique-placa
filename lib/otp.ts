@@ -2,7 +2,7 @@ import "server-only";
 import { randomInt } from "crypto";
 import { supabaseAdmin } from "./supabase-server";
 
-type TipoOTP = "consultor" | "gestor" | "indicador" | "associacao";
+type TipoOTP = "consultor" | "gestor" | "indicador" | "associacao" | "master";
 
 export async function criarOTP(email: string, tipo: TipoOTP): Promise<string> {
   const codigo = String(randomInt(100000, 1000000));

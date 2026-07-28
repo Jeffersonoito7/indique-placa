@@ -214,6 +214,8 @@ export default function MasterLoginPage() {
 
           <div className="lp-links">
             Acesso exclusivo para administradores do sistema.
+            <br />
+            <a href="/master/recuperar-senha">Esqueci minha senha</a>
           </div>
         </div>
       </div>
