@@ -141,6 +141,7 @@ const CSS = `
   .lp-links { margin-top:18px; font-size:12px; color:rgba(255,255,255,.3); line-height:2; }
   .lp-links a { color:#d8b4fe; text-decoration:none; transition:color .15s; }
   .lp-links a:hover { color:#e9d5ff; }
+  .lp-links a.lp-esqueci { font-size:13px; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
 `;
 
 export default function AssociacaoLoginPage() {
@@ -218,7 +219,7 @@ export default function AssociacaoLoginPage() {
           </form>
 
           <div className="lp-links">
-            <a href="/associacao/recuperar-senha">Esqueci minha senha</a>
+            <a href="/associacao/recuperar-senha" className="lp-esqueci">Esqueci minha senha</a>
           </div>
         </div>
       </div>

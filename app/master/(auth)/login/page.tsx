@@ -136,6 +136,7 @@ const CSS = `
   .lp-btn:hover:not(:disabled) { opacity:.9; transform:translateY(-1px); box-shadow:0 6px 32px rgba(52,211,153,.5); }
   .lp-btn:disabled { opacity:.5; cursor:not-allowed; }
   .lp-links { margin-top:18px; font-size:12px; color:rgba(255,255,255,.28); line-height:2; }
+  .lp-links a.lp-esqueci { font-size:13px; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
 `;
 
 export default function MasterLoginPage() {
@@ -215,7 +216,7 @@ export default function MasterLoginPage() {
           <div className="lp-links">
             Acesso exclusivo para administradores do sistema.
             <br />
-            <a href="/master/recuperar-senha">Esqueci minha senha</a>
+            <a href="/master/recuperar-senha" className="lp-esqueci">Esqueci minha senha</a>
           </div>
         </div>
       </div>

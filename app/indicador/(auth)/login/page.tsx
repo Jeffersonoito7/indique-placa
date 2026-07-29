@@ -146,6 +146,7 @@ const CSS = `
   .lp-links { margin-top:18px; font-size:12px; color:rgba(255,255,255,.3); line-height:2; }
   .lp-links a { color:#86efac; text-decoration:none; transition:color .15s; }
   .lp-links a:hover { color:#bbf7d0; }
+  .lp-links a.lp-esqueci { font-size:13px; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
 `;
 
 export default function IndicadorLoginPage() {
@@ -223,7 +224,7 @@ export default function IndicadorLoginPage() {
           </form>
 
           <div className="lp-links">
-            <a href="/indicador/recuperar-senha">Esqueci minha senha</a>
+            <a href="/indicador/recuperar-senha" className="lp-esqueci">Esqueci minha senha</a>
             <br />
             E consultor? <a href="/consultor/login">Acesse aqui</a>
           </div>

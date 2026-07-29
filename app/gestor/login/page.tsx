@@ -138,6 +138,7 @@ const CSS = `
   .lp-links { margin-top:18px; font-size:12px; color:rgba(255,255,255,.3); line-height:2; }
   .lp-links a { color:rgba(103,232,249,.75); text-decoration:none; transition:color .15s; }
   .lp-links a:hover { color:#67e8f9; }
+  .lp-links a.lp-esqueci { font-size:13px; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
 `;
 
 export default function GestorLoginPage() {
@@ -215,7 +216,7 @@ export default function GestorLoginPage() {
           </form>
 
           <div className="lp-links">
-            <a href="/gestor/recuperar-senha">Esqueci minha senha</a>
+            <a href="/gestor/recuperar-senha" className="lp-esqueci">Esqueci minha senha</a>
             {" · "}
             Consultor? <a href="/consultor/login">Acesse aqui</a>
           </div>
