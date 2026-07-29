@@ -33,14 +33,25 @@ export async function POST(req: NextRequest) {
 
   const { placa, nome_lead, telefone_lead, tipo_veiculo } = parsed.data;
 
-  if (!indicador.consultor_id) return NextResponse.json({ error: "Indicador sem consultor vinculado" }, { status: 400 });
+  let consultorId: string | null = indicador.consultor_id ?? null;
 
-  const bloqueio = await verificarBloqueioConsultor(indicador.consultor_id);
+  if (!consultorId) {
+    const { data: cfg } = await supabaseAdmin
+      .from("configuracoes")
+      .select("consultor_padrao_id")
+      .limit(1)
+      .maybeSingle();
+    consultorId = cfg?.consultor_padrao_id ?? null;
+  }
+
+  if (!consultorId) return NextResponse.json({ error: "Nenhum consultor disponível para receber indicações. Entre em contato com o administrador." }, { status: 400 });
+
+  const bloqueio = await verificarBloqueioConsultor(consultorId);
   if (bloqueio.bloqueado) {
     const { data: consultorInfo } = await supabaseAdmin
       .from("consultores")
       .select("nome, fone")
-      .eq("id", indicador.consultor_id)
+      .eq("id", consultorId)
       .single();
     return NextResponse.json(
       {
@@ -57,7 +68,7 @@ export async function POST(req: NextRequest) {
   const { data: existente } = await supabaseAdmin
     .from("indicacoes")
     .select("id")
-    .eq("consultor_id", indicador.consultor_id)
+    .eq("consultor_id", consultorId)
     .eq("placa", placa)
     .limit(1)
     .maybeSingle();
@@ -68,7 +79,7 @@ export async function POST(req: NextRequest) {
     placa,
     nome_lead: nome_lead ?? null,
     telefone_lead: tel,
-    consultor_id: indicador.consultor_id,
+    consultor_id: consultorId,
     indicador_id: indicador.id,
     tipo_veiculo: tipo_veiculo ?? "carro",
     status: "novo",
@@ -79,7 +90,7 @@ export async function POST(req: NextRequest) {
   const { data: consultor } = await supabaseAdmin
     .from("consultores")
     .select("nome, fone")
-    .eq("id", indicador.consultor_id)
+    .eq("id", consultorId)
     .single();
 
   // Disparo de push notification (falhas nao bloqueiam a resposta principal)
@@ -88,7 +99,7 @@ export async function POST(req: NextRequest) {
       const { data: subs } = await supabaseAdmin
         .from("push_subscriptions")
         .select("subscription")
-        .eq("consultor_id", indicador.consultor_id);
+        .eq("consultor_id", consultorId);
 
       if (!subs || subs.length === 0) return;
 
