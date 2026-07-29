@@ -1,4 +1,4 @@
-const CACHE = "ip-v5";
+const CACHE = "ip-v6";
 const STATIC = ["/", "/favicon-indique.png", "/icon-192.png", "/icon-512.png", "/manifest.json"];
 // Apenas a API e o master ficam fora do cache — os paineis de usuario sao incluidos
 const SKIP = ["/api/", "/master"];
