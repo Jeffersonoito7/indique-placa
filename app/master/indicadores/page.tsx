@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserCheck, Trash2, Plus, X } from "lucide-react";
+import { UserCheck, Trash2, Plus, X, Pencil } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface Indicador {
@@ -10,6 +10,7 @@ interface Indicador {
   nome: string;
   telefone: string | null;
   criado_em: string;
+  consultor_id: string | null;
   consultores: { nome: string } | null;
 }
 
@@ -24,10 +25,18 @@ export default function IndicadoresPage() {
   const [lista, setLista] = useState<Indicador[]>([]);
   const [consultores, setConsultores] = useState<Consultor[]>([]);
   const [excluindo, setExcluindo] = useState<string | null>(null);
-  const [modal, setModal] = useState(false);
+
+  // modal novo
+  const [modalNovo, setModalNovo] = useState(false);
   const [form, setForm] = useState(VAZIO);
   const [salvando, setSalvando] = useState(false);
   const [erro, setErro] = useState("");
+
+  // modal editar
+  const [modalEditar, setModalEditar] = useState<Indicador | null>(null);
+  const [consultorEditado, setConsultorEditado] = useState("");
+  const [salvandoEditar, setSalvandoEditar] = useState(false);
+  const [erroEditar, setErroEditar] = useState("");
 
   const carregar = async () => {
     const res = await fetch("/api/master/indicadores");
@@ -36,18 +45,15 @@ export default function IndicadoresPage() {
 
   const carregarConsultores = async () => {
     const res = await fetch("/api/master/consultores");
-    if (res.ok) {
-      const data = await res.json();
-      setConsultores(data ?? []);
-    }
+    if (res.ok) setConsultores((await res.json()) ?? []);
   };
 
   useEffect(() => { carregar(); carregarConsultores(); }, []);
 
-  const abrirModal = () => { setForm(VAZIO); setErro(""); setModal(true); };
-  const fecharModal = () => { setModal(false); setErro(""); };
+  const abrirNovo = () => { setForm(VAZIO); setErro(""); setModalNovo(true); };
+  const fecharNovo = () => { setModalNovo(false); setErro(""); };
 
-  const salvar = async (e: React.FormEvent) => {
+  const salvarNovo = async (e: React.FormEvent) => {
     e.preventDefault();
     setErro("");
     if (form.senha.length < 6) { setErro("A senha deve ter no mínimo 6 caracteres."); return; }
@@ -56,22 +62,46 @@ export default function IndicadoresPage() {
       const res = await fetch("/api/master/indicadores", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          nome: form.nome,
-          telefone: form.telefone,
-          email: form.email,
-          senha: form.senha,
-          consultor_id: form.consultor_id || null,
-        }),
+        body: JSON.stringify({ nome: form.nome, telefone: form.telefone, email: form.email, senha: form.senha, consultor_id: form.consultor_id || null }),
       });
       const json = await res.json();
       if (!res.ok) { setErro(json.error ?? "Erro ao cadastrar."); return; }
-      fecharModal();
+      fecharNovo();
       carregar();
     } catch {
       setErro("Erro de conexão. Tente novamente.");
     } finally {
       setSalvando(false);
+    }
+  };
+
+  const abrirEditar = (ind: Indicador) => {
+    setModalEditar(ind);
+    setConsultorEditado(ind.consultor_id ?? "");
+    setErroEditar("");
+  };
+
+  const fecharEditar = () => { setModalEditar(null); setErroEditar(""); };
+
+  const salvarEditar = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!modalEditar) return;
+    setErroEditar("");
+    setSalvandoEditar(true);
+    try {
+      const res = await fetch(`/api/master/indicador/${modalEditar.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ consultor_id: consultorEditado || null }),
+      });
+      const json = await res.json();
+      if (!res.ok) { setErroEditar(json.error ?? "Erro ao salvar."); return; }
+      fecharEditar();
+      carregar();
+    } catch {
+      setErroEditar("Erro de conexão. Tente novamente.");
+    } finally {
+      setSalvandoEditar(false);
     }
   };
 
@@ -96,7 +126,7 @@ export default function IndicadoresPage() {
           <p className="text-[11px] text-muted-foreground mt-0.5">Captadores de leads vinculados aos consultores</p>
         </div>
         <button
-          onClick={abrirModal}
+          onClick={abrirNovo}
           className="flex items-center gap-2 px-4 py-2 bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold rounded-lg transition-colors"
         >
           <Plus className="h-4 w-4" />
@@ -131,9 +161,7 @@ export default function IndicadoresPage() {
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
                     {["Nome", "Telefone", "Consultor vinculado", "Cadastro", ""].map((h, i) => (
-                      <th key={i} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">
-                        {h}
-                      </th>
+                      <th key={i} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
                     ))}
                   </tr>
                 </thead>
@@ -149,14 +177,23 @@ export default function IndicadoresPage() {
                         {new Date(ind.criado_em).toLocaleDateString("pt-BR")}
                       </td>
                       <td className="px-6 py-3.5">
-                        <button
-                          onClick={() => excluir(ind.id, ind.nome)}
-                          disabled={excluindo === ind.id}
-                          className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-40"
-                          title="Excluir indicador"
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </button>
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => abrirEditar(ind)}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-violet-500 hover:bg-violet-500/10 transition-colors"
+                            title="Editar / vincular consultor"
+                          >
+                            <Pencil className="h-4 w-4" />
+                          </button>
+                          <button
+                            onClick={() => excluir(ind.id, ind.nome)}
+                            disabled={excluindo === ind.id}
+                            className="p-1.5 rounded-lg text-muted-foreground hover:text-red-500 hover:bg-red-500/10 transition-colors disabled:opacity-40"
+                            title="Excluir indicador"
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -167,95 +204,79 @@ export default function IndicadoresPage() {
         </Card>
       </div>
 
-      {modal && (
+      {/* Modal Novo Indicador */}
+      {modalNovo && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
           <div className="bg-background border border-border rounded-2xl shadow-2xl w-full max-w-md">
             <div className="flex items-center justify-between px-6 py-4 border-b border-border">
               <h2 className="text-sm font-bold">Novo Indicador</h2>
-              <button onClick={fecharModal} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
+              <button onClick={fecharNovo} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
                 <X className="h-4 w-4 text-muted-foreground" />
               </button>
             </div>
-            <form onSubmit={salvar} className="px-6 py-5 space-y-4">
-              {erro && (
-                <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2.5 text-sm text-red-400">
-                  {erro}
-                </div>
-              )}
+            <form onSubmit={salvarNovo} className="px-6 py-5 space-y-4">
+              {erro && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2.5 text-sm text-red-400">{erro}</div>}
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Nome completo</label>
-                <input
-                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-                  placeholder="Ex: Maria Silva"
-                  value={form.nome}
-                  required
-                  onChange={e => setForm(f => ({ ...f, nome: e.target.value }))}
-                />
+                <input className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40" placeholder="Ex: Maria Silva" value={form.nome} required onChange={e => setForm(f => ({ ...f, nome: e.target.value }))} />
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">WhatsApp</label>
-                <input
-                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-                  placeholder="(87) 99999-9999"
-                  type="tel"
-                  value={form.telefone}
-                  required
-                  onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))}
-                />
+                <input className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40" placeholder="(87) 99999-9999" type="tel" value={form.telefone} required onChange={e => setForm(f => ({ ...f, telefone: e.target.value }))} />
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">E-mail</label>
-                <input
-                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-                  placeholder="email@exemplo.com"
-                  type="email"
-                  value={form.email}
-                  required
-                  onChange={e => setForm(f => ({ ...f, email: e.target.value }))}
-                />
+                <input className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40" placeholder="email@exemplo.com" type="email" value={form.email} required onChange={e => setForm(f => ({ ...f, email: e.target.value }))} />
               </div>
               <div>
                 <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Senha de acesso</label>
-                <input
-                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-                  placeholder="Mínimo 6 caracteres"
-                  type="password"
-                  value={form.senha}
-                  required
-                  minLength={6}
-                  onChange={e => setForm(f => ({ ...f, senha: e.target.value }))}
-                />
+                <input className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40" placeholder="Mínimo 6 caracteres" type="password" value={form.senha} required minLength={6} onChange={e => setForm(f => ({ ...f, senha: e.target.value }))} />
               </div>
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                  Consultor <span className="text-muted-foreground/50 font-normal normal-case">(opcional)</span>
-                </label>
-                <select
-                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40"
-                  value={form.consultor_id}
-                  onChange={e => setForm(f => ({ ...f, consultor_id: e.target.value }))}
-                >
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Consultor <span className="text-muted-foreground/50 font-normal normal-case">(opcional)</span></label>
+                <select className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40" value={form.consultor_id} onChange={e => setForm(f => ({ ...f, consultor_id: e.target.value }))}>
                   <option value="">Sem consultor vinculado</option>
-                  {consultores.map(c => (
-                    <option key={c.id} value={c.id}>{c.nome}</option>
-                  ))}
+                  {consultores.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                 </select>
               </div>
               <div className="flex gap-3 pt-2">
-                <button
-                  type="button"
-                  onClick={fecharModal}
-                  className="flex-1 py-2.5 rounded-lg border border-border text-sm font-semibold text-muted-foreground hover:bg-accent transition-colors"
+                <button type="button" onClick={fecharNovo} className="flex-1 py-2.5 rounded-lg border border-border text-sm font-semibold text-muted-foreground hover:bg-accent transition-colors">Cancelar</button>
+                <button type="submit" disabled={salvando} className="flex-1 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition-colors disabled:opacity-50">{salvando ? "Salvando..." : "Cadastrar"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
+
+      {/* Modal Editar / Vincular Consultor */}
+      {modalEditar && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+          <div className="bg-background border border-border rounded-2xl shadow-2xl w-full max-w-sm">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-border">
+              <div>
+                <h2 className="text-sm font-bold">Vincular Consultor</h2>
+                <p className="text-xs text-muted-foreground mt-0.5">{modalEditar.nome}</p>
+              </div>
+              <button onClick={fecharEditar} className="p-1.5 rounded-lg hover:bg-accent transition-colors">
+                <X className="h-4 w-4 text-muted-foreground" />
+              </button>
+            </div>
+            <form onSubmit={salvarEditar} className="px-6 py-5 space-y-4">
+              {erroEditar && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2.5 text-sm text-red-400">{erroEditar}</div>}
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Consultor vinculado</label>
+                <select
+                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+                  value={consultorEditado}
+                  onChange={e => setConsultorEditado(e.target.value)}
                 >
-                  Cancelar
-                </button>
-                <button
-                  type="submit"
-                  disabled={salvando}
-                  className="flex-1 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition-colors disabled:opacity-50"
-                >
-                  {salvando ? "Salvando..." : "Cadastrar"}
-                </button>
+                  <option value="">Sem consultor vinculado</option>
+                  {consultores.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
+                </select>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={fecharEditar} className="flex-1 py-2.5 rounded-lg border border-border text-sm font-semibold text-muted-foreground hover:bg-accent transition-colors">Cancelar</button>
+                <button type="submit" disabled={salvandoEditar} className="flex-1 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition-colors disabled:opacity-50">{salvandoEditar ? "Salvando..." : "Salvar"}</button>
               </div>
             </form>
           </div>
