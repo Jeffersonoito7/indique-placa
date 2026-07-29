@@ -76,7 +76,8 @@ export async function middleware(req: NextRequest) {
 
   if (
     pathname.startsWith("/master") &&
-    !pathname.startsWith("/master/login")
+    !pathname.startsWith("/master/login") &&
+    !pathname.startsWith("/master/recuperar-senha")
   ) {
     const token = req.cookies.get("master_auth")?.value ?? "";
     if (!token || !(await checkMasterCookie(token))) {
