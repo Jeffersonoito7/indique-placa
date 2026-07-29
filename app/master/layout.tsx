@@ -34,7 +34,7 @@ const navItems = [
 
 export default function MasterLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname === "/master/login") return <>{children}</>;
+  if (pathname === "/master/login" || pathname === "/master/recuperar-senha") return <>{children}</>;
 
   return (
     <AppShell
