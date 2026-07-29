@@ -28,7 +28,7 @@ const navItems = [
 
 export default function AssociacaoLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname === "/associacao/login") return <>{children}</>;
+  if (pathname === "/associacao/login" || pathname === "/associacao/recuperar-senha") return <>{children}</>;
 
   return (
     <AppShell

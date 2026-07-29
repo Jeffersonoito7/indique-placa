@@ -36,7 +36,7 @@ const navItems = [
 
 export default function GestorLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  if (pathname === "/gestor/login") return <>{children}</>;
+  if (pathname === "/gestor/login" || pathname === "/gestor/recuperar-senha" || pathname === "/gestor/cadastro") return <>{children}</>;
 
   return (
     <AppShell
