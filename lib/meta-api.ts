@@ -59,6 +59,7 @@ export async function criarCampanhaMeta(creds: MetaCreds, params: {
   copy_corpo: string;
   copy_cta: string;
   imagem_url?: string;
+  video_id?: string;
   localizacao?: string;
   idade_min: number;
   idade_max: number;
@@ -114,7 +115,17 @@ export async function criarCampanhaMeta(creds: MetaCreds, params: {
   // 4. Criativo
   let creative_spec: Record<string, unknown>;
 
-  if (params.imagem_url) {
+  if (params.video_id) {
+    creative_spec = {
+      instagram_actor_id: creds.instagram_actor_id ?? creds.page_id,
+      video_data: {
+        video_id: params.video_id,
+        message: params.copy_corpo,
+        title: params.copy_titulo,
+        call_to_action: { type: params.copy_cta, value: { link: "https://indiqueplaca.com.br" } },
+      },
+    };
+  } else if (params.imagem_url) {
     creative_spec = {
       instagram_actor_id: creds.instagram_actor_id ?? creds.page_id,
       link_data: {
@@ -203,4 +214,106 @@ export async function buscarInsights(token: string, campaign_id: string, dias = 
   } catch {
     return { impressoes: 0, cliques: 0, ctr: 0, cpm: 0, cpc: 0, gasto: 0, alcance: 0, leads: 0 };
   }
+}
+
+const BASE_VIDEO = `https://graph-video.facebook.com/${META_VERSION}`;
+
+type IniciarUploadResponse = {
+  upload_session_id: string;
+  video_id: string;
+  start_offset: number;
+  end_offset: number;
+};
+
+// Upload chunked — fase 1: iniciar sessao de upload
+export async function iniciarUploadVideo(
+  creds: Pick<MetaCreds, "access_token" | "ad_account_id">,
+  nome: string,
+  tamanho: number
+): Promise<IniciarUploadResponse> {
+  const acId = `act_${creds.ad_account_id.replace(/^act_/, "")}`;
+  const res = await fetch(`${BASE_VIDEO}/${acId}/advideos`, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({
+      upload_phase: "start",
+      file_size: tamanho,
+      file_name: nome,
+      access_token: creds.access_token,
+    }),
+    cache: "no-store",
+  });
+  const json = await res.json() as IniciarUploadResponse & { error?: { message?: string } };
+  if (!res.ok) throw new Error(json.error?.message ?? "Erro ao iniciar upload de video");
+  return json;
+}
+
+type ChunkResponse = { start_offset: number; end_offset: number };
+
+// Upload chunked — fase 2: enviar chunk
+export async function transferirChunkVideo(
+  creds: Pick<MetaCreds, "access_token" | "ad_account_id">,
+  upload_session_id: string,
+  start_offset: number,
+  end_offset: number,
+  chunk: Blob
+): Promise<ChunkResponse> {
+  const acId = `act_${creds.ad_account_id.replace(/^act_/, "")}`;
+  const form = new FormData();
+  form.append("upload_phase", "transfer");
+  form.append("upload_session_id", upload_session_id);
+  form.append("start_offset", String(start_offset));
+  form.append("end_offset", String(end_offset));
+  form.append("video_file_chunk", chunk, "chunk.bin");
+  form.append("access_token", creds.access_token);
+
+  const res = await fetch(`${BASE_VIDEO}/${acId}/advideos`, {
+    method: "POST",
+    body: form,
+    cache: "no-store",
+  });
+  const json = await res.json() as ChunkResponse & { error?: { message?: string } };
+  if (!res.ok) throw new Error(json.error?.message ?? "Erro ao transferir chunk de video");
+  return json;
+}
+
+type StatusVideoResponse = { pronto: boolean; progresso: number; erro?: string };
+
+// Verificar se video esta pronto no Meta
+export async function checarStatusVideo(token: string, video_id: string): Promise<StatusVideoResponse> {
+  const url = new URL(`${BASE}/${video_id}`);
+  url.searchParams.set("fields", "status");
+  url.searchParams.set("access_token", token);
+  const res = await fetch(url.toString(), { cache: "no-store" });
+  const json = await res.json() as {
+    status?: { video_status?: string; processing_progress?: number };
+    error?: { message?: string };
+  };
+  if (!res.ok) throw new Error(json.error?.message ?? "Erro ao verificar status do video");
+
+  const vs = json.status?.video_status ?? "processing";
+  const prog = json.status?.processing_progress ?? 0;
+
+  if (vs === "ready") return { pronto: true, progresso: 100 };
+  if (vs === "error") return { pronto: false, progresso: prog, erro: "O Meta reportou erro ao processar o video" };
+  return { pronto: false, progresso: prog };
+}
+
+// Faz upload de um video para a conta de anuncios e retorna o video_id
+export async function uploadVideoMeta(creds: Pick<MetaCreds, "access_token" | "ad_account_id">, file: Blob, titulo: string): Promise<string> {
+  const acId = `act_${creds.ad_account_id.replace(/^act_/, "")}`;
+  const form = new FormData();
+  form.append("access_token", creds.access_token);
+  form.append("title", titulo);
+  form.append("source", file, "video.mp4");
+
+  const res = await fetch(`https://graph-video.facebook.com/v19.0/${acId}/advideos`, {
+    method: "POST",
+    body: form,
+    cache: "no-store",
+  });
+
+  const json = await res.json() as { id?: string; error?: { message?: string } };
+  if (!res.ok || !json.id) throw new Error(json.error?.message ?? "Erro ao enviar vídeo para o Meta");
+  return json.id;
 }

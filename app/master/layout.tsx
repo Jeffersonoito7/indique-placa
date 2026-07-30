@@ -2,7 +2,7 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, Building2, Users, UserCheck, ClipboardList, Trophy, Link2, Settings, DollarSign, BarChart2, ShieldCheck, BarChart3, Activity, Layers } from "lucide-react";
+import { LayoutDashboard, Building2, Users, UserCheck, ClipboardList, Trophy, Link2, Settings, DollarSign, BarChart2, ShieldCheck, BarChart3, Activity, Layers, Megaphone } from "lucide-react";
 import MasterHealthBanner from "@/components/master-health-banner";
 
 const navItems = [
@@ -23,6 +23,9 @@ const navItems = [
   { group: "Analytics", items: [
     { href: "/master/bi", label: "Business Intelligence", icon: BarChart3 },
     { href: "/master/health", label: "Health Monitor", icon: Activity },
+  ]},
+  { group: "Marketing", items: [
+    { href: "/master/trafego", label: "Tráfego Pago", icon: Megaphone },
   ]},
   { group: "Administração", items: [
     { href: "/master/financeiro", label: "Financeiro", icon: DollarSign },

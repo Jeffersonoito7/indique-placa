@@ -4,7 +4,7 @@ import { verificarToken } from "@/lib/master-token";
 import { getAssociacaoLogada, getGestorLogado } from "@/lib/auth";
 import { validarSessao } from "@/lib/sessoes";
 
-export type TipoUsuarioTrafego = "gestor" | "consultor" | "associacao";
+export type TipoUsuarioTrafego = "gestor" | "consultor" | "associacao" | "master";
 
 export async function autenticarTrafego(tipo: TipoUsuarioTrafego): Promise<string | null> {
   const cookieStore = await cookies();
@@ -19,6 +19,10 @@ export async function autenticarTrafego(tipo: TipoUsuarioTrafego): Promise<strin
   if (tipo === "associacao") {
     const assoc = await getAssociacaoLogada();
     return assoc?.id ?? null;
+  }
+  if (tipo === "master") {
+    const token = cookieStore.get("master_auth")?.value ?? "";
+    return verificarToken(token) ? "master" : null;
   }
   return null;
 }
