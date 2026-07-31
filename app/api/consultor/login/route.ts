@@ -9,7 +9,7 @@ import { z } from "zod";
 const DUMMY_HASH = "$2a$10$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
 
 const schema = z.object({
-  telefone: z.string().min(10).max(20),
+  email: z.string().email().max(200),
   senha: z.string().min(1).max(128),
 });
 
@@ -28,21 +28,20 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
-  const { telefone, senha } = parsed.data;
-  const tel = telefone.replace(/\D/g, "");
+  const { email, senha } = parsed.data;
 
   const { data: consultor } = await supabaseAdmin
     .from("consultores")
     .select("id, nome, fone, senha_hash, status")
-    .eq("fone", tel)
+    .eq("email", email.toLowerCase())
     .maybeSingle();
 
-  // Sempre executa bcrypt para nao revelar por timing se o telefone existe
+  // Sempre executa bcrypt para nao revelar por timing se o email existe
   const hashParaComparar = consultor?.senha_hash ?? DUMMY_HASH;
   const senhaCorreta = await bcrypt.compare(senha, hashParaComparar);
 
   if (!consultor || !senhaCorreta) {
-    return NextResponse.json({ error: "Telefone ou senha incorretos" }, { status: 401 });
+    return NextResponse.json({ error: "E-mail ou senha incorretos" }, { status: 401 });
   }
 
   if (consultor.status !== "ativo") {

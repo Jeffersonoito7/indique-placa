@@ -22,13 +22,6 @@ const STREAMS = [
   { left:"91%", delay:"2.3s", dur:"7.4s"},
 ];
 
-function fmtTelBR(v: string): string {
-  const n = v.replace(/\D/g, "").slice(0, 11);
-  if (n.length <= 2) return n.length ? `(${n}` : "";
-  if (n.length <= 6) return `(${n.slice(0,2)}) ${n.slice(2)}`;
-  if (n.length <= 10) return `(${n.slice(0,2)}) ${n.slice(2,6)}-${n.slice(6)}`;
-  return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
-}
 
 const CSS = `
   @keyframes bgShift {
@@ -151,7 +144,7 @@ const CSS = `
 
 export default function ConsultorLoginPage() {
   const router = useRouter();
-  const [telefone, setTelefone] = useState("");
+  const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [verSenha, setVerSenha] = useState(false);
   const [erro, setErro] = useState("");
@@ -165,7 +158,7 @@ export default function ConsultorLoginPage() {
       const res = await fetch("/api/consultor/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telefone, senha }),
+        body: JSON.stringify({ email: email.trim().toLowerCase(), senha }),
       });
       const json = await res.json();
       if (!res.ok) setErro(json.error ?? "Credenciais inválidas");
@@ -205,9 +198,9 @@ export default function ConsultorLoginPage() {
           {erro && <div className="lp-erro">{erro}</div>}
 
           <form onSubmit={entrar} noValidate>
-            <input className="lp-campo" type="tel" inputMode="numeric" placeholder="(87) 99999-9999"
-              value={telefone} required
-              onChange={(e) => setTelefone(fmtTelBR(e.target.value))} />
+            <input className="lp-campo" type="email" inputMode="email" placeholder="seu@email.com"
+              value={email} required autoComplete="email"
+              onChange={(e) => setEmail(e.target.value)} />
             <div className="lp-pw-wrap">
               <input className="lp-campo" type={verSenha ? "text" : "password"} placeholder="Senha"
                 value={senha} required onChange={(e) => setSenha(e.target.value)} />
@@ -218,7 +211,7 @@ export default function ConsultorLoginPage() {
                 }
               </button>
             </div>
-            <button className="lp-btn" type="submit" disabled={carregando || !telefone || !senha}>
+            <button className="lp-btn" type="submit" disabled={carregando || !email || !senha}>
               {carregando ? "ENTRANDO..." : "ENTRAR"}
             </button>
           </form>
