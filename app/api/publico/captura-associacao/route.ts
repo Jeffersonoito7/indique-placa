@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
 
@@ -41,8 +41,7 @@ function gerarSlug(nome: string): string {
 }
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const { allowed } = await rateLimit(`captura-associacao:${ip}`, 3, 60 * 1000);
+  const { allowed } = await rateLimit(getRateLimitKey(req, "captura-associacao"), 3, 60 * 1000);
   if (!allowed) {
     return NextResponse.json({ error: "Muitas tentativas. Aguarde 1 minuto." }, { status: 429 });
   }

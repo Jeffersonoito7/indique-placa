@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { cookies } from "next/headers";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { criarSessao } from "@/lib/sessoes";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import bcrypt from "bcryptjs";
 import { z } from "zod";
 
@@ -15,8 +15,7 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const { allowed: rlAllowed } = await rateLimit(`gestor-login:${ip}`, 5, 15 * 60 * 1000);
+  const { allowed: rlAllowed } = await rateLimit(getRateLimitKey(req, "gestor-login"), 5, 15 * 60 * 1000);
   if (!rlAllowed) {
     return NextResponse.json({ error: "Muitas tentativas. Aguarde 15 minutos." }, { status: 429 });
   }

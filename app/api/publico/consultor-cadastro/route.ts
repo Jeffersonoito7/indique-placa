@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { enviarEmailBoasVindas } from "@/lib/email";
 import { z } from "zod";
 import bcrypt from "bcryptjs";
@@ -16,8 +16,7 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const { allowed: rlAllowed } = await rateLimit(`consultor-cadastro:${ip}`, 3, 60 * 1000);
+  const { allowed: rlAllowed } = await rateLimit(getRateLimitKey(req, "consultor-cadastro"), 3, 60 * 1000);
   if (!rlAllowed) {
     return NextResponse.json({ error: "Muitas tentativas. Aguarde 1 minuto." }, { status: 429 });
   }

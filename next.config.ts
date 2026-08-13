@@ -3,12 +3,7 @@ import { withSentryConfig } from "@sentry/nextjs";
 
 const nextConfig: NextConfig = {
   turbopack: {},
-  experimental: {
-    // Aumenta o limite de body para uploads de video (padrao 4.5 MB e insuficiente)
-    serverActions: {
-      bodySizeLimit: "500mb",
-    },
-  },
+  experimental: {},
 };
 
 export default withSentryConfig(nextConfig, {

@@ -7,10 +7,7 @@ const DURACAO_HORAS = 8;
 function getSecret(): string {
   const secret = process.env.SESSION_SECRET;
   if (!secret) {
-    if (process.env.NODE_ENV === "production") {
-      throw new Error("SESSION_SECRET nao configurado. Defina esta variavel de ambiente no Vercel.");
-    }
-    return "indique-placa-secret-dev-only";
+    throw new Error("SESSION_SECRET nao configurado. Defina esta variavel de ambiente.");
   }
   return secret;
 }

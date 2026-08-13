@@ -3,7 +3,7 @@ import { cookies } from "next/headers";
 import { z } from "zod";
 import { createHmac } from "crypto";
 import { gerarToken } from "@/lib/master-token";
-import { rateLimit } from "@/lib/rate-limit";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 // Comparacao em tempo constante sem vazamento de tamanho via HMAC
 function safeEquals(a: string, b: string): boolean {
@@ -21,8 +21,7 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
-  const ip = req.headers.get("x-forwarded-for")?.split(",")[0] ?? "unknown";
-  const { allowed: rlAllowed } = await rateLimit(`master-login:${ip}`, 10, 15 * 60 * 1000);
+  const { allowed: rlAllowed } = await rateLimit(getRateLimitKey(req, "master-login"), 5, 15 * 60 * 1000);
   if (!rlAllowed) {
     return NextResponse.json({ error: "Muitas tentativas. Aguarde 15 minutos." }, { status: 429 });
   }
