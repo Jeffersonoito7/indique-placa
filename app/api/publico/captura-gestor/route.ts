@@ -33,7 +33,7 @@ export async function POST(req: NextRequest) {
     .from("gestores")
     .select("id, ativo, associacao_id")
     .eq("id", gestor_id)
-    .single();
+    .maybeSingle();
 
   if (!gestor || !gestor.ativo) {
     return NextResponse.json({ error: "Gestor não encontrado ou inativo." }, { status: 404 });

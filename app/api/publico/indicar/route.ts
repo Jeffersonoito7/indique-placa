@@ -34,7 +34,7 @@ export async function POST(req: NextRequest) {
       .from("consultores")
       .select("id, status")
       .eq("id", cid)
-      .single();
+      .maybeSingle();
     if (!consultor || consultor.status !== "ativo") cid = null;
   }
 
@@ -43,7 +43,7 @@ export async function POST(req: NextRequest) {
       .from("configuracoes")
       .select("consultor_padrao_id")
       .limit(1)
-      .single();
+      .maybeSingle();
     cid = (config as any)?.consultor_padrao_id ?? null;
   }
 

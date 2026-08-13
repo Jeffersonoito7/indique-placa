@@ -36,22 +36,24 @@ export async function POST(req: NextRequest) {
   const { nome, telefone, email, cidade, associacao, associacao_id, senha } = parsed.data;
   const tel = telefone.replace(/\D/g, "");
 
-  const { data: existenteFone } = await supabaseAdmin
+  const { data: existenteFone, error: errFone } = await supabaseAdmin
     .from("consultores")
     .select("id")
     .eq("fone", tel)
-    .single();
+    .maybeSingle();
 
+  if (errFone) return NextResponse.json({ error: "Erro ao verificar cadastro" }, { status: 500 });
   if (existenteFone) {
     return NextResponse.json({ error: "Este WhatsApp já está cadastrado" }, { status: 409 });
   }
 
-  const { data: existenteEmail } = await supabaseAdmin
+  const { data: existenteEmail, error: errEmail } = await supabaseAdmin
     .from("consultores")
     .select("id")
     .eq("email", email.toLowerCase())
-    .single();
+    .maybeSingle();
 
+  if (errEmail) return NextResponse.json({ error: "Erro ao verificar cadastro" }, { status: 500 });
   if (existenteEmail) {
     return NextResponse.json({ error: "Este email já está cadastrado" }, { status: 409 });
   }
@@ -65,7 +67,7 @@ export async function POST(req: NextRequest) {
       .from("associacoes")
       .select("id")
       .eq("id", assocIdFinal)
-      .single();
+      .maybeSingle();
     if (!assocCheck) assocIdFinal = null;
   }
 

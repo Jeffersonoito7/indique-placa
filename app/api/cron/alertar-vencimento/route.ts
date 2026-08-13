@@ -23,6 +23,7 @@ export async function GET(req: NextRequest) {
   em3Dias.setDate(em3Dias.getDate() + 3);
   const amanha = new Date();
   amanha.setDate(amanha.getDate() + 1);
+  amanha.setHours(0, 0, 0, 0);
 
   // Filtra tambem por alerta_vencimento_enviado_em para evitar spam no mesmo dia
   const inicioDoDia = new Date();
