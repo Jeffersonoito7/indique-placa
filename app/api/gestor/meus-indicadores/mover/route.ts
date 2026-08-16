@@ -9,17 +9,17 @@ const bodySchema = z.object({
 
 export async function POST(req: NextRequest) {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 });
+    return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });
   }
 
   const parsed = bodySchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { indicador_id } = parsed.data;
 
@@ -36,7 +36,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!indicador) {
-    return NextResponse.json({ error: "Indicador nao encontrado" }, { status: 404 });
+    return NextResponse.json({ error: "Indicador não encontrado" }, { status: 404 });
   }
 
   // 2. Verifica que o indicador esta vinculado a um consultor
@@ -57,7 +57,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!consultor) {
-    return NextResponse.json({ error: "Consultor nao encontrado" }, { status: 404 });
+    return NextResponse.json({ error: "Consultor não encontrado" }, { status: 404 });
   }
 
   // 4. Verifica que o consultor pertence ao time do gestor

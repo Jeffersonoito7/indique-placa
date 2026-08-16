@@ -22,7 +22,7 @@ async function autenticar() {
 }
 
 export async function GET() {
-  if (!(await autenticar())) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!(await autenticar())) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const { data } = await supabaseAdmin
     .from("configuracoes_master")
@@ -34,13 +34,13 @@ export async function GET() {
 }
 
 export async function PUT(req: NextRequest) {
-  if (!(await autenticar())) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!(await autenticar())) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Dados invalidos" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Dados inválidos" }, { status: 400 }); }
 
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos", detalhe: parsed.error.flatten() }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos", detalhe: parsed.error.flatten() }, { status: 400 });
 
   const { error } = await supabaseAdmin
     .from("configuracoes_master")

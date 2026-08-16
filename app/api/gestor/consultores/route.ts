@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export async function GET() {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const { data: consultores, error } = await supabaseAdmin
     .from("consultores")
@@ -52,7 +52,7 @@ const postSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }

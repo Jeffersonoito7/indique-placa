@@ -8,7 +8,7 @@ const schemaStatus = z.object({ status: z.enum(["ativa", "pausada"]) });
 
 export async function GET(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = await autenticarTrafego("consultor");
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   const { id: campId } = await params;
 
   const { data: camp } = await supabaseAdmin
@@ -20,7 +20,7 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
     .order("data_referencia", { referencedTable: "trafego_insights", ascending: false })
     .maybeSingle();
 
-  if (!camp) return NextResponse.json({ error: "Nao encontrado" }, { status: 404 });
+  if (!camp) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
 
   const alertas = await supabaseAdmin
     .from("trafego_alertas")
@@ -34,11 +34,11 @@ export async function GET(req: NextRequest, { params }: { params: Promise<{ id: 
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = await autenticarTrafego("consultor");
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   const { id: campId } = await params;
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Dados invalidos" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Dados inválidos" }, { status: 400 }); }
 
   const parsed = schemaStatus.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Status invalido" }, { status: 400 });
@@ -51,7 +51,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .eq("usuario_tipo", "consultor")
     .maybeSingle();
 
-  if (!camp) return NextResponse.json({ error: "Nao encontrado" }, { status: 404 });
+  if (!camp) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
 
   const token = (camp.trafego_contas as { meta_access_token?: string } | null)?.meta_access_token;
 
@@ -75,7 +75,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const id = await autenticarTrafego("consultor");
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   const { id: campId } = await params;
 
   const { data: camp } = await supabaseAdmin
@@ -86,7 +86,7 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
     .eq("usuario_tipo", "consultor")
     .maybeSingle();
 
-  if (!camp) return NextResponse.json({ error: "Nao encontrado" }, { status: 404 });
+  if (!camp) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
 
   const token = (camp.trafego_contas as { meta_access_token?: string } | null)?.meta_access_token;
   if (token && camp.meta_campaign_id) {

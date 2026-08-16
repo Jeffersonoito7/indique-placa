@@ -19,17 +19,17 @@ const patchSchema = z.object({
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const assoc = await getAssociacaoLogada();
-  if (!assoc) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!assoc) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const { id } = await params;
   const pertence = await verificarPosse(assoc.id, id);
-  if (!pertence) return NextResponse.json({ error: "Consultor nao encontrado" }, { status: 404 });
+  if (!pertence) return NextResponse.json({ error: "Consultor não encontrado" }, { status: 404 });
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const parsed = patchSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { data, error } = await supabaseAdmin
     .from("consultores")
@@ -48,11 +48,11 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const assoc = await getAssociacaoLogada();
-  if (!assoc) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!assoc) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const { id } = await params;
   const pertence = await verificarPosse(assoc.id, id);
-  if (!pertence) return NextResponse.json({ error: "Consultor nao encontrado" }, { status: 404 });
+  if (!pertence) return NextResponse.json({ error: "Consultor não encontrado" }, { status: 404 });
 
   // Inativar e desvincular do gestor
   const { error } = await supabaseAdmin

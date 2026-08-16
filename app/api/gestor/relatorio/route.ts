@@ -4,7 +4,7 @@ import { getGestorLogado } from "@/lib/auth";
 
 export async function GET(req: NextRequest) {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   // Verificar permissoes do plano
   const { data: planoConfig } = await supabaseAdmin

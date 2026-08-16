@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 
 export async function GET() {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { data: consultores } = await supabaseAdmin
     .from("consultores")

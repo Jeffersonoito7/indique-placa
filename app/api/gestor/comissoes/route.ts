@@ -11,7 +11,7 @@ const DEFAULTS = [
 
 export async function GET() {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { data } = await supabaseAdmin
     .from("comissoes_tipos")
@@ -33,13 +33,13 @@ const schemaPost = z.object({
 
 export async function POST(req: NextRequest) {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const parsed = schemaPost.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { tipo, label, icone, comissao_indicador, ativo } = parsed.data;
 
@@ -60,13 +60,13 @@ const schemaDelete = z.object({
 
 export async function DELETE(req: NextRequest) {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const parsed = schemaDelete.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { error } = await supabaseAdmin
     .from("comissoes_tipos")

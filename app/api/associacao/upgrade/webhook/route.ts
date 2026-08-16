@@ -31,7 +31,7 @@ export async function POST(req: NextRequest) {
   }
 
   if (!tokensIguais) {
-    return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
   let body: unknown;

@@ -8,13 +8,13 @@ const ALLOWED_TYPES = ["image/jpeg", "image/png", "image/webp"];
 
 export async function POST(req: NextRequest) {
   const consultor = await getConsultorLogado();
-  if (!consultor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!consultor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   let formData: FormData;
-  try { formData = await req.formData(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { formData = await req.formData(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const file = formData.get("foto");
-  if (!(file instanceof File)) return NextResponse.json({ error: "Arquivo nao encontrado" }, { status: 400 });
+  if (!(file instanceof File)) return NextResponse.json({ error: "Arquivo não encontrado" }, { status: 400 });
 
   if (!ALLOWED_TYPES.includes(file.type)) {
     return NextResponse.json({ error: "Tipo de arquivo nao permitido. Use JPG, PNG ou WebP." }, { status: 400 });

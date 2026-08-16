@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
 
   let body: unknown;
   try { body = await req.json(); } catch {
-    return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 });
+    return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });
   }
 
   const etapa2 = schemaEtapa2.safeParse(body);

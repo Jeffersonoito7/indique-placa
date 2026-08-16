@@ -14,13 +14,13 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const id = await autenticarTrafego(TIPO);
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Dados invalidos" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Dados inválidos" }, { status: 400 }); }
 
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos", detalhes: parsed.error.flatten() }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos", detalhes: parsed.error.flatten() }, { status: 400 });
 
   const { data: conta } = await supabaseAdmin
     .from("trafego_contas")

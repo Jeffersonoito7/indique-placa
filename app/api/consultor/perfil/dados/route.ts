@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 
 export async function GET() {
   const consultor = await getConsultorLogado();
-  if (!consultor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!consultor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { data } = await supabaseAdmin
     .from("consultores")
@@ -12,7 +12,7 @@ export async function GET() {
     .eq("id", consultor.id)
     .single();
 
-  if (!data) return NextResponse.json({ error: "Consultor nao encontrado" }, { status: 404 });
+  if (!data) return NextResponse.json({ error: "Consultor não encontrado" }, { status: 404 });
 
   return NextResponse.json(data);
 }

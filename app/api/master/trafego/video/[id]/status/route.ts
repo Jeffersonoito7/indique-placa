@@ -11,7 +11,7 @@ export async function GET(
   { params }: { params: Promise<{ id: string }> }
 ) {
   const id = await autenticarTrafego(TIPO);
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { id: video_id } = await params;
   if (!video_id) return NextResponse.json({ error: "ID do video ausente" }, { status: 400 });

@@ -14,13 +14,13 @@ const schema = z.object({
 
 export async function PATCH(req: NextRequest) {
   const consultor = await getConsultorLogado();
-  if (!consultor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!consultor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { nome, sobrenome, fone, nova_senha, senha_atual } = parsed.data;
   const foneNumeros = fone.replace(/\D/g, "");

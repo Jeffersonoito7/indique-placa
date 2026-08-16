@@ -11,11 +11,11 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const body = await req.json().catch(() => null);
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 422 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 422 });
 
   const { consultor_origem_id, consultor_destino_id, motivo } = parsed.data;
 
@@ -33,8 +33,8 @@ export async function POST(req: NextRequest) {
   const origem = consultores?.find((c) => c.id === consultor_origem_id);
   const destino = consultores?.find((c) => c.id === consultor_destino_id);
 
-  if (!origem) return NextResponse.json({ error: "Consultor de origem nao encontrado no seu time" }, { status: 404 });
-  if (!destino) return NextResponse.json({ error: "Consultor de destino nao encontrado no seu time" }, { status: 404 });
+  if (!origem) return NextResponse.json({ error: "Consultor de origem não encontrado no seu time" }, { status: 404 });
+  if (!destino) return NextResponse.json({ error: "Consultor de destino não encontrado no seu time" }, { status: 404 });
   if (destino.status !== "ativo") return NextResponse.json({ error: "Consultor de destino esta inativo" }, { status: 400 });
 
   // Busca todos os leads abertos (nao fechados) do consultor de origem

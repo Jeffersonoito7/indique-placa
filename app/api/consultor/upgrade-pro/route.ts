@@ -50,7 +50,7 @@ async function gerarPix(
 // GET: retorna configuracao e status do plano
 export async function GET(req: NextRequest) {
   const consultor = await autenticar();
-  if (!consultor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!consultor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   // Modo status: ?txid=xxx
   const txid = req.nextUrl.searchParams.get("txid");
@@ -121,7 +121,7 @@ export async function GET(req: NextRequest) {
 // POST: inicia upgrade
 export async function POST(req: NextRequest) {
   const consultor = await autenticar();
-  if (!consultor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!consultor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   // Considera "ja pro" apenas se o plano ainda estiver dentro da validade
   const planoAtivo = consultor.plano === "pro" && consultor.plano_ativo_ate && new Date(consultor.plano_ativo_ate) > new Date();

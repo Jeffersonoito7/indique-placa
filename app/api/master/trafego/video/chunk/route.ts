@@ -8,7 +8,7 @@ const UID = "master";
 
 export async function POST(req: NextRequest) {
   const id = await autenticarTrafego(TIPO);
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   let formData: FormData;
   try {

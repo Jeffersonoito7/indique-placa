@@ -34,7 +34,7 @@ function mockParceiros(tipo: string, cidade: string): Parceiro[] {
 export async function GET(req: NextRequest) {
   const cookieStore = await cookies();
   const token = cookieStore.get("consultor_auth")?.value;
-  if (!token) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!token) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const consultorId = await validarSessao(token, "consultor");
   if (!consultorId) return NextResponse.json({ error: "Sessao expirada" }, { status: 401 });

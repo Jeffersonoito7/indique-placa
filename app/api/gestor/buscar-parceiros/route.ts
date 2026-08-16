@@ -31,7 +31,7 @@ function mockParceiros(tipo: string, cidade: string): Parceiro[] {
 
 export async function GET(req: NextRequest) {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { searchParams } = req.nextUrl;
   const cidade = (searchParams.get("cidade") ?? "").trim();

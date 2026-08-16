@@ -5,7 +5,7 @@ const BASE_URL = process.env.NEXT_PUBLIC_BASE_URL ?? "";
 
 export async function GET() {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   return NextResponse.json({
     link: `${BASE_URL}/captura/gestor/${gestor.id}`,
@@ -16,13 +16,13 @@ export async function GET() {
 
 export async function POST(req: NextRequest) {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 });
+    return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });
   }
 
   const { tipo } = body as { tipo?: string };

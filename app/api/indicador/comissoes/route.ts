@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 
 export async function GET() {
   const indicador = await getIndicadorLogado();
-  if (!indicador) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!indicador) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const { data } = await supabaseAdmin
     .from("indicacoes")

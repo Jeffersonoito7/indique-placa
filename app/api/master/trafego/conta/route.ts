@@ -17,7 +17,7 @@ const schema = z.object({
 
 export async function GET(req: NextRequest) {
   const id = await autenticarTrafego(TIPO);
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { data } = await supabaseAdmin
     .from("trafego_contas")
@@ -31,13 +31,13 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   const id = await autenticarTrafego(TIPO);
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Dados invalidos" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Dados inválidos" }, { status: 400 }); }
 
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { meta_access_token, meta_ad_account_id, meta_page_id, meta_instagram_actor_id, openai_api_key } = parsed.data;
 
@@ -75,7 +75,7 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const id = await autenticarTrafego(TIPO);
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { data: ativas } = await supabaseAdmin
     .from("trafego_campanhas")

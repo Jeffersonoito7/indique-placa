@@ -5,7 +5,7 @@ import { criarEfiMaster, masterEfiConfigurado } from "@/lib/efi-master";
 
 export async function GET(req: NextRequest) {
   const assoc = await getAssociacaoLogada();
-  if (!assoc) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!assoc) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   // Polling de status de cobranca
   const txid = req.nextUrl.searchParams.get("txid");
@@ -46,7 +46,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(_req: NextRequest) {
   const assoc = await getAssociacaoLogada();
-  if (!assoc) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!assoc) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   // Idempotencia: nao cria novo PIX se ja existe cobranca pendente
   const { data: cobExistente } = await supabaseAdmin

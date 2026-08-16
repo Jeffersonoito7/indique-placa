@@ -5,7 +5,7 @@ import { z } from "zod";
 
 export async function GET() {
   const consultor = await getConsultorLogado();
-  if (!consultor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!consultor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { data } = await supabaseAdmin
     .from("metas")
@@ -27,13 +27,13 @@ const schemaPost = z.object({
 
 export async function POST(req: NextRequest) {
   const consultor = await getConsultorLogado();
-  if (!consultor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!consultor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const parsed = schemaPost.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { nome, descricao, tipo_veiculo, quantidade_indicacoes, bonus_valor } = parsed.data;
 
@@ -54,7 +54,7 @@ export async function POST(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   const consultor = await getConsultorLogado();
-  if (!consultor) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!consultor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
   const id = searchParams.get("id");

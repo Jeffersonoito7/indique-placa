@@ -13,13 +13,13 @@ export async function POST(req: NextRequest) {
   }
 
   const indicador = await getIndicadorLogado();
-  if (!indicador) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!indicador) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   let body: unknown;
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 });
+    return NextResponse.json({ error: "Requisição inválida" }, { status: 400 });
   }
 
   const { subscription } = body as { subscription: unknown };

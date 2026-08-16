@@ -4,7 +4,7 @@ import { autenticarTrafego } from "@/lib/trafego-auth";
 
 export async function GET(req: NextRequest) {
   const id = await autenticarTrafego("consultor");
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { data } = await supabaseAdmin
     .from("trafego_alertas")
@@ -19,7 +19,7 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   const id = await autenticarTrafego("consultor");
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   // Marca todos como lidos
   await supabaseAdmin

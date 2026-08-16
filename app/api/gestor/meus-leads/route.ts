@@ -9,7 +9,7 @@ import { z } from "zod";
 // ─────────────────────────────────────────────────────────────────────────────
 export async function GET(req: NextRequest) {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const { searchParams } = new URL(req.url);
   const statusFiltro = searchParams.get("status");
@@ -99,7 +99,7 @@ const criarLeadSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const gestor = await getGestorLogado();
-  if (!gestor) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!gestor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   let body: unknown;
   try {
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
   const parsed = criarLeadSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json(
-      { error: "Dados invalidos", detalhes: parsed.error.flatten().fieldErrors },
+      { error: "Dados inválidos", detalhes: parsed.error.flatten().fieldErrors },
       { status: 400 }
     );
   }

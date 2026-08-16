@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 
 export async function GET() {
   const indicador = await getIndicadorLogado();
-  if (!indicador) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!indicador) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   if (!indicador.consultor_id) return NextResponse.json([]);
 

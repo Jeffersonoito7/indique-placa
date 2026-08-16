@@ -23,6 +23,7 @@ export default function AssociacaoLinksPage() {
         const items: LinkInfo[] = [
           { label: "Link para Gestores", link: d.linkGestor, qrUrl: null, copiado: false },
           { label: "Link para Consultores", link: d.linkConsultor, qrUrl: null, copiado: false },
+          { label: "Link para Indicadores", link: d.linkIndicador, qrUrl: null, copiado: false },
         ];
 
         for (const item of items) {
@@ -94,7 +95,7 @@ export default function AssociacaoLinksPage() {
                 <br />
                 <a
                   href={info.qrUrl}
-                  download={`link-${idx === 0 ? "gestor" : "consultor"}.png`}
+                  download={`link-${idx === 0 ? "gestor" : idx === 1 ? "consultor" : "indicador"}.png`}
                   style={{ display: "inline-block", marginTop: 12, fontSize: 13, color: "#7c3aed", textDecoration: "underline" }}
                 >
                   Baixar QR Code

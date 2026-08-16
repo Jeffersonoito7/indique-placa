@@ -7,7 +7,7 @@ const UID = "master";
 
 export async function GET(req: NextRequest) {
   const id = await autenticarTrafego(TIPO);
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { data } = await supabaseAdmin
     .from("trafego_alertas")
@@ -22,7 +22,7 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   const id = await autenticarTrafego(TIPO);
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   await supabaseAdmin
     .from("trafego_alertas")

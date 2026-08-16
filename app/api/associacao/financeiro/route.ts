@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 
 export async function GET() {
   const assoc = await getAssociacaoLogada();
-  if (!assoc) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!assoc) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const [consultoresRes, cobrancasRes] = await Promise.all([
     supabaseAdmin

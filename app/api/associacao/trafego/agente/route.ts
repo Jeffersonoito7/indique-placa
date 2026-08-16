@@ -12,7 +12,7 @@ const schema = z.object({
 
 export async function POST(req: NextRequest) {
   const id = await autenticarTrafego("associacao");
-  if (!id) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (!id) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const { data: conta } = await supabaseAdmin
     .from("trafego_contas")
@@ -26,10 +26,10 @@ export async function POST(req: NextRequest) {
   }
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Dados invalidos" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Dados inválidos" }, { status: 400 }); }
 
   const parsed = schema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   try {
     const variacoes = await gerarCopyVariacoes({ ...parsed.data, openai_api_key: conta.openai_api_key });

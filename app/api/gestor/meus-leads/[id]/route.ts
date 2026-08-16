@@ -18,7 +18,7 @@ type Params = { params: Promise<{ id: string }> };
 export async function PATCH(req: NextRequest, { params }: Params) {
   const gestor = await getGestorLogado();
   if (!gestor) {
-    return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
   const { id } = await params;
@@ -33,7 +33,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
   const parse = schemaPatch.safeParse(body);
   if (!parse.success) {
     return NextResponse.json(
-      { error: "Dados invalidos", detalhes: parse.error.flatten().fieldErrors },
+      { error: "Dados inválidos", detalhes: parse.error.flatten().fieldErrors },
       { status: 422 }
     );
   }
@@ -55,7 +55,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Erro ao verificar lead" }, { status: 500 });
   }
   if (!lead) {
-    return NextResponse.json({ error: "Lead nao encontrado" }, { status: 404 });
+    return NextResponse.json({ error: "Lead não encontrado" }, { status: 404 });
   }
 
   const { data: atualizado, error: errUpdate } = await supabaseAdmin
@@ -76,7 +76,7 @@ export async function PATCH(req: NextRequest, { params }: Params) {
 export async function DELETE(_req: NextRequest, { params }: Params) {
   const gestor = await getGestorLogado();
   if (!gestor) {
-    return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
   }
 
   const { id } = await params;
@@ -93,7 +93,7 @@ export async function DELETE(_req: NextRequest, { params }: Params) {
     return NextResponse.json({ error: "Erro ao verificar lead" }, { status: 500 });
   }
   if (!lead) {
-    return NextResponse.json({ error: "Lead nao encontrado" }, { status: 404 });
+    return NextResponse.json({ error: "Lead não encontrado" }, { status: 404 });
   }
 
   const { error: errDelete } = await supabaseAdmin

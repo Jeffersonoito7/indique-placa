@@ -6,7 +6,7 @@ import { z } from "zod";
 
 export async function GET() {
   const consultor = await getConsultorLogado();
-  if (!consultor) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!consultor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const { data, error } = await supabaseAdmin
     .from("indicadores")
@@ -31,13 +31,13 @@ const postSchema = z.object({
 
 export async function POST(req: NextRequest) {
   const consultor = await getConsultorLogado();
-  if (!consultor) return NextResponse.json({ error: "Nao autorizado" }, { status: 401 });
+  if (!consultor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   let body: unknown;
-  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisicao invalida" }, { status: 400 }); }
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
 
   const parsed = postSchema.safeParse(body);
-  if (!parsed.success) return NextResponse.json({ error: "Dados invalidos" }, { status: 400 });
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { nome, email, telefone, senha } = parsed.data;
 
