@@ -477,7 +477,7 @@ export default function AppShell({
                           <Icon
                             size={20}
                             style={{
-                              color: active ? accentColor : "rgba(255,255,255,0.45)",
+                              color: active ? accentColor : "rgba(255,255,255,0.78)",
                               flexShrink: 0,
                             }}
                           />
@@ -672,8 +672,8 @@ function NavBtn({
         color: active
           ? "#93c5fd"
           : hovered
-          ? "rgba(255,255,255,0.85)"
-          : "rgba(255,255,255,0.42)",
+          ? "rgba(255,255,255,0.97)"
+          : "rgba(255,255,255,0.75)",
         borderLeft: active ? "2px solid #3b82f6" : "2px solid transparent",
       }}
     >
