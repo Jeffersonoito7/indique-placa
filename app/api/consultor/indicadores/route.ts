@@ -41,14 +41,26 @@ export async function POST(req: NextRequest) {
 
   const { nome, email, telefone, senha } = parsed.data;
 
-  // Verificar limite do plano
-  const { data: planoConfig } = await supabaseAdmin
+  // Verificar limite do plano.
+  // Antes, plano sem linha em planos_config_consultor fazia o limite deixar de
+  // ser aplicado, liberando de graça o que é pago. Agora config ausente nega.
+  const plano = (consultor as { plano?: string }).plano ?? "free";
+  const { data: planoConfig, error: erroPlano } = await supabaseAdmin
     .from("planos_config_consultor")
     .select("max_indicadores")
-    .eq("plano", (consultor as { plano?: string }).plano ?? "free")
+    .eq("plano", plano)
     .maybeSingle();
 
-  if (planoConfig?.max_indicadores !== null && planoConfig?.max_indicadores !== undefined) {
+  if (erroPlano || !planoConfig) {
+    console.error("[indicadores] plano sem configuracao", { plano, erro: erroPlano?.message });
+    return NextResponse.json(
+      { error: "Não foi possível validar os limites do seu plano. Fale com o suporte." },
+      { status: 503 }
+    );
+  }
+
+  // null continua significando ilimitado, como sempre foi.
+  if (planoConfig.max_indicadores !== null) {
     const { count } = await supabaseAdmin
       .from("indicadores")
       .select("id", { count: "exact", head: true })

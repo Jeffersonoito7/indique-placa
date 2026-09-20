@@ -46,27 +46,51 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  // Guarda a associação de origem antes de descartar o consultor: é ela que
+  // delimita para quem o lead pode ir.
+  let associacaoOrigem: string | null = null;
+
   if (cid) {
     const { data: consultor } = await supabaseAdmin
       .from("consultores")
-      .select("id, status")
+      .select("id, status, associacao_id")
       .eq("id", cid)
       .maybeSingle();
     if (!consultor || consultor.status !== "ativo") {
       cid = null;
     } else {
+      associacaoOrigem = consultor.associacao_id ?? null;
       const bloqueio = await verificarBloqueioConsultor(cid);
       if (bloqueio.bloqueado) cid = null;
     }
   }
 
-  if (!cid) {
-    const { data: config } = await supabaseAdmin
-      .from("configuracoes")
+  // Consultor padrão da PRÓPRIA associação de origem. Antes vinha de uma linha
+  // global de `configuracoes`, sem filtro de tenant, o que permitia entregar o
+  // lead de uma associação ao consultor padrão de outra.
+  if (!cid && associacaoOrigem) {
+    const { data: assoc } = await supabaseAdmin
+      .from("associacoes")
       .select("consultor_padrao_id")
-      .limit(1)
+      .eq("id", associacaoOrigem)
       .maybeSingle();
-    cid = (config as any)?.consultor_padrao_id ?? null;
+
+    const padraoId = assoc?.consultor_padrao_id ?? null;
+
+    if (padraoId) {
+      // O padrão também precisa estar apto: ativo, não bloqueado e da mesma associação.
+      const { data: padrao } = await supabaseAdmin
+        .from("consultores")
+        .select("id, status, associacao_id")
+        .eq("id", padraoId)
+        .eq("associacao_id", associacaoOrigem)
+        .maybeSingle();
+
+      if (padrao && padrao.status === "ativo") {
+        const bloqueio = await verificarBloqueioConsultor(padrao.id);
+        if (!bloqueio.bloqueado) cid = padrao.id;
+      }
+    }
   }
 
   // Deduplicacao por placa dentro da associacao
