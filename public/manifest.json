@@ -2,7 +2,7 @@
   "name": "Indique Placa",
   "short_name": "IndiquePlaca",
   "description": "Indique uma placa e ganhe dinheiro",
-  "start_url": "/consultor/login",
+  "start_url": "/login",
   "scope": "/",
   "display": "standalone",
   "display_override": ["standalone", "minimal-ui"],
