@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { UserCheck, Plus, Search, X } from "lucide-react";
+import { UserCheck, Plus, Search, X, Pencil, Trash2 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Indicador = {
@@ -10,6 +10,7 @@ type Indicador = {
   nome: string;
   telefone: string;
   consultor_id: string | null;
+  status: string | null;
   criado_em: string;
 };
 
@@ -36,6 +37,11 @@ export default function AssociacaoIndicadoresPage() {
   const [enviando, setEnviando] = useState(false);
   const [erroModal, setErroModal] = useState("");
   const [form, setForm] = useState({ nome: "", email: "", telefone: "", senha: "", consultor_id: "" });
+
+  const [editando, setEditando] = useState<Indicador | null>(null);
+  const [formEdit, setFormEdit] = useState({ nome: "", telefone: "", consultor_id: "", nova_senha: "" });
+  const [erroEdit, setErroEdit] = useState("");
+  const [enviandoEdit, setEnviandoEdit] = useState(false);
 
   async function carregar() {
     setCarregando(true);
@@ -67,18 +73,87 @@ export default function AssociacaoIndicadoresPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, telefone: form.telefone.replace(/\D/g, ""), consultor_id: form.consultor_id || null }),
       });
-      const json = await res.json();
       if (!res.ok) {
-        setErroModal(json.error ?? "Erro ao adicionar indicador");
+        const err = await res.json().catch(() => ({}));
+        setErroModal(err.error ?? "Erro ao adicionar indicador");
       } else {
         setModalAberto(false);
         setForm({ nome: "", email: "", telefone: "", senha: "", consultor_id: "" });
         await carregar();
       }
     } catch {
-      setErroModal("Erro de conexao.");
+      setErroModal("Erro de conexão.");
     } finally {
       setEnviando(false);
+    }
+  }
+
+  function gerarSenhaAleatoria() {
+    const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+    return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  }
+
+  function abrirEdicao(ind: Indicador) {
+    setEditando(ind);
+    setFormEdit({ nome: ind.nome, telefone: fmtTelBR(ind.telefone ?? ""), consultor_id: ind.consultor_id ?? "", nova_senha: "" });
+    setErroEdit("");
+  }
+
+  async function toggleStatus(ind: Indicador) {
+    try {
+      await fetch(`/api/associacao/indicadores/${ind.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ status: ind.status === "ativo" || !ind.status ? "inativo" : "ativo" }),
+      });
+    } catch {
+      // falha silenciosa; recarrega para refletir estado real
+    }
+    await carregar();
+  }
+
+  async function excluir(ind: { id: string; nome: string }) {
+    if (!confirm(`Excluir permanentemente ${ind.nome}? Esta ação não pode ser desfeita.`)) return;
+    try {
+      const res = await fetch(`/api/associacao/indicadores/${ind.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error ?? "Erro ao excluir indicador");
+      }
+    } catch {
+      alert("Erro de conexão.");
+    }
+    await carregar();
+  }
+
+  async function salvarEdicao(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editando) return;
+    setErroEdit("");
+    setEnviandoEdit(true);
+    try {
+      const body: Record<string, unknown> = {
+        nome: formEdit.nome,
+        telefone: formEdit.telefone.replace(/\D/g, ""),
+        consultor_id: formEdit.consultor_id || null,
+      };
+      if (formEdit.nova_senha) body.nova_senha = formEdit.nova_senha;
+      const res = await fetch(`/api/associacao/indicadores/${editando.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setErroEdit(err.error ?? "Erro ao salvar indicador");
+      } else {
+        setEditando(null);
+        await carregar();
+      }
+    } catch {
+      setErroEdit("Erro de conexão.");
+    } finally {
+      setEnviandoEdit(false);
     }
   }
 
@@ -128,7 +203,7 @@ export default function AssociacaoIndicadoresPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Nome", "Telefone", "Consultor", "Cadastrado em"].map((h) => (
+                    {["Nome", "Telefone", "Consultor", "Status", "Cadastrado em", ""].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-5 py-3">{h}</th>
                     ))}
                   </tr>
@@ -149,8 +224,47 @@ export default function AssociacaoIndicadoresPage() {
                           : <span className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full border border-border">Sem vinculo</span>
                         }
                       </td>
+                      <td className="px-5 py-3.5">
+                        <span className={cn(
+                          "text-[10px] font-semibold px-2.5 py-1 rounded-full",
+                          (!ind.status || ind.status === "ativo")
+                            ? "bg-emerald-500/10 text-emerald-500"
+                            : "bg-red-500/10 text-red-500"
+                        )}>
+                          {(!ind.status || ind.status === "ativo") ? "Ativo" : "Inativo"}
+                        </span>
+                      </td>
                       <td className="px-5 py-3.5 text-sm text-muted-foreground">
                         {new Date(ind.criado_em).toLocaleDateString("pt-BR")}
+                      </td>
+                      <td className="px-5 py-3.5">
+                        <div className="flex items-center gap-1">
+                          <button
+                            onClick={() => abrirEdicao(ind)}
+                            className="p-1.5 rounded-lg hover:bg-accent text-muted-foreground hover:text-foreground transition-colors"
+                            title="Editar"
+                          >
+                            <Pencil className="h-3.5 w-3.5" />
+                          </button>
+                          <button
+                            onClick={() => toggleStatus(ind)}
+                            className={cn(
+                              "text-[11px] font-semibold px-2 py-1 rounded-lg border transition-colors",
+                              (!ind.status || ind.status === "ativo")
+                                ? "border-red-500/30 text-red-500 hover:bg-red-500/10"
+                                : "border-emerald-500/30 text-emerald-500 hover:bg-emerald-500/10"
+                            )}
+                          >
+                            {(!ind.status || ind.status === "ativo") ? "Desativar" : "Ativar"}
+                          </button>
+                          <button
+                            onClick={() => excluir(ind)}
+                            className="p-1.5 rounded-lg hover:bg-red-500/10 text-red-400/60 hover:text-red-400 transition-colors"
+                            title="Excluir"
+                          >
+                            <Trash2 className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
                       </td>
                     </tr>
                   ))}
@@ -160,6 +274,83 @@ export default function AssociacaoIndicadoresPage() {
           </CardContent>
         </Card>
       </div>
+
+      {editando && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-background border border-border rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-bold text-foreground">Editar Indicador</h2>
+              <button onClick={() => setEditando(null)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {erroEdit && (
+              <div className="mb-4 rounded-xl p-3 bg-red-500/10 border border-red-500/30 text-red-500 text-sm">
+                {erroEdit}
+              </div>
+            )}
+
+            <form onSubmit={salvarEdicao} className="space-y-3">
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Nome</label>
+                <input type="text" required value={formEdit.nome}
+                  onChange={(e) => setFormEdit((f) => ({ ...f, nome: e.target.value }))}
+                  className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Telefone</label>
+                <input type="tel" required value={formEdit.telefone}
+                  onChange={(e) => setFormEdit((f) => ({ ...f, telefone: fmtTelBR(e.target.value) }))}
+                  className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Consultor responsavel</label>
+                <select
+                  value={formEdit.consultor_id}
+                  onChange={(e) => setFormEdit((f) => ({ ...f, consultor_id: e.target.value }))}
+                  className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="">Sem consultor</option>
+                  {consultores.map((c) => (
+                    <option key={c.id} value={c.id}>{c.nome} — {c.email}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Nova senha (opcional)</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormEdit((f) => ({ ...f, nova_senha: gerarSenhaAleatoria() }))}
+                    className="text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    Gerar senha
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  minLength={6}
+                  placeholder="Deixe em branco para manter a atual"
+                  value={formEdit.nova_senha}
+                  onChange={(e) => setFormEdit((f) => ({ ...f, nova_senha: e.target.value }))}
+                  className="w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors font-mono"
+                />
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button type="button" onClick={() => setEditando(null)}
+                  className="flex-1 py-2.5 rounded-xl border border-border text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors"
+                >Cancelar</button>
+                <button type="submit" disabled={enviandoEdit}
+                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-semibold transition-colors"
+                >{enviandoEdit ? "Salvando..." : "Salvar"}</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {modalAberto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -214,7 +405,7 @@ export default function AssociacaoIndicadoresPage() {
               </div>
               <div>
                 <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Senha inicial</label>
-                <input type="password" required minLength={6} placeholder="Minimo 6 caracteres" value={form.senha}
+                <input type="password" required minLength={6} placeholder="Mínimo 6 caracteres" value={form.senha}
                   onChange={(e) => setForm((f) => ({ ...f, senha: e.target.value }))}
                   className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
                 />

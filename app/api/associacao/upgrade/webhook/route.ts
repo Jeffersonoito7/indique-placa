@@ -45,6 +45,25 @@ export async function POST(req: NextRequest) {
     const txid = typeof pix.txid === "string" ? pix.txid : null;
     if (!txid) continue;
 
+    const valorPago = pix.valor != null ? parseFloat(String(pix.valor)) : null;
+
+    // Busca a cobranca pendente para validar o valor antes de ativar
+    const { data: cobrancaPendente } = await supabaseAdmin
+      .from("cobrancas")
+      .select("usuario_id, valor")
+      .eq("txid", txid)
+      .eq("status", "pendente")
+      .eq("usuario_tipo", "associacao")
+      .maybeSingle();
+
+    if (!cobrancaPendente?.usuario_id) continue;
+
+    const valorEsperado = typeof cobrancaPendente.valor === "number" ? cobrancaPendente.valor : parseFloat(String(cobrancaPendente.valor ?? "0"));
+    if (valorPago !== null && valorPago < valorEsperado - 0.01) {
+      console.error(`[webhook/associacao] Valor insuficiente txid=${txid} esperado=${valorEsperado} recebido=${valorPago}`);
+      continue;
+    }
+
     const { data: cobranca } = await supabaseAdmin
       .from("cobrancas")
       .update({ status: "pago", pago_em: new Date().toISOString() })

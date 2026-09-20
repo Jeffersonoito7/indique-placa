@@ -36,7 +36,7 @@ export default function AssociacaoComissoesPage() {
     fetch("/api/associacao/comissoes")
       .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
       .then((d: ComissaoTipo[]) => setComissoes(d))
-      .catch(() => setErroNovo("Erro ao carregar configuracoes de comissao."))
+      .catch(() => setErroNovo("Erro ao carregar configurações de comissão."))
       .finally(() => setCarregando(false));
   };
 
@@ -59,9 +59,9 @@ export default function AssociacaoComissoesPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(comissao),
       });
-      const json = await res.json();
       if (!res.ok) {
-        msgSet(comissao.tipo, { tipo: "erro", texto: json.error ?? "Erro ao salvar" });
+        const err = await res.json().catch(() => ({}));
+        msgSet(comissao.tipo, { tipo: "erro", texto: err.error ?? "Erro ao salvar comissao" });
       } else {
         msgSet(comissao.tipo, { tipo: "ok", texto: "Salvo com sucesso!" });
         setTimeout(() => msgSet(comissao.tipo, null), 2500);
@@ -97,7 +97,7 @@ export default function AssociacaoComissoesPage() {
 
   const adicionarNovo = async () => {
     const labelTrim = novoLabel.trim();
-    if (!labelTrim) { setErroNovo("Informe o nome do tipo de veiculo."); return; }
+    if (!labelTrim) { setErroNovo("Informe o nome do tipo de veículo."); return; }
     if (novoValor < 0) { setErroNovo("O valor da comissao nao pode ser negativo."); return; }
     const tipo = slugify(labelTrim) || `tipo_${comissoes.length + 1}`;
     if (comissoes.some((c) => c.tipo === tipo || c.label.toLowerCase() === labelTrim.toLowerCase())) {
@@ -138,9 +138,9 @@ export default function AssociacaoComissoesPage() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Comissoes por Tipo de Veiculo</h1>
+        <h1 className="text-base font-bold text-foreground">Comissões por Tipo de Veículo</h1>
         <p className="text-[11px] text-muted-foreground mt-0.5">
-          Defina quanto cada indicador ganha por fechamento. Adicione os tipos que sua associacao trabalha.
+          Defina quanto cada indicador ganha por fechamento. Adicione os tipos que sua associação trabalha.
         </p>
       </div>
 
@@ -150,7 +150,7 @@ export default function AssociacaoComissoesPage() {
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2 text-violet-700 dark:text-violet-400">
                 <Plus className="h-4 w-4" />
-                Adicionar Tipo de Veiculo
+                Adicionar Tipo de Veículo
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-1 space-y-3">
@@ -165,7 +165,7 @@ export default function AssociacaoComissoesPage() {
                   />
                 </div>
                 <div>
-                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Comissao (R$)</label>
+                  <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Comissão (R$)</label>
                   <input
                     type="number" min={0} step={1} value={novoValor}
                     onChange={(e) => setNovoValor(Number(e.target.value))}
@@ -233,7 +233,7 @@ export default function AssociacaoComissoesPage() {
                   )}
                   <div>
                     <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                      Comissao por fechamento (R$)
+                      Comissão por fechamento (R$)
                     </label>
                     <div className="flex items-center gap-2">
                       <span className="text-sm font-semibold text-muted-foreground">R$</span>

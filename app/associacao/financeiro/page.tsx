@@ -36,7 +36,7 @@ export default function AssociacaoFinanceiroPage() {
 
   useEffect(() => {
     fetch("/api/associacao/financeiro")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((data) => {
         setConsultores(data.consultores ?? []);
         setResumo(data.resumo ?? null);

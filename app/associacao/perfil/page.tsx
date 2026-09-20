@@ -40,7 +40,7 @@ export default function AssociacaoPerfilPage() {
 
   useEffect(() => {
     fetch("/api/associacao/perfil")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((d: { associacao: AssocPerfil }) => {
         const a = d.associacao;
         setAssoc(a);
@@ -72,9 +72,9 @@ export default function AssociacaoPerfilPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const json = await res.json();
       if (!res.ok) {
-        setMensagem({ tipo: "erro", texto: json.error ?? "Erro ao salvar" });
+        const err = await res.json().catch(() => ({}));
+        setMensagem({ tipo: "erro", texto: err.error ?? "Erro ao salvar perfil" });
       } else {
         setMensagem({ tipo: "ok", texto: "Dados atualizados com sucesso" });
         setSenhaAtual("");
@@ -101,7 +101,7 @@ export default function AssociacaoPerfilPage() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Perfil da Associacao</h1>
+        <h1 className="text-base font-bold text-foreground">Perfil da Associação</h1>
         <p className="text-[11px] text-muted-foreground mt-0.5">Edite seus dados cadastrais e senha de acesso</p>
       </div>
 
@@ -117,17 +117,17 @@ export default function AssociacaoPerfilPage() {
             <CardHeader className="pb-3 border-b border-border">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 <Building2 className="h-4 w-4 text-violet-500" />
-                Dados da Associacao
+                Dados da Associação
               </CardTitle>
             </CardHeader>
             <CardContent className="p-5 space-y-4">
               <div>
                 <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Email</label>
                 <input value={assoc.email} disabled className={`${inputCls} opacity-50 cursor-not-allowed`} />
-                <p className="text-[10px] text-muted-foreground/60 mt-1">O email nao pode ser alterado</p>
+                <p className="text-[10px] text-muted-foreground/60 mt-1">O email não pode ser alterado</p>
               </div>
               <div>
-                <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Nome da Associacao</label>
+                <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">Nome da Associação</label>
                 <input
                   value={nome}
                   onChange={(e) => setNome(e.target.value)}
@@ -239,7 +239,7 @@ export default function AssociacaoPerfilPage() {
             className="flex items-center gap-2 px-5 py-2.5 rounded-md bg-violet-600 hover:bg-violet-500 disabled:opacity-60 text-white text-sm font-semibold transition-colors"
           >
             <Save className="h-4 w-4" />
-            {salvando ? "Salvando..." : "Salvar Alteracoes"}
+            {salvando ? "Salvando..." : "Salvar Alterações"}
           </button>
         </form>
       </div>

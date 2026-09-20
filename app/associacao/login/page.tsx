@@ -22,8 +22,9 @@ const STREAMS = [
   { left:"90%", delay:"2.5s", dur:"7s"  },
 ];
 
-const ACCENT = "#a855f7";
-const ACCENT_DIM = "rgba(168,85,247,";
+const ACCENT = "#0ea5e9";
+const ACCENT_DIM = "rgba(14,165,233,";
+const ACCENT2 = "#10b981";
 
 const CSS = `
   @keyframes bgShift {
@@ -59,7 +60,7 @@ const CSS = `
   .lp-root {
     min-height:100vh; display:flex; align-items:center; justify-content:center;
     padding:20px; position:relative; overflow:hidden;
-    background:linear-gradient(135deg,#080212,#120824,#0f0520,#080212,#0a0318);
+    background:linear-gradient(135deg,#020f1a,#011829,#021a14,#011829,#020f1a);
     background-size:400% 400%;
     animation:bgShift 16s ease infinite;
     font-family:Inter,system-ui,sans-serif;
@@ -102,7 +103,7 @@ const CSS = `
     display:inline-flex; align-items:center;
     background:${ACCENT_DIM}.12); border:1px solid ${ACCENT_DIM}.35);
     border-radius:6px; padding:3px 12px; font-size:10px; font-weight:700;
-    letter-spacing:1.5px; color:#d8b4fe; text-transform:uppercase; margin-bottom:8px;
+    letter-spacing:1.5px; color:#7dd3fc; text-transform:uppercase; margin-bottom:8px;
   }
   .lp-sub { font-size:12px; color:rgba(255,255,255,.4); margin-bottom:24px; }
   .lp-erro {
@@ -131,7 +132,7 @@ const CSS = `
   .lp-eye:hover { color:${ACCENT}; }
   .lp-btn {
     width:100%; padding:14px; border:none; border-radius:12px;
-    background:linear-gradient(135deg,#7e22ce,#a855f7,#c084fc);
+    background:linear-gradient(135deg,${ACCENT2},${ACCENT},#38bdf8);
     box-shadow:0 4px 24px ${ACCENT_DIM}.4);
     color:#fff; font-size:13px; font-weight:800; letter-spacing:1.5px;
     cursor:pointer; font-family:inherit; transition:opacity .15s,transform .1s,box-shadow .15s;
@@ -139,8 +140,8 @@ const CSS = `
   .lp-btn:hover:not(:disabled) { opacity:.9; transform:translateY(-1px); box-shadow:0 6px 32px ${ACCENT_DIM}.55); }
   .lp-btn:disabled { opacity:.5; cursor:not-allowed; }
   .lp-links { margin-top:18px; font-size:12px; color:rgba(255,255,255,.3); line-height:2; }
-  .lp-links a { color:#d8b4fe; text-decoration:none; transition:color .15s; }
-  .lp-links a:hover { color:#e9d5ff; }
+  .lp-links a { color:#7dd3fc; text-decoration:none; transition:color .15s; }
+  .lp-links a:hover { color:#bae6fd; }
   .lp-links a.lp-esqueci { font-size:13px; font-weight:700; text-decoration:underline; text-underline-offset:3px; }
 `;
 
@@ -162,9 +163,12 @@ export default function AssociacaoLoginPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), senha }),
       });
-      const json = await res.json();
-      if (!res.ok) setErro(json.error ?? "Credenciais inválidas");
-      else router.push("/associacao/dashboard");
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setErro(err.error ?? "Credenciais inválidas");
+      } else {
+        router.push("/associacao/dashboard");
+      }
     } catch {
       setErro("Erro de conexão. Tente novamente.");
     } finally {
@@ -194,8 +198,8 @@ export default function AssociacaoLoginPage() {
           <div className="lp-logo">
             <img src="/logo-indique.png" style={{ width: 120, height: 120, objectFit: "contain" }} alt="Indique Placa" />
           </div>
-          <div className="lp-badge">Associacao</div>
-          <div className="lp-sub">Painel da Associacao</div>
+          <div className="lp-badge">Associação</div>
+          <div className="lp-sub">Painel da Associação</div>
 
           {erro && <div className="lp-erro">{erro}</div>}
 

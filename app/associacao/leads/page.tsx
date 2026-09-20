@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Search, TrendingUp, CheckCircle2, Clock, List } from "lucide-react";
+import { PlacaMercosul } from "@/components/placa-mercosul";
 
 interface Lead {
   id: string;
@@ -148,7 +149,9 @@ export default function AssociacaoLeadsPage() {
                   <tbody>
                     {leads.map((lead) => (
                       <tr key={lead.id} className="border-b border-border last:border-0 hover:bg-muted/30 transition-colors">
-                        <td className="px-4 py-3 font-mono font-bold text-foreground">{lead.placa}</td>
+                        <td className="px-4 py-3">
+                          <PlacaMercosul placa={lead.placa} tamanho="sm" />
+                        </td>
                         <td className="px-4 py-3 text-foreground">{lead.nome_lead ?? <span className="text-muted-foreground/50 italic text-xs">nao informado</span>}</td>
                         <td className="px-4 py-3 text-muted-foreground hidden md:table-cell">{(lead.consultores as { nome: string } | null)?.nome ?? "-"}</td>
                         <td className="px-4 py-3">

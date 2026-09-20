@@ -16,7 +16,7 @@ export default function AssociacaoLinksPage() {
 
   useEffect(() => {
     fetch("/api/associacao/links")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then(async (d) => {
         if (!d.linkGestor) { setErro("Não foi possível carregar os links."); return; }
 

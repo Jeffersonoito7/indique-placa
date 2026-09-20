@@ -36,9 +36,9 @@ export default function UpgradePage() {
 
   useEffect(() => {
     fetch("/api/associacao/upgrade")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then(setInfo)
-      .catch(() => setErro("Erro ao carregar informacoes do plano"));
+      .catch(() => setErro("Erro ao carregar informações do plano"));
   }, []);
 
   useEffect(() => {
@@ -46,6 +46,7 @@ export default function UpgradePage() {
     const iv = setInterval(async () => {
       try {
         const r = await fetch(`/api/associacao/upgrade?txid=${pix.txid}`);
+        if (!r.ok) return;
         const json = await r.json();
         if (json.pago) {
           setPago(true);
@@ -62,8 +63,12 @@ export default function UpgradePage() {
     setGerando(true); setErro("");
     try {
       const r = await fetch("/api/associacao/upgrade", { method: "POST" });
+      if (!r.ok) {
+        const err = await r.json().catch(() => ({}));
+        setErro(err.error ?? "Erro ao gerar PIX");
+        return;
+      }
       const json = await r.json();
-      if (!r.ok) { setErro(json.error ?? "Erro ao gerar PIX"); return; }
       setPix(json);
     } finally { setGerando(false); }
   };
@@ -126,13 +131,13 @@ export default function UpgradePage() {
           ) : !info.cobranca_ativa ? (
             <Card className="shadow-sm border-blue-500/20 bg-blue-500/5">
               <CardContent className="p-5">
-                <p className="text-sm text-muted-foreground">Nao ha cobranca ativa para sua associacao no momento. Entre em contato com o suporte se precisar renovar seu plano.</p>
+                <p className="text-sm text-muted-foreground">Não há cobrança ativa para sua associação no momento. Entre em contato com o suporte se precisar renovar seu plano.</p>
               </CardContent>
             </Card>
           ) : !info.master_efi_configurado ? (
             <Card className="shadow-sm border-amber-500/20 bg-amber-500/5">
               <CardContent className="p-5">
-                <p className="text-sm text-muted-foreground">Sistema de pagamento em configuracao. Tente novamente em breve ou entre em contato com o suporte.</p>
+                <p className="text-sm text-muted-foreground">Sistema de pagamento em configuração. Tente novamente em breve ou entre em contato com o suporte.</p>
               </CardContent>
             </Card>
           ) : pix ? (

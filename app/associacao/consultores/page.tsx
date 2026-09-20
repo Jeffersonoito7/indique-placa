@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Users, Plus, Search, X } from "lucide-react";
+import { Users, Plus, Search, X, UserCheck } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 type Consultor = {
@@ -14,6 +15,7 @@ type Consultor = {
   plano: string | null;
   gestor_id: string | null;
   criado_em: string;
+  parceiros_habilitado: boolean;
 };
 
 type Gestor = {
@@ -31,6 +33,7 @@ function fmtTelBR(v: string): string {
 }
 
 export default function AssociacaoConsultoresPage() {
+  const router = useRouter();
   const [consultores, setConsultores] = useState<Consultor[]>([]);
   const [gestores, setGestores] = useState<Gestor[]>([]);
   const [carregando, setCarregando] = useState(true);
@@ -39,6 +42,10 @@ export default function AssociacaoConsultoresPage() {
   const [enviando, setEnviando] = useState(false);
   const [erroModal, setErroModal] = useState("");
   const [form, setForm] = useState({ nome: "", email: "", fone: "", senha: "", gestor_id: "" });
+  const [editando, setEditando] = useState<Consultor | null>(null);
+  const [formEdit, setFormEdit] = useState({ nome: "", email: "", fone: "", gestor_id: "", nova_senha: "", parceiros_habilitado: false });
+  const [enviandoEdit, setEnviandoEdit] = useState(false);
+  const [erroEdit, setErroEdit] = useState("");
 
   async function carregar() {
     setCarregando(true);
@@ -76,18 +83,62 @@ export default function AssociacaoConsultoresPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
       });
-      const json = await res.json();
       if (!res.ok) {
-        setErroModal(json.error ?? "Erro ao adicionar consultor");
+        const err = await res.json().catch(() => ({}));
+        setErroModal(err.error ?? "Erro ao adicionar consultor");
       } else {
         setModalAberto(false);
         setForm({ nome: "", email: "", fone: "", senha: "", gestor_id: "" });
         await carregar();
       }
     } catch {
-      setErroModal("Erro de conexao.");
+      setErroModal("Erro de conexão.");
     } finally {
       setEnviando(false);
+    }
+  }
+
+  function gerarSenhaAleatoria() {
+    const chars = "abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789";
+    return Array.from({ length: 8 }, () => chars[Math.floor(Math.random() * chars.length)]).join("");
+  }
+
+  function abrirEdicao(c: Consultor) {
+    setEditando(c);
+    setFormEdit({ nome: c.nome, email: c.email ?? "", fone: c.fone ?? "", gestor_id: c.gestor_id ?? "", nova_senha: "", parceiros_habilitado: c.parceiros_habilitado ?? false });
+    setErroEdit("");
+  }
+
+  async function salvarEdicao(e: React.FormEvent) {
+    e.preventDefault();
+    if (!editando) return;
+    setErroEdit("");
+    setEnviandoEdit(true);
+    try {
+      const body: Record<string, unknown> = {
+        nome: formEdit.nome,
+        email: formEdit.email,
+        fone: formEdit.fone.replace(/\D/g, ""),
+        gestor_id: formEdit.gestor_id || null,
+        parceiros_habilitado: formEdit.parceiros_habilitado,
+      };
+      if (formEdit.nova_senha) body.nova_senha = formEdit.nova_senha;
+      const res = await fetch(`/api/associacao/consultores/${editando.id}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setErroEdit(err.error ?? "Erro ao salvar alterações");
+      } else {
+        setEditando(null);
+        await carregar();
+      }
+    } catch {
+      setErroEdit("Erro de conexão.");
+    } finally {
+      setEnviandoEdit(false);
     }
   }
 
@@ -104,12 +155,16 @@ export default function AssociacaoConsultoresPage() {
     await carregar();
   }
 
-  async function inativar(c: Consultor) {
-    if (!confirm(`Inativar e desvincular ${c.nome}?`)) return;
+  async function excluir(c: Consultor) {
+    if (!confirm(`Excluir permanentemente ${c.nome}? Esta ação não pode ser desfeita.`)) return;
     try {
-      await fetch(`/api/associacao/consultores/${c.id}`, { method: "DELETE" });
+      const res = await fetch(`/api/associacao/consultores/${c.id}`, { method: "DELETE" });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        alert(err.error ?? "Erro ao excluir consultor");
+      }
     } catch {
-      // falha silenciosa; recarrega para refletir estado real
+      alert("Erro de conexão.");
     }
     await carregar();
   }
@@ -119,7 +174,7 @@ export default function AssociacaoConsultoresPage() {
       <div className="px-8 py-5 border-b border-border flex items-center justify-between">
         <div>
           <h1 className="text-base font-bold text-foreground">Consultores</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Gerencie os consultores da associacao</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Gerencie os consultores da associação</p>
         </div>
         <button
           onClick={() => { setModalAberto(true); setErroModal(""); }}
@@ -160,7 +215,7 @@ export default function AssociacaoConsultoresPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Consultor", "Contato", "Plano", "Status", "Acoes"].map((h) => (
+                    {["Consultor", "Contato", "Plano", "Status", "Ações"].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-5 py-3">{h}</th>
                     ))}
                   </tr>
@@ -201,6 +256,19 @@ export default function AssociacaoConsultoresPage() {
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-2">
                           <button
+                            onClick={() => router.push(`/associacao/consultores/${c.id}/indicadores`)}
+                            className="text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-primary/30 text-primary hover:bg-primary/10 transition-colors flex items-center gap-1"
+                          >
+                            <UserCheck className="w-3 h-3" />
+                            Indicadores
+                          </button>
+                          <button
+                            onClick={() => abrirEdicao(c)}
+                            className="text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-indigo-500/30 text-indigo-500 hover:bg-indigo-500/10 transition-colors"
+                          >
+                            Editar
+                          </button>
+                          <button
                             onClick={() => toggleStatus(c)}
                             className={cn(
                               "text-[11px] font-semibold px-3 py-1.5 rounded-lg border transition-colors",
@@ -212,10 +280,10 @@ export default function AssociacaoConsultoresPage() {
                             {c.status === "ativo" ? "Desativar" : "Ativar"}
                           </button>
                           <button
-                            onClick={() => inativar(c)}
-                            className="text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-border text-muted-foreground hover:bg-muted transition-colors"
+                            onClick={() => excluir(c)}
+                            className="text-[11px] font-semibold px-3 py-1.5 rounded-lg border border-red-900/40 text-red-400 hover:bg-red-500/10 transition-colors"
                           >
-                            Inativar
+                            Excluir
                           </button>
                         </div>
                       </td>
@@ -227,6 +295,119 @@ export default function AssociacaoConsultoresPage() {
           </CardContent>
         </Card>
       </div>
+
+      {editando && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-background border border-border rounded-2xl shadow-2xl w-full max-w-md p-6">
+            <div className="flex items-center justify-between mb-5">
+              <h2 className="text-base font-bold text-foreground">Editar Consultor</h2>
+              <button onClick={() => setEditando(null)} className="text-muted-foreground hover:text-foreground transition-colors">
+                <X className="h-5 w-5" />
+              </button>
+            </div>
+
+            {erroEdit && (
+              <div className="mb-4 rounded-xl p-3 bg-red-500/10 border border-red-500/30 text-red-500 text-sm">
+                {erroEdit}
+              </div>
+            )}
+
+            <form onSubmit={salvarEdicao} className="space-y-3">
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Nome</label>
+                <input
+                  type="text"
+                  required
+                  value={formEdit.nome}
+                  onChange={(e) => setFormEdit((f) => ({ ...f, nome: e.target.value }))}
+                  className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">E-mail</label>
+                <input
+                  type="text"
+                  inputMode="email"
+                  value={formEdit.email}
+                  onChange={(e) => setFormEdit((f) => ({ ...f, email: e.target.value }))}
+                  className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Telefone</label>
+                <input
+                  type="tel"
+                  value={formEdit.fone}
+                  onChange={(e) => setFormEdit((f) => ({ ...f, fone: fmtTelBR(e.target.value) }))}
+                  className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                />
+              </div>
+              <div>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Gestor responsavel</label>
+                <select
+                  value={formEdit.gestor_id}
+                  onChange={(e) => setFormEdit((f) => ({ ...f, gestor_id: e.target.value }))}
+                  className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
+                >
+                  <option value="">Sem gestor</option>
+                  {gestores.map((g) => (
+                    <option key={g.id} value={g.id}>{g.nome} — {g.email}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <div className="flex items-center justify-between mb-1">
+                  <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Nova senha (opcional)</label>
+                  <button
+                    type="button"
+                    onClick={() => setFormEdit((f) => ({ ...f, nova_senha: gerarSenhaAleatoria() }))}
+                    className="text-[10px] font-semibold text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    Gerar senha
+                  </button>
+                </div>
+                <input
+                  type="text"
+                  minLength={6}
+                  placeholder="Deixe em branco para manter a atual"
+                  value={formEdit.nova_senha}
+                  onChange={(e) => setFormEdit((f) => ({ ...f, nova_senha: e.target.value }))}
+                  className="w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors font-mono"
+                />
+              </div>
+              <div className="flex items-center justify-between py-3 border-t border-border">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Buscar Parceiros</p>
+                  <p className="text-xs text-muted-foreground">Habilitar acesso individual a este consultor</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setFormEdit((f) => ({ ...f, parceiros_habilitado: !f.parceiros_habilitado }))}
+                  className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${formEdit.parceiros_habilitado ? "bg-[#00c389]" : "bg-muted-foreground/30"}`}
+                >
+                  <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${formEdit.parceiros_habilitado ? "translate-x-6" : "translate-x-1"}`} />
+                </button>
+              </div>
+              <div className="flex gap-3 pt-2">
+                <button
+                  type="button"
+                  onClick={() => setEditando(null)}
+                  className="flex-1 py-2.5 rounded-xl border border-border text-sm font-semibold text-muted-foreground hover:bg-muted transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  type="submit"
+                  disabled={enviandoEdit}
+                  className="flex-1 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-60 text-white text-sm font-semibold transition-colors"
+                >
+                  {enviandoEdit ? "Salvando..." : "Salvar"}
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      )}
 
       {modalAberto && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
@@ -267,7 +448,7 @@ export default function AssociacaoConsultoresPage() {
                 />
               </div>
               <div>
-                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Gestor responsavel</label>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Gestor responsável</label>
                 <select
                   value={form.gestor_id}
                   onChange={(e) => setForm((f) => ({ ...f, gestor_id: e.target.value }))}
@@ -281,7 +462,7 @@ export default function AssociacaoConsultoresPage() {
               </div>
               <div>
                 <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Senha inicial</label>
-                <input type="password" required minLength={6} placeholder="Minimo 6 caracteres" value={form.senha}
+                <input type="password" required minLength={6} placeholder="Mínimo 6 caracteres" value={form.senha}
                   onChange={(e) => setForm((f) => ({ ...f, senha: e.target.value }))}
                   className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
                 />

@@ -61,7 +61,7 @@ export async function POST(_req: NextRequest) {
 
   if (cobExistente) {
     return NextResponse.json(
-      { error: "Ja existe um PIX pendente para esta conta.", txid: cobExistente.txid },
+      { error: "Já existe um PIX pendente para esta conta.", txid: cobExistente.txid },
       { status: 409 }
     );
   }
@@ -73,7 +73,7 @@ export async function POST(_req: NextRequest) {
     .maybeSingle();
 
   if (!mc?.cobranca_associacao_ativa) {
-    return NextResponse.json({ error: "Cobranca de associacoes nao esta ativa no momento." }, { status: 422 });
+    return NextResponse.json({ error: "Cobrança de associações não está ativa no momento." }, { status: 422 });
   }
 
   const plano = assoc.plano ?? "trial";
@@ -86,11 +86,11 @@ export async function POST(_req: NextRequest) {
   const valor = valorMap[plano] ?? 0;
 
   if (valor === 0) {
-    return NextResponse.json({ error: "Valor nao configurado para este plano." }, { status: 422 });
+    return NextResponse.json({ error: "Valor não configurado para este plano." }, { status: 422 });
   }
 
   if (!masterEfiConfigurado()) {
-    return NextResponse.json({ error: "Sistema de pagamento nao configurado. Contate o suporte." }, { status: 422 });
+    return NextResponse.json({ error: "Sistema de pagamento não configurado. Contate o suporte." }, { status: 422 });
   }
 
   try {
@@ -110,7 +110,7 @@ export async function POST(_req: NextRequest) {
     const txid = (cobranca as Record<string, unknown>).txid as string;
     const loc = (cobranca as Record<string, unknown>).loc as Record<string, unknown> | undefined;
     const locId = loc?.id as number | undefined;
-    if (!locId) throw new Error("Erro ao criar localizacao PIX");
+    if (!locId) throw new Error("Erro ao criar localização PIX");
 
     const qrRes = await efi.pixGenerateQRCode({ id: locId });
     const qrcode = (qrRes as Record<string, unknown>).qrcode as string;

@@ -2,7 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, Users, User, UserCheck, Briefcase, ClipboardList, DollarSign, CreditCard, Megaphone, Settings2, Link2 } from "lucide-react";
+import { LayoutDashboard, Users, User, UserCheck, Briefcase, ClipboardList, DollarSign, CreditCard, Megaphone, Settings2, Link2, MessageCircleQuestion } from "lucide-react";
+import { ManifestLink } from "@/components/manifest-link";
 
 const navItems = [
   { group: "Painel", items: [
@@ -15,16 +16,18 @@ const navItems = [
     { href: "/associacao/gestores", label: "Gestores", icon: Briefcase },
     { href: "/associacao/consultores", label: "Consultores", icon: Users },
     { href: "/associacao/indicadores", label: "Indicadores", icon: UserCheck },
-    { href: "/associacao/links", label: "Links de Captacao", icon: Link2 },
+    { href: "/associacao/links", label: "Links de Captação", icon: Link2 },
   ]},
   { group: "Financeiro", items: [
     { href: "/associacao/financeiro", label: "Financeiro", icon: DollarSign },
-    { href: "/associacao/comissoes", label: "Comissoes", icon: Settings2 },
+    { href: "/associacao/comissoes", label: "Comissões", icon: Settings2 },
     { href: "/associacao/upgrade", label: "Assinatura", icon: CreditCard },
     { href: "/associacao/trafego", label: "Trafego Pago", icon: Megaphone },
   ]},
   { group: "Conta", items: [
+    { href: "/associacao/usuarios", label: "Usuários", icon: Users },
     { href: "/associacao/perfil", label: "Perfil", icon: User },
+    { href: "/associacao/suporte", label: "Suporte", icon: MessageCircleQuestion },
   ]},
 ];
 
@@ -33,6 +36,8 @@ export default function AssociacaoLayout({ children }: { children: React.ReactNo
   if (pathname === "/associacao/login" || pathname === "/associacao/recuperar-senha") return <>{children}</>;
 
   return (
+    <>
+    <ManifestLink href="/manifest-associacao.json" />
     <AppShell
       navItems={navItems}
       badgeLabel="ASSOCIACAO"
@@ -49,5 +54,6 @@ export default function AssociacaoLayout({ children }: { children: React.ReactNo
     >
       {children}
     </AppShell>
+    </>
   );
 }

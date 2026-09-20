@@ -50,7 +50,7 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (!planoConfig) {
-    return NextResponse.json({ error: "Configuracao de plano nao encontrada. Contate o suporte." }, { status: 403 });
+    return NextResponse.json({ error: "Configuração de plano não encontrada. Contate o suporte." }, { status: 403 });
   }
 
   if (planoConfig.max_gestores !== null && planoConfig.max_gestores !== undefined) {
@@ -82,7 +82,7 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) {
-    if (error.code === "23505") return NextResponse.json({ error: "Email ja cadastrado" }, { status: 409 });
+    if (error.code === "23505") return NextResponse.json({ error: "Email já cadastrado" }, { status: 409 });
     console.error("[associacao/gestores] POST:", error.code, error.message);
     return NextResponse.json({ error: "Erro ao criar gestor" }, { status: 500 });
   }

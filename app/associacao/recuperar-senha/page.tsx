@@ -65,10 +65,10 @@ const STYLES = `
   .grec-otp input:focus { border-color: rgba(167,139,250,.6); }
 `;
 
-type Etapa = "email" | "codigo" | "nova-senha" | "ok";
+type Etapa = "telefone" | "codigo" | "nova-senha" | "ok";
 
 export default function AssociacaoRecuperarSenhaPage() {
-  const [etapa, setEtapa] = useState<Etapa>("email");
+  const [etapa, setEtapa] = useState<Etapa>("telefone");
   const [email, setEmail] = useState("");
   const [codigo, setCodigo] = useState(["", "", "", "", "", ""]);
   const [novaSenha, setNovaSenha] = useState("");
@@ -86,14 +86,18 @@ export default function AssociacaoRecuperarSenhaPage() {
       const res = await fetch("/api/associacao/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim() }),
+        body: JSON.stringify({ telefone: email.trim() }),
       });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setErro(err.error ?? "Erro ao enviar codigo");
+        return;
+      }
       const json = await res.json();
-      if (!res.ok) { setErro(json.error ?? "Erro ao enviar codigo"); return; }
-      if (!json.enviado) { setErro("E-mail nao encontrado. Verifique se digitou corretamente."); return; }
+      if (!json.enviado) { setErro("Telefone nao encontrado. Verifique se digitou corretamente."); return; }
       setEtapa("codigo");
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCarregando(false);
     }
@@ -115,13 +119,18 @@ export default function AssociacaoRecuperarSenhaPage() {
       const res = await fetch("/api/associacao/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email: email.trim(), codigo: codigoCompleto, novaSenha }),
+        body: JSON.stringify({ telefone: email.trim(), codigo: codigoCompleto, novaSenha }),
       });
-      const json = await res.json();
-      if (!res.ok) { setErro(json.error ?? "Erro ao redefinir senha"); setEtapa("codigo"); return; }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setErro(err.error ?? "Erro ao redefinir senha");
+        setEtapa("codigo");
+        return;
+      }
+      await res.json();
       setEtapa("ok");
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCarregando(false);
     }
@@ -162,15 +171,15 @@ export default function AssociacaoRecuperarSenhaPage() {
           }}>ASSOCIACAO</div>
 
           <div style={{ fontSize: 16, fontWeight: 800, color: "#fff", marginBottom: 6 }}>
-            {etapa === "email" && "Recuperar Senha"}
+            {etapa === "telefone" && "Recuperar Senha"}
             {etapa === "codigo" && "Digite o Codigo"}
             {etapa === "nova-senha" && "Nova Senha"}
             {etapa === "ok" && "Senha Redefinida!"}
           </div>
 
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.45)", marginBottom: 22, lineHeight: 1.5 }}>
-            {etapa === "email" && "Informe o e-mail da sua associacao para receber o codigo"}
-            {etapa === "codigo" && `Enviamos um codigo para ${email}`}
+            {etapa === "telefone" && "Informe o WhatsApp da sua associacao para receber o codigo"}
+            {etapa === "codigo" && `Enviamos um codigo via WhatsApp para ${email}`}
             {etapa === "nova-senha" && "Escolha uma nova senha para sua conta"}
             {etapa === "ok" && "Sua senha foi atualizada com sucesso"}
           </div>
@@ -182,19 +191,19 @@ export default function AssociacaoRecuperarSenhaPage() {
             }}>{erro}</div>
           )}
 
-          {etapa === "email" && (
+          {etapa === "telefone" && (
             <form onSubmit={enviarEmail}>
               <input
                 className="grec-campo"
-                type="text" inputMode="email"
-                placeholder="email@suaassociacao.com"
+                type="tel" inputMode="tel"
+                placeholder="(11) 99999-9999"
                 value={email}
                 required
-                autoComplete="email"
+                autoComplete="tel"
                 onChange={(e) => setEmail(e.target.value)}
               />
               <button className="grec-btn" type="submit" disabled={carregando || !email}>
-                {carregando ? "ENVIANDO..." : "ENVIAR CODIGO"}
+                {carregando ? "ENVIANDO..." : "ENVIAR CODIGO VIA WHATSAPP"}
               </button>
             </form>
           )}
@@ -222,7 +231,7 @@ export default function AssociacaoRecuperarSenhaPage() {
               <div style={{ marginTop: 12, fontSize: 12, color: "rgba(255,255,255,.35)" }}>
                 <span
                   style={{ color: "rgba(196,181,253,.8)", cursor: "pointer" }}
-                  onClick={() => setEtapa("email")}
+                  onClick={() => setEtapa("telefone")}
                 >
                   Reenviar codigo
                 </span>

@@ -31,9 +31,9 @@ export default async function AssociacaoDashboardPage() {
   }
 
   const cards = [
-    { label: "Gestores", value: totalGestores ?? 0, icon: Briefcase, color: "text-indigo-500", bg: "bg-indigo-500/10", border: "border-t-indigo-500" },
-    { label: "Consultores", value: totalConsultores ?? 0, icon: Users, color: "text-violet-500", bg: "bg-violet-500/10", border: "border-t-violet-500" },
-    { label: "Indicadores", value: totalIndicadores, icon: UserCheck, color: "text-purple-500", bg: "bg-purple-500/10", border: "border-t-purple-500" },
+    { label: "Gestores", value: totalGestores ?? 0, icon: Briefcase, color: "text-[#00c389]", bg: "bg-muted" },
+    { label: "Consultores", value: totalConsultores ?? 0, icon: Users, color: "text-foreground", bg: "bg-muted" },
+    { label: "Indicadores", value: totalIndicadores, icon: UserCheck, color: "text-foreground", bg: "bg-muted" },
   ];
 
   return (
@@ -45,10 +45,10 @@ export default async function AssociacaoDashboardPage() {
       <div className="flex-1 p-8 bg-muted/30">
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 max-w-2xl">
           {cards.map((c) => (
-            <Card key={c.label} className={`border-t-4 ${c.border} shadow-sm`}>
+            <Card key={c.label} className="border border-border shadow-sm">
               <CardContent className="p-5 flex items-center gap-4">
                 <div className={`w-10 h-10 rounded-xl ${c.bg} flex items-center justify-center flex-shrink-0`}>
-                  <c.icon className={`h-5 w-5 ${c.color}`} />
+                  <c.icon className="h-5 w-5 text-muted-foreground" />
                 </div>
                 <div>
                   <div className={`text-2xl font-bold ${c.color}`}>{c.value}</div>

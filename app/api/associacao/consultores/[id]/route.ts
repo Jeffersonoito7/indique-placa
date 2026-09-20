@@ -1,20 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { getAssociacaoLogada } from "@/lib/auth";
+import bcrypt from "bcryptjs";
 import { z } from "zod";
 
-async function verificarPosse(assocId: string, consultorId: string): Promise<boolean> {
-  const { data } = await supabaseAdmin
-    .from("consultores")
-    .select("id")
-    .eq("id", consultorId)
-    .eq("associacao_id", assocId)
-    .single();
-  return !!data;
-}
-
 const patchSchema = z.object({
+  nome: z.string().min(2).max(100).optional(),
+  email: z.string().email().optional(),
+  fone: z.string().min(10).max(20).optional(),
+  nova_senha: z.string().min(6).max(128).optional(),
   status: z.enum(["ativo", "inativo"]).optional(),
+  plano: z.enum(["gratis", "pro"]).optional(),
+  plano_ativo_ate: z.string().nullable().optional(),
+  parceiros_habilitado: z.boolean().optional(),
 });
 
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -22,8 +20,15 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!assoc) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const { id } = await params;
-  const pertence = await verificarPosse(assoc.id, id);
-  if (!pertence) return NextResponse.json({ error: "Consultor não encontrado" }, { status: 404 });
+
+  const { data: consultor } = await supabaseAdmin
+    .from("consultores")
+    .select("id")
+    .eq("id", id)
+    .eq("associacao_id", assoc.id)
+    .maybeSingle();
+
+  if (!consultor) return NextResponse.json({ error: "Consultor não encontrado" }, { status: 404 });
 
   let body: unknown;
   try { body = await req.json(); } catch { return NextResponse.json({ error: "Requisição inválida" }, { status: 400 }); }
@@ -31,19 +36,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   const parsed = patchSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
-  const { data, error } = await supabaseAdmin
-    .from("consultores")
-    .update(parsed.data)
-    .eq("id", id)
-    .select("id, nome, status")
-    .single();
+  const { nova_senha, ...rest } = parsed.data;
+  const update: Record<string, unknown> = { ...rest };
 
-  if (error) {
-    console.error("[associacao/consultores/id] PATCH:", error.code, error.message);
-    return NextResponse.json({ error: "Erro ao atualizar" }, { status: 500 });
+  if (nova_senha) {
+    update.senha = await bcrypt.hash(nova_senha, 12);
   }
 
-  return NextResponse.json(data);
+  if (Object.keys(update).length === 0) return NextResponse.json({ error: "Nada para atualizar" }, { status: 400 });
+
+  const { error } = await supabaseAdmin.from("consultores").update(update).eq("id", id).eq("associacao_id", assoc.id);
+  if (error) return NextResponse.json({ error: "Erro ao atualizar consultor" }, { status: 500 });
+
+  return NextResponse.json({ ok: true });
 }
 
 export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
@@ -51,19 +56,22 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   if (!assoc) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
 
   const { id } = await params;
-  const pertence = await verificarPosse(assoc.id, id);
-  if (!pertence) return NextResponse.json({ error: "Consultor não encontrado" }, { status: 404 });
 
-  // Inativar e desvincular do gestor
-  const { error } = await supabaseAdmin
+  const { data: consultor } = await supabaseAdmin
     .from("consultores")
-    .update({ status: "inativo", gestor_id: null })
-    .eq("id", id);
+    .select("id")
+    .eq("id", id)
+    .eq("associacao_id", assoc.id)
+    .maybeSingle();
 
-  if (error) {
-    console.error("[associacao/consultores/id] DELETE:", error.code, error.message);
-    return NextResponse.json({ error: "Erro ao inativar consultor" }, { status: 500 });
-  }
+  if (!consultor) return NextResponse.json({ error: "Consultor não encontrado" }, { status: 404 });
+
+  // Desvincula indicacoes e indicadores antes de excluir (evita violacao de FK)
+  await supabaseAdmin.from("indicacoes").update({ consultor_id: null }).eq("consultor_id", id);
+  await supabaseAdmin.from("indicadores").update({ consultor_id: null }).eq("consultor_id", id);
+
+  const { error } = await supabaseAdmin.from("consultores").delete().eq("id", id).eq("associacao_id", assoc.id);
+  if (error) return NextResponse.json({ error: "Erro ao excluir consultor" }, { status: 500 });
 
   return NextResponse.json({ ok: true });
 }
