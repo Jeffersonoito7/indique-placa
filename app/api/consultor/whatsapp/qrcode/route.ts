@@ -2,6 +2,12 @@ import { NextResponse } from "next/server";
 import { getConsultorLogado } from "@/lib/auth";
 import { createHmac } from "crypto";
 
+function exigirSessionSecret(): string {
+  const s = process.env.SESSION_SECRET;
+  if (!s) throw new Error("SESSION_SECRET ausente");
+  return s;
+}
+
 export async function POST() {
   const consultor = await getConsultorLogado();
   if (!consultor) return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
@@ -18,7 +24,7 @@ export async function POST() {
       // Token unico por instancia derivado de SESSION_SECRET — nunca usar a chave admin
       body: JSON.stringify({
         instanceName,
-        token: createHmac("sha256", process.env.SESSION_SECRET ?? "default")
+        token: createHmac("sha256", exigirSessionSecret())
           .update(`wpp-${consultor.id}`)
           .digest("hex")
           .slice(0, 32),
