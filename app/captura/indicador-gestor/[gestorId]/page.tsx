@@ -27,9 +27,6 @@ const STYLES = `
     padding: 36px 28px 32px; box-shadow: 0 24px 80px rgba(0,0,0,.4);
     animation: fadeUp .4s ease both;
   }
-  .cap-logo { text-align: center; margin-bottom: 24px; }
-  .cap-logo span { font-size: 22px; font-weight: 800; color: #fff; letter-spacing: -0.5px; }
-  .cap-logo span em { color: #00C389; font-style: normal; }
   .cap-titulo { color: #fff; font-size: 18px; font-weight: 700; margin: 0 0 4px; }
   .cap-sub { color: rgba(255,255,255,.55); font-size: 13px; margin: 0 0 24px; }
   .cap-label { display: block; color: rgba(255,255,255,.7); font-size: 12px; font-weight: 600; letter-spacing: .5px; margin-bottom: 6px; }
@@ -55,10 +52,10 @@ const STYLES = `
   .cap-sucesso p { color: rgba(255,255,255,.7); font-size: 14px; }
 `;
 
-export default function CapturaIndicadorPage({ params }: { params: Promise<{ consultorId: string }> }) {
-  const { consultorId } = use(params);
+export default function CapturaIndicadorGestorPage({ params }: { params: Promise<{ gestorId: string }> }) {
+  const { gestorId } = use(params);
 
-  const [nomeConsultor, setNomeConsultor] = useState<string | null>(null);
+  const [nomeGestor, setNomeGestor] = useState<string | null>(null);
   const [linkInvalido, setLinkInvalido] = useState(false);
 
   const [nome, setNome] = useState("");
@@ -70,21 +67,21 @@ export default function CapturaIndicadorPage({ params }: { params: Promise<{ con
   const [carregando, setCarregando] = useState(false);
 
   useEffect(() => {
-    fetch(`/api/publico/captura-indicador/${consultorId}`)
+    fetch(`/api/publico/captura-indicador-gestor/${gestorId}`)
       .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((d) => {
-        if (d.nome) setNomeConsultor(d.nome);
+        if (d.nome) setNomeGestor(d.nome);
         else setLinkInvalido(true);
       })
       .catch(() => setLinkInvalido(true));
-  }, [consultorId]);
+  }, [gestorId]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     setErro("");
     setCarregando(true);
     try {
-      const res = await fetch(`/api/publico/captura-indicador/${consultorId}`, {
+      const res = await fetch(`/api/publico/captura-indicador-gestor/${gestorId}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ nome, telefone, email, senha }),
@@ -128,7 +125,7 @@ export default function CapturaIndicadorPage({ params }: { params: Promise<{ con
             <>
               <p className="cap-titulo">Seja um indicador</p>
               <p className="cap-sub">
-                {nomeConsultor ? `Convite de ${nomeConsultor}` : "Carregando..."}
+                {nomeGestor ? `Convite de ${nomeGestor}` : "Carregando..."}
               </p>
 
               <form onSubmit={handleSubmit}>
@@ -146,12 +143,13 @@ export default function CapturaIndicadorPage({ params }: { params: Promise<{ con
 
                 {erro && <p className="cap-erro">{erro}</p>}
 
-                <button className="cap-btn" type="submit" disabled={carregando || !nomeConsultor}>
+                <button className="cap-btn" type="submit" disabled={carregando || !nomeGestor}>
                   {carregando ? "Cadastrando..." : "Criar minha conta"}
                 </button>
               </form>
             </>
           )}
+
           <div style={{ textAlign: "center", marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,.08)", fontSize: 11, color: "rgba(255,255,255,.25)" }}>
             IndiquePlaca &copy; {new Date().getFullYear()} &middot; Plataforma de indicações
           </div>

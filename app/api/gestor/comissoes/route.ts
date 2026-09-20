@@ -17,7 +17,7 @@ export async function GET() {
     .from("comissoes_tipos")
     .select("tipo, label, icone, comissao_indicador, ativo")
     .eq("gestor_id", gestor.id)
-    .order("created_at", { ascending: true });
+    .order("tipo", { ascending: true });
 
   if (!data || data.length === 0) return NextResponse.json(DEFAULTS);
   return NextResponse.json(data);
@@ -43,14 +43,32 @@ export async function POST(req: NextRequest) {
 
   const { tipo, label, icone, comissao_indicador, ativo } = parsed.data;
 
-  const { error } = await supabaseAdmin
+  // Verifica se já existe registro para este gestor+tipo
+  const { data: existente } = await supabaseAdmin
     .from("comissoes_tipos")
-    .upsert(
-      { gestor_id: gestor.id, tipo, label, icone, comissao_indicador, ativo },
-      { onConflict: "gestor_id,tipo" }
-    );
+    .select("id")
+    .eq("gestor_id", gestor.id)
+    .eq("tipo", tipo)
+    .maybeSingle();
 
-  if (error) return NextResponse.json({ error: "Erro ao salvar comissao" }, { status: 500 });
+  let saveError;
+  if (existente) {
+    const { error } = await supabaseAdmin
+      .from("comissoes_tipos")
+      .update({ label, icone, comissao_indicador, ativo })
+      .eq("id", existente.id);
+    saveError = error;
+  } else {
+    const { error } = await supabaseAdmin
+      .from("comissoes_tipos")
+      .insert({ gestor_id: gestor.id, tipo, label, icone, comissao_indicador, ativo });
+    saveError = error;
+  }
+
+  if (saveError) {
+    console.error("[gestor/comissoes] POST error:", saveError.code, saveError.message);
+    return NextResponse.json({ error: "Erro ao salvar comissao" }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }
 

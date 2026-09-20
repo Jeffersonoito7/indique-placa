@@ -76,7 +76,7 @@ export default function GestorIndicadoresPage() {
         await carregar();
       }
     } catch {
-      setErroModal("Erro de conexao.");
+      setErroModal("Erro de conexão.");
     } finally {
       setEnviando(false);
     }
@@ -214,7 +214,7 @@ export default function GestorIndicadoresPage() {
               </div>
               <div>
                 <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Senha inicial</label>
-                <input type="password" required minLength={6} placeholder="Minimo 6 caracteres" value={form.senha}
+                <input type="password" required minLength={6} placeholder="Mínimo 6 caracteres" value={form.senha}
                   onChange={(e) => setForm((f) => ({ ...f, senha: e.target.value }))}
                   className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
                 />

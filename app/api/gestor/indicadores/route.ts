@@ -62,7 +62,7 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (!planoConfig) {
-    return NextResponse.json({ error: "Configuracao de plano nao encontrada. Contate o suporte." }, { status: 403 });
+    return NextResponse.json({ error: "Configuração de plano não encontrada. Contate o suporte." }, { status: 403 });
   }
 
   if (planoConfig.max_consultores !== null && planoConfig.max_consultores !== undefined) {
@@ -106,7 +106,7 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) {
-    if (error.code === "23505") return NextResponse.json({ error: "Telefone ja cadastrado" }, { status: 409 });
+    if (error.code === "23505") return NextResponse.json({ error: "Telefone já cadastrado" }, { status: 409 });
     console.error("[gestor/indicadores] POST:", error.code, error.message);
     return NextResponse.json({ error: "Erro ao criar indicador" }, { status: 500 });
   }

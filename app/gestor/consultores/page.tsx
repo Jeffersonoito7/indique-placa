@@ -89,7 +89,7 @@ function ModalTransferir({
       if (!res.ok) { setErro(json.error ?? "Erro ao transferir"); return; }
       onFeito(json.transferidos ?? 0);
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setEnviando(false);
     }
@@ -226,7 +226,7 @@ export default function GestorConsultoresPage() {
         await carregar();
       }
     } catch {
-      setErroModal("Erro de conexao.");
+      setErroModal("Erro de conexão.");
     } finally {
       setEnviando(false);
     }
@@ -245,7 +245,7 @@ export default function GestorConsultoresPage() {
       if (res.ok) await carregar();
       else setErroAcao("Erro ao atualizar status. Tente novamente.");
     } catch {
-      setErroAcao("Erro de conexao. Tente novamente.");
+      setErroAcao("Erro de conexão. Tente novamente.");
     }
   }
 
@@ -258,7 +258,7 @@ export default function GestorConsultoresPage() {
       if (res.ok) await carregar();
       else setErroAcao("Erro ao remover consultor. Tente novamente.");
     } catch {
-      setErroAcao("Erro de conexao. Tente novamente.");
+      setErroAcao("Erro de conexão. Tente novamente.");
     }
   }
 
@@ -343,7 +343,7 @@ export default function GestorConsultoresPage() {
                 <table className="w-full min-w-[800px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/40">
-                      {["Consultor", "Contato", "Status", "Leads", "Fechamentos", "Conversao", "Acoes"].map((h) => (
+                      {["Consultor", "Contato", "Status", "Leads", "Fechamentos", "Conversão", "Ações"].map((h) => (
                         <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-5 py-3">{h}</th>
                       ))}
                     </tr>
@@ -483,7 +483,7 @@ export default function GestorConsultoresPage() {
                   type="password"
                   required
                   minLength={6}
-                  placeholder="Minimo 6 caracteres"
+                  placeholder="Mínimo 6 caracteres"
                   value={form.senha}
                   onChange={(e) => setForm((f) => ({ ...f, senha: e.target.value }))}
                   className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"

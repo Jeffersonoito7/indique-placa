@@ -27,13 +27,24 @@ export async function POST() {
       }),
     });
 
-    if (!res.ok) {
-      const text = await res.text();
-      return NextResponse.json({ error: "Falha ao criar instancia", detail: text }, { status: 502 });
-    }
+    let base64: string | null = null;
 
-    const data = await res.json();
-    const base64 = data?.qrcode?.base64 ?? null;
+    if (!res.ok) {
+      // Instância já existe — busca o QR diretamente
+      const connectRes = await fetch(
+        `${process.env.EVOLUTION_API_URL}/instance/connect/${instanceName}`,
+        { headers: { apikey: process.env.EVOLUTION_API_KEY! } }
+      );
+      if (!connectRes.ok) {
+        const text = await connectRes.text();
+        return NextResponse.json({ error: "Falha ao obter QR Code", detail: text }, { status: 502 });
+      }
+      const connectData = await connectRes.json();
+      base64 = connectData?.base64 ?? null;
+    } else {
+      const data = await res.json();
+      base64 = data?.qrcode?.base64 ?? null;
+    }
 
     if (!base64) {
       return NextResponse.json({ error: "QR code não retornado pela Evolution API" }, { status: 502 });

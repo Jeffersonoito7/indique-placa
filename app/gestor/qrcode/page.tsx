@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect, useCallback } from "react"
-import { QrCode, Copy, Check, Share2, Download, Users, Target } from "lucide-react"
+import { QrCode, Copy, Check, Share2, Download, Users, Target, UserPlus } from "lucide-react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs"
@@ -160,6 +160,7 @@ export default function GestorQRCodePage() {
   const baseUrl = typeof window !== "undefined" ? window.location.origin : ""
   const consultorLink = `${baseUrl}/captura/consultor/${gestorId}`
   const leadLink = `${baseUrl}/captura/gestor/${gestorId}`
+  const indicadorLink = `${baseUrl}/captura/indicador-gestor/${gestorId}`
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -203,21 +204,28 @@ export default function GestorQRCodePage() {
                     className="flex-1 data-[state=active]:bg-cyan-600 data-[state=active]:text-white text-slate-400"
                   >
                     <Users className="w-4 h-4 mr-2" />
-                    Recrutar Consultores
+                    Consultores
+                  </TabsTrigger>
+                  <TabsTrigger
+                    value="indicador"
+                    className="flex-1 data-[state=active]:bg-violet-600 data-[state=active]:text-white text-slate-400"
+                  >
+                    <UserPlus className="w-4 h-4 mr-2" />
+                    Indicadores
                   </TabsTrigger>
                   <TabsTrigger
                     value="leads"
                     className="flex-1 data-[state=active]:bg-emerald-600 data-[state=active]:text-white text-slate-400"
                   >
                     <Target className="w-4 h-4 mr-2" />
-                    Captura de Leads
+                    Leads
                   </TabsTrigger>
                 </TabsList>
 
                 <TabsContent value="consultor" className="mt-0">
                   <QRCard
                     title="Recrutar Consultores"
-                    description="Compartilhe este QR code para atrair novos consultores para o seu time. Ao escanear, a pessoa sera direcionada para o formulario de cadastro de consultor vinculado a voce."
+                    description="Compartilhe este QR code para atrair novos consultores para o seu time. Ao escanear, a pessoa será direcionada para o formulário de cadastro de consultor vinculado a você."
                     icon={<Users className="w-4 h-4" />}
                     link={consultorLink}
                     accentClass="text-cyan-400"
@@ -225,10 +233,21 @@ export default function GestorQRCodePage() {
                   />
                 </TabsContent>
 
+                <TabsContent value="indicador" className="mt-0">
+                  <QRCard
+                    title="Recrutar Indicadores"
+                    description="Compartilhe este QR code para cadastrar indicadores diretamente no seu time. Ao escanear, a pessoa cria a conta e fica vinculada a você."
+                    icon={<UserPlus className="w-4 h-4" />}
+                    link={indicadorLink}
+                    accentClass="text-violet-400"
+                    buttonClass="bg-violet-600 hover:bg-violet-700 text-white"
+                  />
+                </TabsContent>
+
                 <TabsContent value="leads" className="mt-0">
                   <QRCard
                     title="Captura de Leads"
-                    description="Compartilhe este QR code para que clientes indiquem veiculos. Ao escanear, o cliente sera direcionado para o formulario de indicacao vinculado a voce."
+                    description="Compartilhe este QR code para que clientes indiquem veículos. Ao escanear, o cliente será direcionado para o formulário de indicação vinculado a você."
                     icon={<Target className="w-4 h-4" />}
                     link={leadLink}
                     accentClass="text-emerald-400"

@@ -47,7 +47,7 @@ export async function POST(req: NextRequest) {
     ativo: true,
   });
 
-  if (error) return NextResponse.json({ error: "Erro ao criar meta" }, { status: 500 });
+  if (error) return NextResponse.json({ error: "Erro ao criar meta", detail: error.message }, { status: 500 });
 
   return NextResponse.json({ ok: true });
 }

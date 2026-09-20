@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       nome,
       telefone,
       email: email ? email.toLowerCase() : null,
-      senha_hash: senhaHash,
+      senha: senhaHash,
       gestor_id: gestor.id,
       consultor_id: null,
       associacao_id: (gestor as { associacao_id?: string }).associacao_id ?? null,
@@ -60,6 +60,7 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) {
+    console.error("[meus-indicadores] insert error:", JSON.stringify({ code: error.code, message: error.message, details: error.details }));
     if (error.code === "23505") return NextResponse.json({ error: "Telefone ja cadastrado" }, { status: 409 });
     return NextResponse.json({ error: "Erro ao criar indicador" }, { status: 500 });
   }

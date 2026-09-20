@@ -37,6 +37,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
     .from("consultores")
     .update(parsed.data)
     .eq("id", id)
+    .eq("gestor_id", gestor.id)
     .select("id, nome, status, plano")
     .single();
 
@@ -59,7 +60,8 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
   const { error } = await supabaseAdmin
     .from("consultores")
     .update({ status: "inativo", gestor_id: null })
-    .eq("id", id);
+    .eq("id", id)
+    .eq("gestor_id", gestor.id);
 
   if (error) return NextResponse.json({ error: "Erro ao remover" }, { status: 500 });
 

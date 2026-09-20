@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Copy, Check, Share2, Users, Target, QrCode } from "lucide-react";
+import { Copy, Check, Share2, Users, Target, QrCode, UserPlus } from "lucide-react";
 import Link from "next/link";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,7 +13,6 @@ function LinkCard({
   link,
   shareTitle,
   shareText,
-  copiadoKey,
 }: {
   titulo: string;
   descricao: string;
@@ -21,7 +20,6 @@ function LinkCard({
   link: string;
   shareTitle: string;
   shareText: string;
-  copiadoKey: string;
 }) {
   const [copiado, setCopiado] = useState(false);
 
@@ -49,53 +47,34 @@ function LinkCard({
   };
 
   return (
-    <Card style={{ marginBottom: 20 }}>
+    <Card className="mb-5">
       <CardHeader>
-        <CardTitle style={{ fontSize: 15, display: "flex", alignItems: "center", gap: 8 }}>
+        <CardTitle className="text-sm flex items-center gap-2">
           {icone}
           {titulo}
         </CardTitle>
-        <p style={{ fontSize: 13, color: "#94a3b8", marginTop: 4 }}>{descricao}</p>
+        <p className="text-xs text-muted-foreground mt-1">{descricao}</p>
       </CardHeader>
       <CardContent>
-        <div
-          style={{
-            background: "rgba(255,255,255,.04)",
-            border: "1px solid rgba(255,255,255,.1)",
-            borderRadius: 10,
-            padding: "12px 14px",
-            fontSize: 13,
-            color: "#67e8f9",
-            wordBreak: "break-all",
-            marginBottom: 14,
-            fontFamily: "monospace",
-          }}
-        >
+        <div className="bg-muted border border-border rounded-lg px-3 py-3 text-xs text-[#00c389] break-all mb-3 font-mono">
           {link}
         </div>
-        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-          <Button onClick={copiar} style={{ flex: 1, minWidth: 120, gap: 6 }}>
-            {copiado ? <Check size={15} /> : <Copy size={15} />}
+        <div className="flex gap-2 flex-wrap">
+          <Button onClick={copiar} className="flex-1 min-w-[120px] gap-1.5">
+            {copiado ? <Check size={14} /> : <Copy size={14} />}
             {copiado ? "Copiado!" : "Copiar link"}
           </Button>
-          <Button variant="outline" onClick={compartilhar} style={{ flex: 1, minWidth: 120, gap: 6 }}>
-            <Share2 size={15} />
+          <Button variant="outline" onClick={compartilhar} className="flex-1 min-w-[120px] gap-1.5">
+            <Share2 size={14} />
             Compartilhar
           </Button>
         </div>
-        <div style={{ marginTop: 12 }}>
+        <div className="mt-3">
           <Link
             href="/gestor/qrcode"
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 6,
-              fontSize: 13,
-              color: "#06b6d4",
-              textDecoration: "none",
-            }}
+            className="inline-flex items-center gap-1.5 text-xs text-[#00c389] hover:opacity-80 transition-opacity"
           >
-            <QrCode size={14} />
+            <QrCode size={13} />
             Gerar QR Code
           </Link>
         </div>
@@ -115,50 +94,56 @@ export default function GestorCapturaClient({
     typeof window !== "undefined" ? window.location.origin : "https://indiqueplaca.com.br";
 
   const linkConsultor = `${baseUrl}/captura/consultor/${gestorId}`;
+  const linkIndicador = `${baseUrl}/captura/indicador-gestor/${gestorId}`;
   const linkLeads = `${baseUrl}/captura/gestor/${gestorId}`;
 
   return (
-    <div style={{ maxWidth: 640, margin: "0 auto", padding: "24px 16px" }}>
-      <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#f1f5f9", marginBottom: 4 }}>
-          Link de Captura
-        </h1>
-        <p style={{ fontSize: 14, color: "#94a3b8" }}>
-          Voce tem dois links exclusivos: um para recrutar consultores e outro para receber leads diretamente.
+    <div className="max-w-2xl mx-auto px-4 py-6">
+      <div className="mb-6">
+        <h1 className="text-lg font-bold text-foreground mb-1">Link de Captura</h1>
+        <p className="text-sm text-muted-foreground">
+          Você tem dois links exclusivos: um para recrutar consultores e outro para receber leads diretamente.
         </p>
       </div>
 
       <LinkCard
         titulo="Recrutar Consultores"
-        descricao="Compartilhe para recrutar novos consultores. Ao se cadastrar, eles ficam vinculados a voce automaticamente."
-        icone={<Users size={16} style={{ color: "#06b6d4" }} />}
+        descricao="Compartilhe para recrutar novos consultores. Ao se cadastrar, eles ficam vinculados a você automaticamente."
+        icone={<Users size={15} className="text-muted-foreground" />}
         link={linkConsultor}
         shareTitle="Seja Consultor - Indique Placa"
         shareText={`${nomeGestor} te convidou para ser consultor no Indique Placa. Cadastre-se:`}
-        copiadoKey="consultor"
+      />
+
+      <LinkCard
+        titulo="Recrutar Indicadores"
+        descricao="Compartilhe para que pessoas se cadastrem como indicadores diretamente no seu time, sem precisar de consultor."
+        icone={<UserPlus size={15} className="text-muted-foreground" />}
+        link={linkIndicador}
+        shareTitle="Seja Indicador - Indique Placa"
+        shareText={`${nomeGestor} te convidou para ser indicador no Indique Placa. Cadastre-se:`}
       />
 
       <LinkCard
         titulo="Captura de Leads"
-        descricao="Link direto para receber indicacoes e leads sem passar por consultor. Use em anuncios ou materiais proprios."
-        icone={<Target size={16} style={{ color: "#a78bfa" }} />}
+        descricao="Link direto para receber indicações e leads sem passar por consultor. Use em anúncios ou materiais próprios."
+        icone={<Target size={15} className="text-muted-foreground" />}
         link={linkLeads}
         shareTitle="Indique sua Placa - Indique Placa"
-        shareText={`Indique sua placa e receba uma oferta. Acesse:`}
-        copiadoKey="leads"
+        shareText="Indique sua placa e receba uma oferta. Acesse:"
       />
 
       <Card>
         <CardHeader>
-          <CardTitle style={{ fontSize: 15 }}>Como funciona</CardTitle>
+          <CardTitle className="text-sm">Como funciona</CardTitle>
         </CardHeader>
         <CardContent>
-          <ol style={{ paddingLeft: 18, color: "#94a3b8", fontSize: 14, lineHeight: 2 }}>
+          <ol className="pl-4 text-sm text-muted-foreground space-y-1.5 list-decimal">
             <li>Compartilhe o link desejado no WhatsApp, Instagram ou onde preferir</li>
-            <li>A pessoa clica e preenche o formulario rapidamente</li>
-            <li>Consultores entram direto na sua equipe, sem aprovacao manual</li>
-            <li>Leads chegam direto para voce em tempo real</li>
-            <li>Acompanhe tudo em <strong style={{ color: "#e2e8f0" }}>Meu Time</strong> e no painel de leads</li>
+            <li>A pessoa clica e preenche o formulário rapidamente</li>
+            <li>Consultores entram direto na sua equipe, sem aprovação manual</li>
+            <li>Leads chegam direto para você em tempo real</li>
+            <li>Acompanhe tudo em <strong className="text-foreground font-semibold">Meu Time</strong> e no painel de leads</li>
           </ol>
         </CardContent>
       </Card>

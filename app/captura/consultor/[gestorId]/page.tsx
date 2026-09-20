@@ -66,6 +66,14 @@ export default function CapturaConsultorPage({ params }: { params: Promise<{ ges
   const [nome, setNome] = useState("");
   const [telefone, setTelefone] = useState("");
   const [email, setEmail] = useState("");
+
+  const formatarTelefone = (valor: string) => {
+    const digits = valor.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+    if (digits.length <= 6) return `(${digits.slice(0,2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+  };
   const [estado, setEstado] = useState("");
   const [cidade, setCidade] = useState("");
   const [senha, setSenha] = useState("");
@@ -77,7 +85,7 @@ export default function CapturaConsultorPage({ params }: { params: Promise<{ ges
 
   useEffect(() => {
     fetch(`/api/publico/captura-consultor/${gestorId}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((d) => {
         if (d.nome) setNomeGestor(d.nome);
         else setLinkInvalido(true);
@@ -90,7 +98,7 @@ export default function CapturaConsultorPage({ params }: { params: Promise<{ ges
     setErro("");
     if (!estado) { setErro("Selecione o estado."); return; }
     if (!cidade) { setErro("Selecione a cidade."); return; }
-    if (!aceitouTermos) { setErro("Voce precisa aceitar os Termos de Uso e a Politica de Privacidade (LGPD) para continuar."); return; }
+    if (!aceitouTermos) { setErro("Você precisa aceitar os Termos de Uso e a Política de Privacidade (LGPD) para continuar."); return; }
     setCarregando(true);
     try {
       const res = await fetch(`/api/publico/captura-consultor/${gestorId}`, {
@@ -149,7 +157,7 @@ export default function CapturaConsultorPage({ params }: { params: Promise<{ ges
               )}
               <form onSubmit={enviar}>
                 <input className="cap-campo" type="text" placeholder="Seu nome completo" value={nome} required onChange={(e) => setNome(e.target.value)} />
-                <input className="cap-campo" type="tel" placeholder="WhatsApp (11) 99999-9999" value={telefone} required onChange={(e) => setTelefone(e.target.value)} />
+                <input className="cap-campo" type="tel" placeholder="WhatsApp (11) 99999-9999" value={telefone} required inputMode="numeric" onChange={(e) => setTelefone(formatarTelefone(e.target.value))} />
                 <input className="cap-campo" type="email" placeholder="seu@email.com" value={email} required autoComplete="off" onChange={(e) => setEmail(e.target.value)} />
                 <select
                   className="cap-campo"
@@ -216,7 +224,7 @@ export default function CapturaConsultorPage({ params }: { params: Promise<{ ges
                     Li e aceito os{" "}
                     <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color: "#67e8f9", textDecoration: "underline" }}>Termos de Uso</a>
                     {" "}e a{" "}
-                    <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: "#67e8f9", textDecoration: "underline" }}>Politica de Privacidade</a>
+                    <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: "#67e8f9", textDecoration: "underline" }}>Política de Privacidade</a>
                     {" "}(LGPD).
                   </span>
                 </label>
@@ -225,7 +233,7 @@ export default function CapturaConsultorPage({ params }: { params: Promise<{ ges
                 </button>
               </form>
               <div style={{ textAlign: "center", marginTop: 14, fontSize: 12, color: "rgba(255,255,255,.35)" }}>
-                Ja tem conta?{" "}
+                Já tem conta?{" "}
                 <a href="/consultor/login" style={{ color: "rgba(103,232,249,.8)", textDecoration: "none" }}>Entrar</a>
               </div>
             </>

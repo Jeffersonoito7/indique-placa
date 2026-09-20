@@ -122,7 +122,7 @@ function ModalNovoLead({
 
   async function salvar() {
     if (!form.placa.trim()) {
-      setErro("Informe a placa do veiculo");
+      setErro("Informe a placa do veículo");
       return;
     }
     setEnviando(true);
@@ -145,7 +145,7 @@ function ModalNovoLead({
       }
       onCriado(json);
     } catch {
-      setErro("Erro de conexao");
+      setErro("Erro de conexão");
     } finally {
       setEnviando(false);
     }
@@ -182,7 +182,7 @@ function ModalNovoLead({
           </div>
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-              Nome do proprietario
+              Nome do proprietário
             </label>
             <input
               type="text"
@@ -206,7 +206,7 @@ function ModalNovoLead({
           </div>
           <div>
             <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">
-              Tipo de veiculo
+              Tipo de veículo
             </label>
             <select
               value={form.tipo_veiculo}
@@ -215,7 +215,7 @@ function ModalNovoLead({
             >
               <option value="carro">Carro</option>
               <option value="moto">Moto</option>
-              <option value="caminhao">Caminhao</option>
+              <option value="caminhao">Caminhão</option>
               <option value="outro">Outro</option>
             </select>
           </div>
@@ -306,7 +306,7 @@ function LeadCard({
         {lead.nome_lead ? (
           <span className="text-sm font-medium text-foreground truncate">{lead.nome_lead}</span>
         ) : (
-          <span className="text-xs italic text-muted-foreground/60">Proprietario a confirmar</span>
+          <span className="text-xs italic text-muted-foreground/60">Proprietário a confirmar</span>
         )}
         {lead.tipo_veiculo && (
           <span className="ml-auto text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full capitalize flex-shrink-0">
@@ -494,7 +494,7 @@ export default function GestorMeusLeadsPage() {
       setLeadsKanban((prev) => prev.map(patch));
       setLeadsLista((prev) => prev.map(patch));
     } catch {
-      setErroKanban("Erro ao mover o card. Verifique sua conexao e tente novamente.");
+      setErroKanban("Erro ao mover o card. Verifique sua conexão e tente novamente.");
     } finally {
       setAtualizando((prev) => {
         const next = new Set(prev);
@@ -505,7 +505,7 @@ export default function GestorMeusLeadsPage() {
   }
 
   async function apagarLead(id: string) {
-    const confirmado = window.confirm("Apagar este lead? Esta acao nao pode ser desfeita.");
+    const confirmado = window.confirm("Apagar este lead? Esta ação não pode ser desfeita.");
     if (!confirmado) return;
     setApagando((prev) => new Set(prev).add(id));
     try {
@@ -519,7 +519,7 @@ export default function GestorMeusLeadsPage() {
       setLeadsLista((prev) => prev.filter((l) => l.id !== id));
       setTotalLista((prev) => Math.max(0, prev - 1));
     } catch {
-      alert("Erro de conexao");
+      alert("Erro de conexão");
     } finally {
       setApagando((prev) => {
         const next = new Set(prev);
@@ -569,7 +569,7 @@ export default function GestorMeusLeadsPage() {
               </span>
             )}
           </h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Sua producao pessoal</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Sua produção pessoal</p>
         </div>
         <div className="flex items-center gap-2">
           <input
@@ -616,7 +616,7 @@ export default function GestorMeusLeadsPage() {
             corTexto="text-emerald-600 dark:text-emerald-400"
           />
           <KpiCard
-            label="Taxa de conversao"
+            label="Taxa de conversão"
             valor={`${kpis.taxa}%`}
             icone={<XCircle size={16} />}
             corTexto={kpis.taxa >= 30 ? "text-emerald-600 dark:text-emerald-400" : "text-foreground"}
@@ -662,7 +662,7 @@ export default function GestorMeusLeadsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/40 border-b border-border">
-                    {["Placa", "Proprietario", "Tipo", "Status", "Data", ""].map((h) => (
+                    {["Placa", "Proprietário", "Tipo", "Status", "Data", ""].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-4 py-2.5">
                         {h}
                       </th>
@@ -758,7 +758,7 @@ export default function GestorMeusLeadsPage() {
                 onClick={() => setPage((p) => p + 1)}
                 className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Proximo
+                Próximo
               </button>
             </div>
           </div>

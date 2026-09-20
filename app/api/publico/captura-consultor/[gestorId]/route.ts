@@ -28,7 +28,7 @@ export async function POST(
     .from("gestores")
     .select("id, nome, associacao_id, ativo")
     .eq("id", gestorId)
-    .single();
+    .maybeSingle();
 
   if (!gestor || !gestor.ativo) {
     return NextResponse.json({ error: "Link inválido ou expirado." }, { status: 404 });
@@ -52,7 +52,7 @@ export async function POST(
     .from("consultores")
     .select("id")
     .eq("email", email.toLowerCase())
-    .single();
+    .maybeSingle();
 
   if (emailExistente) {
     return NextResponse.json({ error: "Este e-mail já está cadastrado." }, { status: 409 });
@@ -63,13 +63,13 @@ export async function POST(
     .from("consultores")
     .select("id")
     .eq("fone", fone)
-    .single();
+    .maybeSingle();
 
   if (foneExistente) {
     return NextResponse.json({ error: "Este telefone já está cadastrado." }, { status: 409 });
   }
 
-  const senha_hash = await bcrypt.hash(senha, 10);
+  const senhaHash = await bcrypt.hash(senha, 10);
 
   const { data: novo, error } = await supabaseAdmin
     .from("consultores")
@@ -78,16 +78,17 @@ export async function POST(
       fone,
       email: email.toLowerCase().trim(),
       cidade: cidade.trim(),
-      senha_hash,
+      senha: senhaHash,
       gestor_id: gestor.id,
       associacao_id: gestor.associacao_id ?? null,
       plano: "free",
-      ativo: true,
+      status: "ativo",
     })
     .select("id, nome")
     .single();
 
   if (error || !novo) {
+    console.error("[captura-consultor] insert error:", JSON.stringify({ code: error?.code, message: error?.message, details: error?.details }));
     return NextResponse.json({ error: "Erro ao criar conta. Tente novamente." }, { status: 500 });
   }
 
@@ -105,7 +106,7 @@ export async function GET(
     .from("gestores")
     .select("id, nome, ativo")
     .eq("id", gestorId)
-    .single();
+    .maybeSingle();
 
   if (!gestor || !gestor.ativo) {
     return NextResponse.json({ error: "Link inválido." }, { status: 404 });

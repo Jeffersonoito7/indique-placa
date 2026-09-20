@@ -53,7 +53,7 @@ export default async function GestorFinanceiroProprio() {
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
         <h1 className="text-base font-bold text-foreground">Financeiro Pessoal</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Suas comissoes por leads fechados diretamente por voce</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Suas comissões por leads fechados diretamente por você</p>
       </div>
 
       <div className="flex-1 p-8 bg-muted/30 space-y-6">
@@ -61,7 +61,7 @@ export default async function GestorFinanceiroProprio() {
           {[
             { label: "Total acumulado", valor: moeda(totalGanho), icon: DollarSign, color: "text-emerald-500", bg: "bg-emerald-500/10" },
             { label: "Em andamento (potencial)", valor: moeda(potencialEmAndamento), icon: TrendingUp, color: "text-amber-500", bg: "bg-amber-500/10" },
-            { label: "Leads fechados proprios", valor: fechados.length, icon: CheckCircle2, color: "text-blue-500", bg: "bg-blue-500/10" },
+            { label: "Leads fechados próprios", valor: fechados.length, icon: CheckCircle2, color: "text-blue-500", bg: "bg-blue-500/10" },
           ].map(({ label, valor, icon: Icon, color, bg }) => (
             <Card key={label} className="shadow-sm">
               <CardContent className="p-5 flex items-start gap-3">
@@ -81,19 +81,19 @@ export default async function GestorFinanceiroProprio() {
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <Clock className="h-4 w-4 text-muted-foreground" />
-              Historico de Fechamentos Pessoais
+              Histórico de Fechamentos Pessoais
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
             {fechados.length === 0 ? (
               <div className="text-center text-sm text-muted-foreground py-14">
-                Nenhum lead fechado diretamente por voce ainda.
+                Nenhum lead fechado diretamente por você ainda.
               </div>
             ) : (
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Lead", "Via Indicador", "Comissao", "Data"].map((h) => (
+                    {["Lead", "Via Indicador", "Comissão", "Data"].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
                     ))}
                   </tr>
@@ -123,7 +123,7 @@ export default async function GestorFinanceiroProprio() {
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-muted-foreground" />
-              Historico de Pagamentos (Plano Pro)
+              Histórico de Pagamentos (Plano Pro)
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">
@@ -135,7 +135,7 @@ export default async function GestorFinanceiroProprio() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Descricao", "Valor", "Status", "Data"].map((h) => (
+                    {["Descrição", "Valor", "Status", "Data"].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3">{h}</th>
                     ))}
                   </tr>

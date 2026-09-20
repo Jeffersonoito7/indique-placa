@@ -41,7 +41,7 @@ export default function MetasPage() {
 
   const carregar = () => {
     fetch("/api/gestor/metas")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((d: Meta[]) => setMetas(d))
       .catch(() => {})
       .finally(() => setCarregando(false));
@@ -67,7 +67,7 @@ export default function MetasPage() {
         }),
       });
       const json = await res.json();
-      if (!res.ok) { setErro(json.error ?? "Erro ao criar meta"); return; }
+      if (!res.ok) { setErro((json.error ?? "Erro ao criar meta") + (json.detail ? `: ${json.detail}` : "")); return; }
       setSucesso(true);
       setNome("");
       setDescricao("");
@@ -77,7 +77,7 @@ export default function MetasPage() {
       carregar();
       setTimeout(() => setSucesso(false), 2500);
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCriando(false);
     }
@@ -91,7 +91,7 @@ export default function MetasPage() {
       if (res.ok) setMetas((prev) => prev.filter((m) => m.id !== id));
       else setErro("Erro ao remover meta. Tente novamente.");
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setRemovendo(null);
     }

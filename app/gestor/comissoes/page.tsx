@@ -61,7 +61,7 @@ export default function GestorComissoesPage() {
     fetch("/api/gestor/comissoes")
       .then((r) => { if (!r.ok) throw new Error(); return r.json(); })
       .then((d: ComissaoTipo[]) => setComissoes(d))
-      .catch(() => setErroNovo("Erro ao carregar configuracoes de comissao."))
+      .catch(() => setErroNovo("Erro ao carregar configurações de comissão."))
       .finally(() => setCarregandoConfig(false));
   };
 
@@ -110,14 +110,14 @@ export default function GestorComissoesPage() {
         setTimeout(() => msgSet(comissao.tipo, null), 2500);
       }
     } catch {
-      msgSet(comissao.tipo, { tipo: "erro", texto: "Erro de conexao" });
+      msgSet(comissao.tipo, { tipo: "erro", texto: "Erro de conexão" });
     } finally {
       setSalvando(null);
     }
   };
 
   const excluir = async (tipo: string, label: string) => {
-    if (!confirm(`Excluir o tipo "${label}"? Indicadores nao poderao mais seleciona-lo.`)) return;
+    if (!confirm(`Excluir o tipo "${label}"? Indicadores não poderão mais selecioná-lo.`)) return;
     setExcluindo(tipo);
     try {
       const res = await fetch("/api/gestor/comissoes", {
@@ -132,7 +132,7 @@ export default function GestorComissoesPage() {
         alert(json.error ?? "Erro ao excluir");
       }
     } catch {
-      alert("Erro de conexao");
+      alert("Erro de conexão");
     } finally {
       setExcluindo(null);
     }
@@ -140,11 +140,11 @@ export default function GestorComissoesPage() {
 
   const adicionarNovo = async () => {
     const labelTrim = novoLabel.trim();
-    if (!labelTrim) { setErroNovo("Informe o nome do tipo de veiculo."); return; }
-    if (novoValor < 0) { setErroNovo("O valor da comissao nao pode ser negativo."); return; }
+    if (!labelTrim) { setErroNovo("Informe o nome do tipo de veículo."); return; }
+    if (novoValor < 0) { setErroNovo("O valor da comissão não pode ser negativo."); return; }
     const tipo = slugify(labelTrim) || `tipo_${comissoes.length + 1}`;
     if (comissoes.some((c) => c.tipo === tipo || c.label.toLowerCase() === labelTrim.toLowerCase())) {
-      setErroNovo("Ja existe um tipo com este nome."); return;
+      setErroNovo("Já existe um tipo com este nome."); return;
     }
     setAdicionando(true);
     setErroNovo("");
@@ -164,7 +164,7 @@ export default function GestorComissoesPage() {
         setErroNovo(json.error ?? "Erro ao adicionar");
       }
     } catch {
-      setErroNovo("Erro de conexao");
+      setErroNovo("Erro de conexão");
     } finally {
       setAdicionando(false);
     }
@@ -177,9 +177,9 @@ export default function GestorComissoesPage() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Comissoes por Tipo de Veiculo</h1>
+        <h1 className="text-base font-bold text-foreground">Comissões por Tipo de Veículo</h1>
         <p className="text-[11px] text-muted-foreground mt-0.5">
-          Configure os valores pagos por indicacao e consulte o historico de pagamentos do seu time.
+          Configure os valores pagos por indicação e consulte o histórico de pagamentos do seu time.
         </p>
         <div className="flex gap-1 mt-4">
           {(["configurar", "historico"] as const).map((a) => (
@@ -188,7 +188,7 @@ export default function GestorComissoesPage() {
               onClick={() => setAba(a)}
               className={`px-4 py-1.5 text-xs font-semibold rounded-lg transition-colors ${aba === a ? "bg-emerald-600 text-white" : "bg-muted text-muted-foreground hover:text-foreground"}`}
             >
-              {a === "configurar" ? "Configurar Valores" : "Historico do Time"}
+              {a === "configurar" ? "Configurar Valores" : "Histórico do Time"}
             </button>
           ))}
         </div>
@@ -206,7 +206,7 @@ export default function GestorComissoesPage() {
                   <CardHeader className="pb-2">
                     <CardTitle className="text-sm font-semibold flex items-center gap-2 text-emerald-700 dark:text-emerald-400">
                       <Plus className="h-4 w-4" />
-                      Adicionar Tipo de Veiculo
+                      Adicionar Tipo de Veículo
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-1 space-y-3">
@@ -222,7 +222,7 @@ export default function GestorComissoesPage() {
                         />
                       </div>
                       <div>
-                        <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Comissao (R$)</label>
+                        <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1">Comissão (R$)</label>
                         <input
                           type="number" min={0} step={1} value={novoValor}
                           onChange={(e) => setNovoValor(Number(e.target.value))}
@@ -245,7 +245,7 @@ export default function GestorComissoesPage() {
 
                 {comissoes.length === 0 && (
                   <div className="text-center py-10 text-sm text-muted-foreground">
-                    Nenhum tipo cadastrado. Use o formulario acima para comecar.
+                    Nenhum tipo cadastrado. Use o formulário acima para começar.
                   </div>
                 )}
 
@@ -290,7 +290,7 @@ export default function GestorComissoesPage() {
                         )}
                         <div>
                           <label className="block text-[11px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
-                            Comissao por fechamento (R$)
+                            Comissão por fechamento (R$)
                           </label>
                           <div className="flex items-center gap-2">
                             <span className="text-sm font-semibold text-muted-foreground">R$</span>
@@ -327,17 +327,17 @@ export default function GestorComissoesPage() {
               <>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", gap: 12, marginBottom: 24 }}>
                   {[
-                    { label: "Total Gerado", valor: totalGerado, icon: TrendingUp, cor: "#06b6d4" },
-                    { label: "Ja Pago", valor: totalPago, icon: CheckCircle2, cor: "#10b981" },
-                    { label: "Pendente", valor: totalGerado - totalPago, icon: Clock, cor: "#f59e0b" },
+                    { label: "Total Gerado", valor: totalGerado, icon: TrendingUp, cls: "text-[#00c389]" },
+                    { label: "Já Pago", valor: totalPago, icon: CheckCircle2, cls: "text-emerald-500" },
+                    { label: "Pendente", valor: totalGerado - totalPago, icon: Clock, cls: "text-amber-500" },
                   ].map((s) => (
                     <Card key={s.label}>
                       <CardContent style={{ padding: "16px 20px" }}>
                         <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                          <s.icon size={16} style={{ color: s.cor }} />
-                          <span style={{ fontSize: 12, color: "#94a3b8" }}>{s.label}</span>
+                          <s.icon size={16} className={s.cls} />
+                          <span className="text-xs text-muted-foreground">{s.label}</span>
                         </div>
-                        <div style={{ fontWeight: 700, fontSize: 20, color: s.cor }}>
+                        <div className={`text-xl font-bold ${s.cls}`}>
                           {moeda(s.valor)}
                         </div>
                       </CardContent>
@@ -347,46 +347,42 @@ export default function GestorComissoesPage() {
 
                 <Card>
                   <CardHeader>
-                    <CardTitle style={{ fontSize: 15 }}>Historico de vendas fechadas</CardTitle>
+                    <CardTitle style={{ fontSize: 15 }}>Histórico de vendas fechadas</CardTitle>
                   </CardHeader>
                   <CardContent style={{ padding: 0 }}>
                     {leads.length === 0 ? (
-                      <div style={{ padding: "32px", textAlign: "center", color: "#64748b", fontSize: 14 }}>
+                      <div className="p-8 text-center text-muted-foreground text-sm">
                         Nenhuma venda fechada ainda.
                       </div>
                     ) : (
                       <div style={{ overflowX: "auto" }}>
                         <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 13 }}>
                           <thead>
-                            <tr style={{ borderBottom: "1px solid rgba(255,255,255,.06)" }}>
-                              {["Consultor", "Lead", "Placa", "Comissao", "Status", "Data"].map((h) => (
-                                <th key={h} style={{ padding: "10px 14px", textAlign: "left", color: "#64748b", fontWeight: 600, fontSize: 11, textTransform: "uppercase", letterSpacing: 0.5 }}>{h}</th>
+                            <tr className="border-b border-border">
+                              {["Consultor", "Lead", "Placa", "Comissão", "Status", "Data"].map((h) => (
+                                <th key={h} className="px-3.5 py-2.5 text-left text-[11px] font-semibold uppercase text-muted-foreground" style={{ letterSpacing: 0.5 }}>{h}</th>
                               ))}
                             </tr>
                           </thead>
                           <tbody>
                             {leads.map((l) => (
-                              <tr key={l.id} style={{ borderBottom: "1px solid rgba(255,255,255,.04)" }}>
-                                <td style={{ padding: "10px 14px", color: "#e2e8f0" }}>{nomeConsultor(l.consultor_id)}</td>
-                                <td style={{ padding: "10px 14px", color: "#94a3b8" }}>{l.nome_lead ?? "—"}</td>
-                                <td style={{ padding: "10px 14px" }}>
+                              <tr key={l.id} className="border-b border-border">
+                                <td className="px-3.5 py-2.5 text-foreground">{nomeConsultor(l.consultor_id)}</td>
+                                <td className="px-3.5 py-2.5 text-muted-foreground">{l.nome_lead ?? "—"}</td>
+                                <td className="px-3.5 py-2.5">
                                   {l.placa ? (
-                                    <span style={{ fontFamily: "monospace", fontWeight: 700, color: "#f1f5f9", background: "rgba(255,255,255,.08)", padding: "2px 6px", borderRadius: 4 }}>{l.placa}</span>
+                                    <span className="font-mono font-bold text-foreground bg-muted px-1.5 py-0.5 rounded">{l.placa}</span>
                                   ) : "—"}
                                 </td>
-                                <td style={{ padding: "10px 14px", color: "#10b981", fontWeight: 600 }}>
+                                <td className="px-3.5 py-2.5 text-emerald-600 dark:text-emerald-400 font-semibold">
                                   {l.comissao_valor ? moeda(l.comissao_valor) : "—"}
                                 </td>
-                                <td style={{ padding: "10px 14px" }}>
-                                  <span style={{
-                                    padding: "2px 8px", borderRadius: 6, fontSize: 11, fontWeight: 600,
-                                    background: l.comissao_paga ? "rgba(16,185,129,.15)" : "rgba(245,158,11,.15)",
-                                    color: l.comissao_paga ? "#10b981" : "#f59e0b",
-                                  }}>
+                                <td className="px-3.5 py-2.5">
+                                  <span className={`px-2 py-0.5 rounded-md text-[11px] font-semibold ${l.comissao_paga ? "bg-emerald-500/15 text-emerald-600 dark:text-emerald-400" : "bg-amber-500/15 text-amber-600 dark:text-amber-400"}`}>
                                     {l.comissao_paga ? "Pago" : "Pendente"}
                                   </span>
                                 </td>
-                                <td style={{ padding: "10px 14px", color: "#64748b" }}>
+                                <td className="px-3.5 py-2.5 text-muted-foreground">
                                   {new Date(l.criado_em).toLocaleDateString("pt-BR")}
                                 </td>
                               </tr>

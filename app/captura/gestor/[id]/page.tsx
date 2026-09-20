@@ -58,6 +58,14 @@ export default function CapturaGestorPage({ params }: { params: Promise<{ id: st
 
   const [nomeLead, setNomeLead] = useState("");
   const [telefoneLead, setTelefoneLead] = useState("");
+
+  const formatarTelefone = (valor: string) => {
+    const digits = valor.replace(/\D/g, "").slice(0, 11);
+    if (digits.length <= 2) return digits.length ? `(${digits}` : "";
+    if (digits.length <= 6) return `(${digits.slice(0,2)}) ${digits.slice(2)}`;
+    if (digits.length <= 10) return `(${digits.slice(0,2)}) ${digits.slice(2,6)}-${digits.slice(6)}`;
+    return `(${digits.slice(0,2)}) ${digits.slice(2,7)}-${digits.slice(7)}`;
+  };
   const [placa, setPlaca] = useState("");
   const [tipoVeiculo, setTipoVeiculo] = useState("");
   const [erro, setErro] = useState("");
@@ -66,7 +74,7 @@ export default function CapturaGestorPage({ params }: { params: Promise<{ id: st
 
   useEffect(() => {
     fetch(`/api/publico/gestor-info/${id}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((d) => {
         if (d.nome) setNomeGestor(d.nome);
         else setLinkInvalido(true);
@@ -154,7 +162,8 @@ export default function CapturaGestorPage({ params }: { params: Promise<{ id: st
                   placeholder="WhatsApp (11) 99999-9999"
                   value={telefoneLead}
                   required
-                  onChange={(e) => setTelefoneLead(e.target.value)}
+                  inputMode="numeric"
+                  onChange={(e) => setTelefoneLead(formatarTelefone(e.target.value))}
                 />
                 <input
                   className="cap-campo"

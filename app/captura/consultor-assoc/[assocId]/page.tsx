@@ -4,6 +4,11 @@ import { useState, useEffect, use } from "react";
 import { ESTADOS_NOMES, ESTADOS_CIDADES } from "@/lib/cidades-brasil";
 
 const STYLES = `
+  @keyframes gradientShift {
+    0%   { background-position: 0% 50%; }
+    50%  { background-position: 100% 50%; }
+    100% { background-position: 0% 50%; }
+  }
   @keyframes fadeUp {
     from { opacity: 0; transform: translateY(20px); }
     to   { opacity: 1; transform: translateY(0); }
@@ -11,7 +16,9 @@ const STYLES = `
   .cap-page {
     min-height: 100vh; display: flex; align-items: center; justify-content: center;
     padding: 24px 16px;
-    background: linear-gradient(135deg, #0D2B5E, #1a3d6e, #0D2B5E);
+    background: linear-gradient(135deg, #022c22, #064e3b, #065f46, #0369a1, #075985, #022c22);
+    background-size: 400% 400%;
+    animation: gradientShift 12s ease infinite;
     font-family: Inter, system-ui, sans-serif;
   }
   .cap-card {
@@ -70,7 +77,7 @@ export default function CapturaConsultorAssocPage({ params }: { params: Promise<
 
   useEffect(() => {
     fetch(`/api/publico/captura-consultor-assoc/${assocId}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((d) => { if (d.nome) setNomeAssoc(d.nome); else setLinkInvalido(true); })
       .catch(() => setLinkInvalido(true));
   }, [assocId]);
@@ -101,8 +108,8 @@ export default function CapturaConsultorAssocPage({ params }: { params: Promise<
       <style>{STYLES}</style>
       <div className="cap-page">
         <div className="cap-card">
-          <div className="cap-logo">
-            <span>Indique<em>Placa</em></span>
+          <div style={{ display: "flex", justifyContent: "center", marginBottom: 24 }}>
+            <img src="/logo-indique.png" style={{ width: 100, height: 100, objectFit: "contain" }} alt="Indique Placa" />
           </div>
 
           {linkInvalido && (
@@ -159,6 +166,9 @@ export default function CapturaConsultorAssocPage({ params }: { params: Promise<
               </form>
             </>
           )}
+          <div style={{ textAlign: "center", marginTop: 20, paddingTop: 16, borderTop: "1px solid rgba(255,255,255,.08)", fontSize: 11, color: "rgba(255,255,255,.25)" }}>
+            IndiquePlaca &copy; {new Date().getFullYear()} &middot; Plataforma de indicações
+          </div>
         </div>
       </div>
     </>

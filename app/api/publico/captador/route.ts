@@ -30,7 +30,7 @@ export async function POST(req: NextRequest) {
   // Verificar se consultor existe antes de vincular
   let cid = consultor_id ?? null;
   if (cid) {
-    const { data } = await supabaseAdmin.from("consultores").select("id, status").eq("id", cid).single();
+    const { data } = await supabaseAdmin.from("consultores").select("id, status").eq("id", cid).maybeSingle();
     if (!data || data.status !== "ativo") cid = null;
   }
 

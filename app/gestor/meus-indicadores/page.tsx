@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCheck, Plus, ArrowRight, Trash2, Copy, Check, X, Search } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { detectarTipoPix, corTipoPix } from "@/lib/pix-utils";
 
 type MeuIndicador = {
   id: string;
@@ -106,7 +107,7 @@ export default function MeusIndicadoresPage() {
         await carregar();
       }
     } catch {
-      setErroAdicionar("Erro de conexao.");
+      setErroAdicionar("Erro de conexão.");
     } finally {
       setEnviandoAdicionar(false);
     }
@@ -163,7 +164,7 @@ export default function MeusIndicadoresPage() {
         await carregar();
       }
     } catch {
-      setErroMover("Erro de conexao.");
+      setErroMover("Erro de conexão.");
     } finally {
       setAdotando(null);
     }
@@ -196,7 +197,7 @@ export default function MeusIndicadoresPage() {
         <div>
           <h1 className="text-base font-bold text-foreground">Meus Indicadores</h1>
           <p className="text-[11px] text-muted-foreground mt-0.5">
-            Indicadores vinculados diretamente a voce
+            Indicadores vinculados diretamente a você
           </p>
         </div>
         <div className="flex items-center gap-3">
@@ -224,7 +225,7 @@ export default function MeusIndicadoresPage() {
         ) : indicadores.length === 0 ? (
           <div className="flex flex-col items-center justify-center py-20 gap-3">
             <UserCheck className="h-10 w-10 text-muted-foreground/40" />
-            <p className="text-sm text-muted-foreground">Nenhum indicador vinculado a voce ainda.</p>
+            <p className="text-sm text-muted-foreground">Nenhum indicador vinculado a você ainda.</p>
             <button
               onClick={() => { setModalAdicionar(true); setErroAdicionar(""); }}
               className="mt-1 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white text-sm font-semibold transition-colors"
@@ -261,20 +262,30 @@ export default function MeusIndicadoresPage() {
                     </p>
 
                     {ind.chave_pix ? (
-                      <div className="flex items-center gap-1.5">
-                        <p className="text-[11px] text-muted-foreground truncate flex-1" title={ind.chave_pix}>
-                          PIX: {ind.chave_pix}
-                        </p>
-                        <button
-                          onClick={() => copiarPix(ind.chave_pix!, ind.id)}
-                          className="shrink-0 text-muted-foreground hover:text-indigo-500 transition-colors"
-                          title="Copiar chave PIX"
-                        >
-                          {pixCopiado === ind.id
-                            ? <Check className="h-3.5 w-3.5 text-emerald-500" />
-                            : <Copy className="h-3.5 w-3.5" />
-                          }
-                        </button>
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-1.5">
+                          <p className="text-[11px] text-muted-foreground truncate flex-1" title={ind.chave_pix}>
+                            {ind.chave_pix}
+                          </p>
+                          <button
+                            onClick={() => copiarPix(ind.chave_pix!, ind.id)}
+                            className="shrink-0 text-muted-foreground hover:text-indigo-500 transition-colors"
+                            title="Copiar chave PIX"
+                          >
+                            {pixCopiado === ind.id
+                              ? <Check className="h-3.5 w-3.5 text-emerald-500" />
+                              : <Copy className="h-3.5 w-3.5" />
+                            }
+                          </button>
+                        </div>
+                        {(() => {
+                          const info = detectarTipoPix(ind.chave_pix);
+                          return (
+                            <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full border w-fit ${corTipoPix(info.tipo)}`}>
+                              {info.label}
+                            </span>
+                          );
+                        })()}
                       </div>
                     ) : (
                       <p className="text-[11px] italic text-muted-foreground/50">sem chave PIX</p>
@@ -358,7 +369,7 @@ export default function MeusIndicadoresPage() {
                   type="password"
                   required
                   minLength={6}
-                  placeholder="Minimo 6 caracteres"
+                  placeholder="Mínimo 6 caracteres"
                   value={formAdicionar.senha}
                   onChange={(e) => setFormAdicionar((f) => ({ ...f, senha: e.target.value }))}
                   className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
@@ -520,7 +531,7 @@ export default function MeusIndicadoresPage() {
           <div className="bg-background border border-border rounded-2xl shadow-2xl w-full max-w-sm p-6">
             <h2 className="text-base font-bold text-foreground mb-2">Remover indicador?</h2>
             <p className="text-sm text-muted-foreground mb-5">
-              Esta acao nao pode ser desfeita. O indicador sera removido do seu cadastro.
+              Esta ação não pode ser desfeita. O indicador será removido do seu cadastro.
             </p>
             <div className="flex gap-3">
               <button

@@ -76,7 +76,7 @@ export default function GestorRelatorioPage() {
         { label: "Consultores", value: relatorio.total_consultores, icon: Users, iconBg: "bg-indigo-500/10", iconColor: "text-indigo-500", valueColor: "text-indigo-500", border: "border-t-indigo-500" },
         { label: "Total de leads", value: relatorio.total_leads, icon: ClipboardList, iconBg: "bg-blue-500/10", iconColor: "text-blue-500", valueColor: "text-blue-500", border: "border-t-blue-500" },
         { label: "Fechamentos", value: relatorio.total_fechamentos, icon: CheckCircle2, iconBg: "bg-emerald-500/10", iconColor: "text-emerald-500", valueColor: "text-emerald-500", border: "border-t-emerald-500" },
-        { label: "Taxa de conversao", value: `${relatorio.taxa_conversao}%`, icon: TrendingUp, iconBg: "bg-amber-500/10", iconColor: "text-amber-500", valueColor: "text-amber-500", border: "border-t-amber-500" },
+        { label: "Taxa de conversão", value: `${relatorio.taxa_conversao}%`, icon: TrendingUp, iconBg: "bg-amber-500/10", iconColor: "text-amber-500", valueColor: "text-amber-500", border: "border-t-amber-500" },
       ]
     : [];
 
@@ -86,9 +86,9 @@ export default function GestorRelatorioPage() {
         <div className="w-16 h-16 rounded-full bg-muted flex items-center justify-center mb-4">
           <Lock className="h-8 w-8 text-muted-foreground" />
         </div>
-        <h2 className="text-base font-bold text-foreground mb-2">Relatorios nao disponiveis no seu plano</h2>
+        <h2 className="text-base font-bold text-foreground mb-2">Relatórios não disponíveis no seu plano</h2>
         <p className="text-sm text-muted-foreground max-w-sm">
-          O acesso a relatorios de equipe nao esta incluido no seu plano atual.
+          O acesso a relatórios de equipe não está incluído no seu plano atual.
           Entre em contato com o administrador para solicitar upgrade.
         </p>
       </div>
@@ -99,8 +99,8 @@ export default function GestorRelatorioPage() {
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border flex items-center justify-between">
         <div>
-          <h1 className="text-base font-bold text-foreground">Relatorio da Equipe</h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Desempenho consolidado por periodo</p>
+          <h1 className="text-base font-bold text-foreground">Relatório da Equipe</h1>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Desempenho consolidado por período</p>
         </div>
         {relatorio && relatorio.ranking.length > 0 && relatorio.permite_csv && (
           <button
@@ -129,7 +129,7 @@ export default function GestorRelatorioPage() {
                 />
               </div>
               <div className="flex items-center gap-2">
-                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Ate</label>
+                <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Até</label>
                 <input
                   type="date"
                   value={ate}
@@ -146,7 +146,7 @@ export default function GestorRelatorioPage() {
                 </button>
               )}
               <span className="text-[11px] text-muted-foreground">
-                {de || ate ? "Periodo filtrado" : "Todos os periodos"}
+                {de || ate ? "Período filtrado" : "Todos os períodos"}
               </span>
             </div>
           </CardContent>
@@ -155,7 +155,7 @@ export default function GestorRelatorioPage() {
         {carregando ? (
           <div className="text-center text-muted-foreground text-sm py-12">Carregando...</div>
         ) : !relatorio ? (
-          <div className="text-center text-muted-foreground text-sm py-12">Erro ao carregar relatorio.</div>
+          <div className="text-center text-muted-foreground text-sm py-12">Erro ao carregar relatório.</div>
         ) : (
           <>
             {/* KPIs */}
@@ -186,7 +186,7 @@ export default function GestorRelatorioPage() {
               </CardHeader>
               <CardContent className="p-0">
                 {relatorio.ranking.length === 0 ? (
-                  <div className="text-center text-muted-foreground text-sm py-10">Nenhum dado no periodo.</div>
+                  <div className="text-center text-muted-foreground text-sm py-10">Nenhum dado no período.</div>
                 ) : (
                   <table className="w-full">
                     <thead>

@@ -72,9 +72,9 @@ export default async function GestorDashboard() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Ola, {gestor.nome.split(" ")[0]}</h1>
+        <h1 className="text-base font-bold text-foreground">Olá, {gestor.nome.split(" ")[0]}</h1>
         <div className="flex items-center gap-3 mt-0.5">
-          <p className="text-[11px] text-muted-foreground">Lider de equipe</p>
+          <p className="text-[11px] text-muted-foreground">Líder de equipe</p>
           {gestor.fone && (
             <>
               <span className="text-[11px] text-muted-foreground/40">|</span>
@@ -97,9 +97,9 @@ export default async function GestorDashboard() {
 
         {/* Banner de boas-vindas: primeiro acesso */}
         {isPrimeiroAcesso && (
-          <div className="rounded-2xl p-5 bg-cyan-500/10 border border-cyan-500/30 flex flex-col sm:flex-row sm:items-center gap-4">
+          <div className="rounded-2xl p-5 bg-muted border border-border flex flex-col sm:flex-row sm:items-center gap-4">
             <div className="flex-1">
-              <div className="text-sm font-bold text-cyan-400 leading-tight mb-1">
+              <div className="text-sm font-bold text-foreground leading-tight mb-1">
                 Bem-vindo ao seu painel!
               </div>
               <div className="text-xs text-muted-foreground">
@@ -109,13 +109,13 @@ export default async function GestorDashboard() {
             <div className="flex gap-2 shrink-0">
               <Link
                 href="/gestor/consultores"
-                className="text-xs font-semibold px-4 py-2 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/40 hover:bg-cyan-500/30 transition-colors"
+                className="text-xs font-semibold px-4 py-2 rounded-lg bg-background text-foreground border border-border hover:bg-accent transition-colors"
               >
                 Adicionar Consultor
               </Link>
               <Link
                 href="/gestor/meus-leads"
-                className="text-xs font-semibold px-4 py-2 rounded-lg bg-cyan-500 text-white hover:bg-cyan-600 transition-colors"
+                className="text-xs font-semibold px-4 py-2 rounded-lg bg-[#00c389] text-white hover:bg-[#00c389]/90 transition-colors"
               >
                 Cadastrar Lead
               </Link>
@@ -126,23 +126,23 @@ export default async function GestorDashboard() {
         {/* Minha Producao */}
         <div>
           <div className="flex items-center justify-between mb-3">
-            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Minha Producao</h2>
+            <h2 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">Minha Produção</h2>
             <Link
               href="/gestor/meus-leads"
-              className="text-[11px] font-semibold text-cyan-400 hover:text-cyan-300 transition-colors"
+              className="text-[11px] font-semibold text-[#00c389] hover:text-[#00c389]/80 transition-colors"
             >
               Ver todos
             </Link>
           </div>
           <div className="grid grid-cols-3 gap-4">
             {[
-              { label: "Meus Leads", value: meusTotalLeads, icon: ClipboardList, iconBg: "bg-cyan-500/10", iconColor: "text-cyan-500", valueColor: "text-cyan-500", border: "border-t-cyan-500" },
-              { label: "Meus Fechamentos", value: meusTotalFechamentos, icon: CheckCircle2, iconBg: "bg-cyan-600/10", iconColor: "text-cyan-400", valueColor: "text-cyan-400", border: "border-t-cyan-400" },
-              { label: "Minha Taxa", value: `${minhaTaxa}%`, icon: TrendingUp, iconBg: "bg-sky-500/10", iconColor: "text-sky-400", valueColor: "text-sky-400", border: "border-t-sky-400" },
+              { label: "Meus Leads", value: meusTotalLeads, icon: ClipboardList, iconBg: "bg-muted", iconColor: "text-muted-foreground", valueColor: "text-[#00c389]" },
+              { label: "Meus Fechamentos", value: meusTotalFechamentos, icon: CheckCircle2, iconBg: "bg-muted", iconColor: "text-muted-foreground", valueColor: "text-foreground" },
+              { label: "Minha Taxa", value: `${minhaTaxa}%`, icon: TrendingUp, iconBg: "bg-muted", iconColor: "text-muted-foreground", valueColor: "text-foreground" },
             ].map((m) => {
               const Icon = m.icon;
               return (
-                <Card key={m.label} className={cn("border-t-4 shadow-sm", m.border)}>
+                <Card key={m.label} className="border border-border shadow-sm">
                   <CardContent className="p-5">
                     <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center mb-3", m.iconBg)}>
                       <Icon className={cn("h-4 w-4", m.iconColor)} />
@@ -159,14 +159,14 @@ export default async function GestorDashboard() {
         {/* KPIs */}
         <div className="grid grid-cols-4 gap-4">
           {[
-            { label: "Consultores no time", value: total_consultores, icon: Users, iconBg: "bg-indigo-500/10", iconColor: "text-indigo-500", valueColor: "text-indigo-500", border: "border-t-indigo-500" },
-            { label: "Total de leads", value: total_leads, icon: ClipboardList, iconBg: "bg-blue-500/10", iconColor: "text-blue-500", valueColor: "text-blue-500", border: "border-t-blue-500" },
-            { label: "Fechamentos do time", value: total_fechamentos, icon: CheckCircle2, iconBg: "bg-emerald-500/10", iconColor: "text-emerald-500", valueColor: "text-emerald-500", border: "border-t-emerald-500" },
-            { label: "Taxa do time", value: `${taxa}%`, icon: TrendingUp, iconBg: "bg-amber-500/10", iconColor: "text-amber-500", valueColor: "text-amber-500", border: "border-t-amber-500" },
+            { label: "Consultores no time", value: total_consultores, icon: Users, iconBg: "bg-muted", iconColor: "text-muted-foreground", valueColor: "text-[#00c389]" },
+            { label: "Total de leads", value: total_leads, icon: ClipboardList, iconBg: "bg-muted", iconColor: "text-muted-foreground", valueColor: "text-foreground" },
+            { label: "Fechamentos do time", value: total_fechamentos, icon: CheckCircle2, iconBg: "bg-muted", iconColor: "text-muted-foreground", valueColor: "text-foreground" },
+            { label: "Taxa do time", value: `${taxa}%`, icon: TrendingUp, iconBg: "bg-muted", iconColor: "text-muted-foreground", valueColor: "text-foreground" },
           ].map((m) => {
             const Icon = m.icon;
             return (
-              <Card key={m.label} className={cn("border-t-4 shadow-sm", m.border)}>
+              <Card key={m.label} className="border border-border shadow-sm">
                 <CardContent className="p-5">
                   <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center mb-3", m.iconBg)}>
                     <Icon className={cn("h-4 w-4", m.iconColor)} />

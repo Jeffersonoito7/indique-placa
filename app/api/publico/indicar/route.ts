@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
-import { notificarNovoLead } from "@/lib/whatsapp";
+import { notificarNovoLead, notificarNovoLeadGestor } from "@/lib/whatsapp";
+import { verificarBloqueioConsultor } from "@/lib/consultor-status";
 import { z } from "zod";
 
 const schema = z.object({
@@ -9,6 +10,7 @@ const schema = z.object({
   nome_lead: z.string().min(2).max(100),
   telefone_lead: z.string().min(10).max(20),
   consultor_id: z.string().uuid().optional().nullable(),
+  indicador_id: z.string().uuid().optional().nullable(),
   tipo_veiculo: z.enum(["moto", "carro", "caminhao"]).default("carro"),
 });
 
@@ -24,10 +26,25 @@ export async function POST(req: NextRequest) {
   const parsed = schema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
-  const { placa, nome_lead, telefone_lead, consultor_id, tipo_veiculo } = parsed.data;
+  const { placa, nome_lead, telefone_lead, consultor_id, indicador_id, tipo_veiculo } = parsed.data;
   const tel = telefone_lead?.replace(/\D/g, "") ?? null;
 
+  let iid = indicador_id ?? null;
   let cid = consultor_id ?? null;
+
+  // Se veio pelo link do indicador, resolve o consultor a partir do indicador
+  if (iid && !cid) {
+    const { data: indic } = await supabaseAdmin
+      .from("indicadores")
+      .select("id, consultor_id, status")
+      .eq("id", iid)
+      .maybeSingle();
+    if (!indic || indic.status !== "ativo") {
+      iid = null;
+    } else {
+      cid = indic.consultor_id ?? null;
+    }
+  }
 
   if (cid) {
     const { data: consultor } = await supabaseAdmin
@@ -35,7 +52,12 @@ export async function POST(req: NextRequest) {
       .select("id, status")
       .eq("id", cid)
       .maybeSingle();
-    if (!consultor || consultor.status !== "ativo") cid = null;
+    if (!consultor || consultor.status !== "ativo") {
+      cid = null;
+    } else {
+      const bloqueio = await verificarBloqueioConsultor(cid);
+      if (bloqueio.bloqueado) cid = null;
+    }
   }
 
   if (!cid) {
@@ -47,16 +69,32 @@ export async function POST(req: NextRequest) {
     cid = (config as any)?.consultor_padrao_id ?? null;
   }
 
-  // Deduplicacao por placa
+  // Deduplicacao por placa dentro da associacao
   if (cid) {
-    const { data: existente } = await supabaseAdmin
-      .from("indicacoes")
-      .select("id")
-      .eq("consultor_id", cid)
-      .eq("placa", placa)
-      .limit(1)
+    const { data: consultorAssoc } = await supabaseAdmin
+      .from("consultores")
+      .select("associacao_id")
+      .eq("id", cid)
       .maybeSingle();
-    if (existente) return NextResponse.json({ error: "Esta placa já foi indicada anteriormente." }, { status: 409 });
+
+    if (consultorAssoc?.associacao_id) {
+      const { data: consultoresDaAssoc } = await supabaseAdmin
+        .from("consultores")
+        .select("id")
+        .eq("associacao_id", consultorAssoc.associacao_id);
+
+      const ids = (consultoresDaAssoc ?? []).map((c) => c.id);
+
+      const { data: existente } = await supabaseAdmin
+        .from("indicacoes")
+        .select("id")
+        .in("consultor_id", ids)
+        .eq("placa", placa)
+        .limit(1)
+        .maybeSingle();
+
+      if (existente) return NextResponse.json({ error: "Esta placa já foi indicada anteriormente." }, { status: 409 });
+    }
   }
 
   const { error } = await supabaseAdmin.from("indicacoes").insert({
@@ -64,29 +102,53 @@ export async function POST(req: NextRequest) {
     nome_lead: nome_lead ?? null,
     telefone_lead: tel,
     consultor_id: cid,
+    indicador_id: iid ?? null,
     tipo_veiculo: tipo_veiculo ?? "carro",
     status: "novo",
   });
 
-  if (error) return NextResponse.json({ error: "Erro ao salvar" }, { status: 500 });
+  if (error) {
+    if (error.code === "23505") return NextResponse.json({ error: "Esta placa já foi indicada anteriormente." }, { status: 409 });
+    return NextResponse.json({ error: "Erro ao salvar" }, { status: 500 });
+  }
 
   if (cid) {
-    supabaseAdmin
-      .from("consultores")
-      .select("nome, fone")
-      .eq("id", cid)
-      .single()
-      .then(({ data }) => {
-        if (data) {
-          notificarNovoLead({
+    void (async () => {
+      const { data } = await supabaseAdmin
+        .from("consultores")
+        .select("nome, fone, gestor_id")
+        .eq("id", cid)
+        .maybeSingle();
+
+      if (!data) return;
+
+      notificarNovoLead({
+        nomeConsultor: data.nome,
+        telefoneConsultor: data.fone,
+        placa,
+        nomeLead: nome_lead ?? null,
+        telefoneLead: tel,
+      }).catch((err) => console.error("[indicar] notificarNovoLead falhou:", err));
+
+      if (data.gestor_id) {
+        const { data: gestor } = await supabaseAdmin
+          .from("gestores")
+          .select("nome, fone")
+          .eq("id", data.gestor_id)
+          .maybeSingle();
+
+        if (gestor?.fone) {
+          notificarNovoLeadGestor({
+            nomeGestor: gestor.nome,
+            telefoneGestor: gestor.fone,
             nomeConsultor: data.nome,
-            telefoneConsultor: data.fone,
             placa,
             nomeLead: nome_lead ?? null,
             telefoneLead: tel,
-          }).catch(() => {});
+          }).catch((err) => console.error("[indicar] notificarNovoLeadGestor falhou:", err));
         }
-      });
+      }
+    })().catch((err) => console.error("[indicar] bloco de notificacao falhou:", err));
   }
 
   return NextResponse.json({ ok: true });

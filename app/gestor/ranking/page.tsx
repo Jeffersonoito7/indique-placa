@@ -46,16 +46,16 @@ export default async function GestorRankingPage() {
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 16px" }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#f1f5f9", marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
-          <Trophy size={22} style={{ color: "#f59e0b" }} />
+        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }} className="text-foreground">
+          <Trophy size={22} className="text-amber-500" />
           Ranking do Time
         </h1>
-        <p style={{ fontSize: 14, color: "#94a3b8" }}>Desempenho dos seus consultores por vendas fechadas.</p>
+        <p style={{ fontSize: 14 }} className="text-muted-foreground">Desempenho dos seus consultores por vendas fechadas.</p>
       </div>
 
       {ranking.length === 0 ? (
         <Card>
-          <CardContent style={{ padding: "32px", textAlign: "center", color: "#64748b", fontSize: 14 }}>
+          <CardContent style={{ padding: "32px", textAlign: "center", fontSize: 14 }} className="text-muted-foreground">
             Nenhum consultor na equipe ainda.
           </CardContent>
         </Card>
@@ -64,30 +64,33 @@ export default async function GestorRankingPage() {
           {ranking.map((c, i) => (
             <Card key={c.id} style={{ border: i === 0 ? "1px solid rgba(245,158,11,.3)" : undefined }}>
               <CardContent style={{ padding: "16px 20px", display: "flex", alignItems: "center", gap: 14 }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center",
-                  justifyContent: "center", fontWeight: 800, fontSize: 14,
-                  background: i === 0 ? "rgba(245,158,11,.2)" : i === 1 ? "rgba(148,163,184,.1)" : i === 2 ? "rgba(205,127,50,.1)" : "rgba(255,255,255,.05)",
-                  color: i === 0 ? "#f59e0b" : i === 1 ? "#94a3b8" : i === 2 ? "#cd7f32" : "#475569",
-                }}>
+                <div
+                  style={{ width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 800, fontSize: 14 }}
+                  className={
+                    i === 0 ? "bg-amber-500/20 text-amber-600 dark:text-amber-400"
+                    : i === 1 ? "bg-slate-400/10 text-muted-foreground"
+                    : i === 2 ? "bg-amber-700/10 text-amber-700 dark:text-amber-600"
+                    : "bg-muted text-muted-foreground"
+                  }
+                >
                   {i < 3 ? medalhas[i] : i + 1}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <div style={{ fontWeight: 600, color: "#e2e8f0", fontSize: 15 }}>{c.nome}</div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
-                    {c.total} indicacao{c.total !== 1 ? "es" : ""} recebida{c.total !== 1 ? "s" : ""}
+                  <div style={{ fontWeight: 600, fontSize: 15 }} className="text-foreground">{c.nome}</div>
+                  <div style={{ fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
+                    {c.total} indicação{c.total !== 1 ? "es" : ""} recebida{c.total !== 1 ? "s" : ""}
                   </div>
                 </div>
                 <div style={{ textAlign: "right" }}>
-                  <div style={{ fontWeight: 700, fontSize: 18, color: "#10b981" }}>{c.fechados}</div>
-                  <div style={{ fontSize: 11, color: "#64748b" }}>fechados</div>
+                  <div style={{ fontWeight: 700, fontSize: 18 }} className="text-emerald-600 dark:text-emerald-400">{c.fechados}</div>
+                  <div style={{ fontSize: 11 }} className="text-muted-foreground">fechados</div>
                 </div>
                 {c.ganhos > 0 && (
                   <div style={{ textAlign: "right", minWidth: 80 }}>
-                    <div style={{ fontWeight: 600, fontSize: 13, color: "#34d399" }}>
+                    <div style={{ fontWeight: 600, fontSize: 13 }} className="text-emerald-600 dark:text-emerald-400">
                       {c.ganhos.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })}
                     </div>
-                    <div style={{ fontSize: 11, color: "#64748b" }}>comissoes</div>
+                    <div style={{ fontSize: 11 }} className="text-muted-foreground">comissões</div>
                   </div>
                 )}
               </CardContent>

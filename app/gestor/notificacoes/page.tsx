@@ -32,66 +32,57 @@ export default async function GestorNotificacoesPage() {
 
   const nomeConsultor = (id: string) => consultores?.find((c) => c.id === id)?.nome ?? "—";
 
-  const statusLabel: Record<string, { label: string; cor: string; bg: string }> = {
-    novo:    { label: "Novo lead",    cor: "#06b6d4", bg: "rgba(6,182,212,.15)" },
-    contato: { label: "Em contato",  cor: "#f59e0b", bg: "rgba(245,158,11,.15)" },
-    fechado: { label: "Venda fechada", cor: "#10b981", bg: "rgba(16,185,129,.15)" },
-    perdido: { label: "Perdido",      cor: "#ef4444", bg: "rgba(239,68,68,.15)" },
+  const statusLabel: Record<string, { label: string; badgeCls: string; iconCls: string; iconBg: string }> = {
+    novo:    { label: "Novo lead",    badgeCls: "bg-[#00c389]/15 text-[#007a54]",               iconCls: "text-[#00c389]", iconBg: "bg-[#00c389]/15" },
+    contato: { label: "Em contato",  badgeCls: "bg-amber-500/15 text-amber-700 dark:text-amber-400",   iconCls: "text-amber-600 dark:text-amber-400", iconBg: "bg-amber-500/15" },
+    fechado: { label: "Venda fechada", badgeCls: "bg-emerald-500/15 text-emerald-700 dark:text-emerald-400", iconCls: "text-emerald-600 dark:text-emerald-400", iconBg: "bg-emerald-500/15" },
+    perdido: { label: "Perdido",      badgeCls: "bg-red-500/15 text-red-700 dark:text-red-400",    iconCls: "text-red-600 dark:text-red-400", iconBg: "bg-red-500/15" },
   };
 
   return (
     <div style={{ maxWidth: 720, margin: "0 auto", padding: "24px 16px" }}>
       <div style={{ marginBottom: 24 }}>
-        <h1 style={{ fontSize: 22, fontWeight: 700, color: "#f1f5f9", marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }}>
-          <Bell size={22} style={{ color: "#06b6d4" }} />
+        <h1 style={{ fontSize: 22, fontWeight: 700, marginBottom: 4, display: "flex", alignItems: "center", gap: 8 }} className="text-foreground">
+          <Bell size={22} className="text-[#00c389]" />
           Notificacoes
         </h1>
-        <p style={{ fontSize: 14, color: "#94a3b8" }}>Ultimas movimentacoes de leads do seu time.</p>
+        <p style={{ fontSize: 14 }} className="text-muted-foreground">Ultimas movimentacoes de leads do seu time.</p>
       </div>
 
       {recentes.length === 0 ? (
         <Card>
-          <CardContent style={{ padding: "32px", textAlign: "center", color: "#64748b", fontSize: 14 }}>
+          <CardContent style={{ padding: "32px", textAlign: "center", fontSize: 14 }} className="text-muted-foreground">
             Nenhuma atividade registrada ainda.
           </CardContent>
         </Card>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
           {recentes.map((l) => {
-            const s = statusLabel[l.status] ?? { label: l.status, cor: "#94a3b8", bg: "rgba(255,255,255,.06)" };
+            const s = statusLabel[l.status] ?? { label: l.status, badgeCls: "bg-muted text-muted-foreground", iconCls: "text-muted-foreground", iconBg: "bg-muted" };
             return (
-              <div key={l.id} style={{
-                background: "rgba(255,255,255,.04)", border: "1px solid rgba(255,255,255,.08)",
-                borderRadius: 10, padding: "12px 16px", display: "flex", alignItems: "center", gap: 14,
-              }}>
-                <div style={{
-                  width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center",
-                  justifyContent: "center", background: s.bg, flexShrink: 0,
-                }}>
+              <div key={l.id} className="bg-muted border border-border rounded-[10px] px-4 py-3 flex items-center gap-3.5">
+                <div style={{ width: 36, height: 36, borderRadius: "50%", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }} className={s.iconBg}>
                   {l.status === "fechado" ? (
-                    <CheckCircle2 size={16} style={{ color: s.cor }} />
+                    <CheckCircle2 size={16} className={s.iconCls} />
                   ) : (
-                    <ClipboardList size={16} style={{ color: s.cor }} />
+                    <ClipboardList size={16} className={s.iconCls} />
                   )}
                 </div>
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ color: "#e2e8f0", fontSize: 14, fontWeight: 500 }}>
-                    <strong style={{ color: "#f1f5f9" }}>{nomeConsultor(l.consultor_id)}</strong>
+                  <div style={{ fontSize: 14, fontWeight: 500 }} className="text-foreground">
+                    <strong className="text-foreground">{nomeConsultor(l.consultor_id)}</strong>
                     {" — "}{l.nome_lead ?? "Lead"}
                     {l.placa ? (
-                      <span style={{ marginLeft: 6, fontFamily: "monospace", fontSize: 12, fontWeight: 700, background: "rgba(255,255,255,.08)", padding: "1px 5px", borderRadius: 4 }}>
+                      <span className="ml-1.5 font-mono text-xs font-bold bg-muted px-1 py-px rounded">
                         {l.placa}
                       </span>
                     ) : null}
                   </div>
-                  <div style={{ fontSize: 12, color: "#64748b", marginTop: 2 }}>
+                  <div style={{ fontSize: 12, marginTop: 2 }} className="text-muted-foreground">
                     {new Date(l.criado_em).toLocaleString("pt-BR")}
                   </div>
                 </div>
-                <span style={{
-                  padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600,
-                  background: s.bg, color: s.cor, whiteSpace: "nowrap",
-                }}>
+                <span style={{ padding: "3px 10px", borderRadius: 6, fontSize: 11, fontWeight: 600, whiteSpace: "nowrap" }} className={s.badgeCls}>
                   {s.label}
                 </span>
               </div>

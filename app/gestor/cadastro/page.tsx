@@ -126,7 +126,7 @@ export default function GestorCadastroPage() {
     const tel = fone.replace(/\D/g, "");
     if (tel.length < 10) { setErro("Digite um WhatsApp válido com DDD"); return; }
     if (senha !== confirmarSenha) { setErro("As senhas não coincidem"); return; }
-    if (!aceitouTermos) { setErro("Voce precisa aceitar os Termos de Uso e a Politica de Privacidade (LGPD) para continuar."); return; }
+    if (!aceitouTermos) { setErro("Você precisa aceitar os Termos de Uso e a Política de Privacidade (LGPD) para continuar."); return; }
     setCarregando(true);
     try {
       const res = await fetch("/api/gestor/cadastro", {
@@ -139,7 +139,7 @@ export default function GestorCadastroPage() {
       setSucesso(true);
       setTimeout(() => router.push("/gestor/login"), 2500);
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCarregando(false);
     }
@@ -171,7 +171,7 @@ export default function GestorCadastroPage() {
           }}>CADASTRO DE GESTOR</div>
 
           <div style={{ fontSize: 12, color: "rgba(255,255,255,.5)", marginBottom: 20 }}>
-            Crie sua conta de lider de equipe
+            Crie sua conta de líder de equipe
           </div>
 
           {sucesso ? (
@@ -264,7 +264,7 @@ export default function GestorCadastroPage() {
                     Li e aceito os{" "}
                     <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color: "#67e8f9", textDecoration: "underline" }}>Termos de Uso</a>
                     {" "}e a{" "}
-                    <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: "#67e8f9", textDecoration: "underline" }}>Politica de Privacidade</a>
+                    <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color: "#67e8f9", textDecoration: "underline" }}>Política de Privacidade</a>
                     {" "}(LGPD).
                   </span>
                 </label>
@@ -274,7 +274,7 @@ export default function GestorCadastroPage() {
               </form>
 
               <div style={{ marginTop: 16, fontSize: 12, color: "rgba(255,255,255,.35)", lineHeight: 1.9 }}>
-                Ja tem conta?{" "}
+                Já tem conta?{" "}
                 <a href="/gestor/login" style={{ color: "rgba(103,232,249,.8)", textDecoration: "none" }}>
                   Entrar
                 </a>

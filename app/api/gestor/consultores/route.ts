@@ -68,7 +68,7 @@ export async function POST(req: NextRequest) {
     .maybeSingle();
 
   if (!planoConfig) {
-    return NextResponse.json({ error: "Configuracao de plano nao encontrada. Contate o suporte." }, { status: 403 });
+    return NextResponse.json({ error: "Configuração de plano não encontrada. Contate o suporte." }, { status: 403 });
   }
 
   if (planoConfig.max_consultores !== null && planoConfig.max_consultores !== undefined) {
@@ -95,7 +95,7 @@ export async function POST(req: NextRequest) {
       nome,
       email: email.toLowerCase(),
       fone: tel,
-      senha_hash: senhaHash,
+      senha: senhaHash,
       gestor_id: gestor.id,
       status: "ativo",
       plano: "free",
@@ -104,7 +104,8 @@ export async function POST(req: NextRequest) {
     .single();
 
   if (error) {
-    if (error.code === "23505") return NextResponse.json({ error: "Email ou telefone ja cadastrado" }, { status: 409 });
+    console.error("[gestor/consultores] insert error:", JSON.stringify({ code: error.code, message: error.message, details: error.details }));
+    if (error.code === "23505") return NextResponse.json({ error: "Email ou telefone já cadastrado" }, { status: 409 });
     return NextResponse.json({ error: "Erro ao criar consultor" }, { status: 500 });
   }
 

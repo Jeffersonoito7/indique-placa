@@ -480,7 +480,7 @@ export default function CapturaAssociacaoPage() {
                 </form>
 
                 <div style={{ textAlign: "center", marginTop: 14, fontSize: 11.5, color: "rgba(255,255,255,.22)" }}>
-                  Ja tem conta?{" "}
+                  Já tem conta?{" "}
                   <a href="/associacao/login" style={{ color: "#34d399", textDecoration: "none", fontWeight: 600 }}>Entrar</a>
                 </div>
               </>

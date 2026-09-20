@@ -36,7 +36,7 @@ export default function GestorPerfilPage() {
 
   useEffect(() => {
     fetch("/api/gestor/perfil")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((d: Gestor) => {
         setGestor(d);
         setNome(d.nome ?? "");
@@ -72,7 +72,7 @@ export default function GestorPerfilPage() {
         setGestor((g) => g ? { ...g, nome: nome.trim() } : g);
       }
     } catch {
-      setMensagem({ tipo: "erro", texto: "Erro de conexao. Tente novamente." });
+      setMensagem({ tipo: "erro", texto: "Erro de conexão. Tente novamente." });
     } finally {
       setSalvando(false);
     }
@@ -155,7 +155,7 @@ export default function GestorPerfilPage() {
                     E-mail
                   </label>
                   <input className={cn(campo, "opacity-60 cursor-not-allowed")} type="email" value={gestor.email} disabled />
-                  <p className="text-[10px] text-muted-foreground mt-1">O e-mail nao pode ser alterado</p>
+                  <p className="text-[10px] text-muted-foreground mt-1">O e-mail não pode ser alterado</p>
                 </div>
                 <div>
                   <label className="block text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5">
@@ -198,7 +198,7 @@ export default function GestorPerfilPage() {
                       className={cn(campo, "pr-10")}
                       type={verNovaSenha ? "text" : "password"}
                       value={novaSenha}
-                      placeholder="Minimo 6 caracteres"
+                      placeholder="Mínimo 6 caracteres"
                       onChange={(e) => setNovaSenha(e.target.value)}
                     />
                     <button type="button" onClick={() => setVerNovaSenha((v) => !v)}
@@ -216,7 +216,7 @@ export default function GestorPerfilPage() {
               className="w-full flex items-center justify-center gap-2 py-3 rounded-xl bg-cyan-600 hover:bg-cyan-500 text-white font-bold text-sm transition-colors disabled:opacity-50"
             >
               <Save className="h-4 w-4" />
-              {salvando ? "Salvando..." : "Salvar Alteracoes"}
+              {salvando ? "Salvando..." : "Salvar Alterações"}
             </button>
           </form>
 

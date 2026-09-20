@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getGestorLogado } from "@/lib/auth";
+import { supabaseAdmin } from "@/lib/supabase-server";
 
 type Parceiro = {
   nome: string;
@@ -32,6 +33,17 @@ function mockParceiros(tipo: string, cidade: string): Parceiro[] {
 export async function GET(req: NextRequest) {
   const gestor = await getGestorLogado();
   if (!gestor) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+
+  // Verificar se gestor ou associacao tem parceiros habilitado
+  const { data: gData } = await supabaseAdmin
+    .from("gestores")
+    .select("parceiros_habilitado, associacoes(parceiros_habilitado)")
+    .eq("id", gestor.id)
+    .single();
+
+  const assocFlag = (gData?.associacoes as unknown as { parceiros_habilitado: boolean } | null)?.parceiros_habilitado ?? false;
+  const habilitado = (gData?.parceiros_habilitado ?? false) || assocFlag;
+  if (!habilitado) return NextResponse.json({ error: "Recurso não disponível" }, { status: 403 });
 
   const { searchParams } = req.nextUrl;
   const cidade = (searchParams.get("cidade") ?? "").trim();

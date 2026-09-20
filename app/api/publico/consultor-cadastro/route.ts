@@ -58,7 +58,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Este email já está cadastrado" }, { status: 409 });
   }
 
-  const senha_hash = await bcrypt.hash(senha, 10);
+  const senhaHash = await bcrypt.hash(senha, 10);
 
   // Se associacao_id valido, confirma que existe antes de vincular
   let assocIdFinal: string | null = associacao_id ?? null;
@@ -78,9 +78,8 @@ export async function POST(req: NextRequest) {
     cidade,
     associacao,
     associacao_id: assocIdFinal,
-    senha_hash,
+    senha: senhaHash,
     status: "ativo",
-    aceite_termos_em: new Date().toISOString(),
   });
 
   if (error) {

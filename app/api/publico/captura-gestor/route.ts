@@ -8,7 +8,7 @@ const schema = z.object({
   placa: z.string().min(3).max(10),
   nome_lead: z.string().min(2).max(100),
   telefone_lead: z.string().min(10).max(20),
-  tipo_veiculo: z.enum(["moto", "carro", "caminhao"]),
+  tipo_veiculo: z.string().min(1).max(50),
 });
 
 export async function POST(req: NextRequest) {

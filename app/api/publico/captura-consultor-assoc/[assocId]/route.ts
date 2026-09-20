@@ -56,19 +56,18 @@ export async function POST(
   if (errEmail) return NextResponse.json({ error: "Erro ao verificar cadastro." }, { status: 500 });
   if (emailExistente) return NextResponse.json({ error: "Este e-mail já está cadastrado." }, { status: 409 });
 
-  const senha_hash = await bcrypt.hash(senha, 10);
+  const senhaHash = await bcrypt.hash(senha, 10);
 
   const { error } = await supabaseAdmin.from("consultores").insert({
     nome: nome.trim(),
     fone,
     email: email.toLowerCase().trim(),
     cidade: cidade.trim(),
-    senha_hash,
+    senha: senhaHash,
     associacao_id: assoc.id,
     associacao: assoc.nome,
     plano: "free",
     status: "ativo",
-    ativo: true,
   });
 
   if (error) return NextResponse.json({ error: "Erro ao criar conta. Tente novamente." }, { status: 500 });
