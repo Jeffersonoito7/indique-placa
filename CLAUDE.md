@@ -13,7 +13,7 @@ npm run dev          # dev com Turbopack (NODE_OPTIONS="--max-old-space-size=204
 npm run build        # build de produção
 npm run lint         # ESLint
 npx tsc --noEmit     # typecheck
-npx vercel --prod    # deploy manual (obrigatório após force push)
+npx vercel --prod    # deploy (GitHub HTTPS bloqueado — sempre usar este)
 ```
 <!-- MANAGED-END: commands -->
 
@@ -26,18 +26,16 @@ Cada nível tem seu próprio painel em `app/<perfil>/` e cookie de sessão `<per
 ## Autenticação
 
 - **HMAC-SHA256 customizado** via `lib/sessoes.ts` — não usa Supabase Auth
-- Sessões validadas por `validarSessao(token, tipo)` em cada rota protegida
-- Funções de conveniência em `lib/auth.ts`: `getConsultorLogado()`, `getGestorLogado()`, etc.
-- **Master** usa variáveis de ambiente fixas (`MASTER_USUARIO` / `MASTER_SENHA`), sem banco
-- Middleware só protege páginas (`/gestor/**`, `/consultor/**`, etc.), **não** as rotas `/api/`
-- Toda rota `/api/` deve chamar `get<Perfil>Logado()` manualmente no início do handler
+- Rotas `/api/master/*`: chamar `verificarToken(token)` de `lib/master-token.ts` (usa `MASTER_TOKEN_SECRET`)
+- Rotas `/api/<perfil>/*` (demais): chamar `get<Perfil>Logado(req)` de `lib/auth.ts` no início do handler
+- Middleware protege apenas páginas — rotas `/api/` **não** são protegidas automaticamente
+- Master não usa banco; credenciais vêm de `MASTER_USUARIO` / `MASTER_SENHA` via env
 
 ## Supabase
 
 - Usar sempre `supabaseAdmin` de `lib/supabase-server.ts` nas rotas de API (service_role)
 - `supabaseAdmin` é `server-only` — nunca importar em componentes client
-- `supabase.ts` é o client público (anon key) para uso no browser
-- Checks de existência (email, fone, etc.): usar `.maybeSingle()` + tratar o campo `error`
+- Checks de existência (email, fone, etc.): usar `.maybeSingle()` — `.single()` engole erros de banco
 - `.single()` só quando "não encontrado" é erro real (ex: buscar o próprio perfil autenticado)
 - DDL (CREATE TABLE, ALTER, etc.) não funciona via service_role — usar SQL Editor do Supabase
 
@@ -57,7 +55,8 @@ Nunca ler `x-forwarded-for` diretamente — `getRateLimitKey` já trata corretam
 - Handlers de evento (`onClick`, `onMouseEnter`, etc.) exigem `"use client"` — sem exceção
 - Validação de entrada com Zod em todas as rotas públicas
 - Erros retornados como `{ error: "mensagem" }` com status HTTP correto
-- Sem comentários explicando o quê — só o porquê quando não óbvio
+- Fetches em `useEffect`: sempre checar `r.ok` antes de `r.json()`, adicionar `.catch(() => {})`
+- `app/error.tsx`: sempre capturar `{ error, reset }` — descartar `error` cega o debugging
 
 ## Estrutura de pastas
 
@@ -66,21 +65,17 @@ Nunca ler `x-forwarded-for` diretamente — `getRateLimitKey` já trata corretam
 | `app/api/<perfil>/` | Rotas protegidas por perfil |
 | `app/api/publico/` | Rotas abertas (indicar, cadastros) |
 | `app/api/cron/` | Jobs agendados via Vercel Cron |
-| `app/api/<perfil>/upgrade/webhook/` | Webhooks PIX — validar txid E valor |
+| `app/api/<perfil>/upgrade/webhook/` | Webhooks PIX — validar txid E valor pago >= valor esperado |
 | `lib/` | Utilitários server-only |
 | `components/` | Componentes React reutilizáveis |
-| `sql/` | Migrations SQL para executar no Supabase |
+| `sql/` | Migrations SQL para executar no Supabase SQL Editor |
+
+## Pendências de banco (executar no Supabase SQL Editor)
+
+- `sql/fix_indicacoes_unique_placa.sql` — adiciona UNIQUE(consultor_id, placa) na tabela indicacoes
 
 ## Dívidas técnicas conhecidas (não introduzir mais)
 
 - Sem RLS no Supabase — autorização feita 100% em código com service_role
 - Credenciais de terceiros (EFI, Meta, OpenAI) em texto plano no banco
-- Webhook PIX não valida valor — ativa plano com qualquer pagamento no txid correto
-- Race condition no POST de cobrança PIX (sem UNIQUE constraint no banco)
 - Zero testes automatizados
-
-## Deploy
-
-1. Commitar e fazer push para `main`
-2. Vercel faz deploy automático em resposta ao push
-3. Após `git push --force`, o Vercel **não** dispara deploy — rodar `npx vercel --prod`

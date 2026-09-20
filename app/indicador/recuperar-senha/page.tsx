@@ -83,11 +83,11 @@ export default function IndicadorRecuperarSenhaPage() {
       const res = await fetch("/api/indicador/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ telefone: email }),
       });
       const json = await res.json();
       if (!res.ok) { setErro("Erro ao enviar código. Tente novamente."); return; }
-      if (!json.enviado) { setErro("E-mail não encontrado. Verifique se digitou corretamente."); return; }
+      if (!json.enviado) { setErro("Telefone não encontrado. Verifique se digitou corretamente."); return; }
       setEtapa("otp");
     } catch { setErro("Erro de conexão. Tente novamente."); }
     finally { setCarregando(false); }
@@ -103,7 +103,7 @@ export default function IndicadorRecuperarSenhaPage() {
       const res = await fetch("/api/indicador/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, codigo, novaSenha }),
+        body: JSON.stringify({ telefone: email, codigo, novaSenha }),
       });
       const json = await res.json();
       if (!res.ok) { setErro(json.error ?? "Código inválido ou expirado."); return; }
@@ -145,9 +145,9 @@ export default function IndicadorRecuperarSenhaPage() {
             <>
               <div className="rp-titulo">Digite o código</div>
               <div className="rp-info">
-                Um código de 6 dígitos foi enviado para o seu<br />
-                <strong>email {email}</strong>.<br />
-                Pode demorar até 2 minutos. Verifique também a caixa de spam.
+                Um código de 6 dígitos foi enviado via<br />
+                <strong>WhatsApp para {email}</strong>.<br />
+                Pode demorar até 1 minuto.
               </div>
               <form onSubmit={confirmarOTP}>
                 {erro && <div className="rp-erro">{erro}</div>}
@@ -196,13 +196,13 @@ export default function IndicadorRecuperarSenhaPage() {
           {etapa === "telefone" && (
             <>
               <div className="rp-titulo">Esqueceu a senha?</div>
-              <p className="rp-sub">Digite seu email. Vamos enviar um código de verificação.</p>
+              <p className="rp-sub">Digite seu WhatsApp cadastrado. Vamos enviar um código de verificação.</p>
               <form onSubmit={solicitarOTP}>
                 {erro && <div className="rp-erro">{erro}</div>}
                 <input
                   className="rp-campo"
-                  type="text" inputMode="email"
-                  placeholder="seu@email.com"
+                  type="tel" inputMode="tel"
+                  placeholder="(11) 99999-9999"
                   value={email}
                   required
                   autoFocus

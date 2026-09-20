@@ -2,7 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, PlusCircle, ClipboardList, Target, UserCircle, Wallet } from "lucide-react";
+import { LayoutDashboard, PlusCircle, ClipboardList, Target, UserCircle, Wallet, MessageCircleQuestion, Link2 } from "lucide-react";
+import { ManifestLink } from "@/components/manifest-link";
 
 const navItems = [
   { group: "Painel", items: [
@@ -10,12 +11,14 @@ const navItems = [
   ]},
   { group: "Indicações", items: [
     { href: "/indicador/indicar", label: "Nova Indicação", icon: PlusCircle },
+    { href: "/indicador/meu-link", label: "Meu Link / QR Code", icon: Link2 },
     { href: "/indicador/historico", label: "Histórico", icon: ClipboardList },
     { href: "/indicador/metas", label: "Minhas Metas", icon: Target },
-    { href: "/indicador/comissoes", label: "Comissoes", icon: Wallet },
+    { href: "/indicador/comissoes", label: "Comissões", icon: Wallet },
   ]},
   { group: "Conta", items: [
     { href: "/indicador/perfil", label: "Meu Perfil / PIX", icon: UserCircle },
+    { href: "/indicador/suporte", label: "Suporte", icon: MessageCircleQuestion },
   ]},
 ];
 
@@ -24,6 +27,8 @@ export default function IndicadorLayout({ children }: { children: React.ReactNod
   if (pathname === "/indicador/login" || pathname === "/indicador/cadastro" || pathname === "/indicador/recuperar-senha") return <>{children}</>;
 
   return (
+    <>
+    <ManifestLink href="/manifest-indicador.json" />
     <AppShell
       navItems={navItems}
       badgeLabel="INDICADOR"
@@ -40,5 +45,6 @@ export default function IndicadorLayout({ children }: { children: React.ReactNod
     >
       {children}
     </AppShell>
+    </>
   );
 }

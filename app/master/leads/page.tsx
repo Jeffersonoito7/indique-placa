@@ -84,7 +84,7 @@ function ModalTransferir({
         </div>
         <div className="p-6 flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
-            {ids.length} lead{ids.length > 1 ? "s" : ""} sera{ids.length > 1 ? "o" : ""} transferido{ids.length > 1 ? "s" : ""}.
+            {ids.length} lead{ids.length > 1 ? "s" : ""} será{ids.length > 1 ? "o" : ""} transferido{ids.length > 1 ? "s" : ""}.
           </p>
           <div>
             <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Consultor Destino</label>
@@ -165,8 +165,8 @@ export default function LeadsCentralPage() {
   useEffect(() => { carregar(); }, [carregar]);
 
   useEffect(() => {
-    fetch("/api/master/associacoes").then((r) => r.json()).then((j) => setAssociacoes(j.lista ?? []));
-    fetch("/api/master/consultores").then((r) => r.json()).then((j) => setConsultores(j.lista ?? []));
+    fetch("/api/master/associacoes").then((r) => r.ok ? r.json() : Promise.reject(r.status)).then((j) => setAssociacoes(j.lista ?? [])).catch(() => {});
+    fetch("/api/master/consultores").then((r) => r.ok ? r.json() : Promise.reject(r.status)).then((j) => setConsultores(j.lista ?? [])).catch(() => {});
   }, []);
 
   const consultoresFiltrados = filtroAssoc
@@ -218,7 +218,7 @@ export default function LeadsCentralPage() {
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
         <h1 className="text-base font-bold text-foreground">Central de Leads</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Gestao completa de todos os leads da plataforma</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Gestão completa de todos os leads da plataforma</p>
       </div>
 
       <div className="flex-1 p-8 bg-muted/30 flex flex-col gap-6">
@@ -230,7 +230,7 @@ export default function LeadsCentralPage() {
                 value={filtroAssoc}
                 onChange={(e) => { setFiltroAssoc(e.target.value); setFiltroConsultor(""); setPage(1); }}
               >
-                <option value="">Todas as associacoes</option>
+                <option value="">Todas as associações</option>
                 {associacoes.map((a) => <option key={a.id} value={a.id}>{a.nome}</option>)}
               </select>
 
@@ -317,7 +317,7 @@ export default function LeadsCentralPage() {
                           onChange={toggleTodos}
                         />
                       </th>
-                      {["Placa", "Proprietario", "Telefone", "Consultor", "Indicador", "Associacao", "Status", "Data", ""].map((h, i) => (
+                      {["Placa", "Proprietário", "Telefone", "Consultor", "Indicador", "Associação", "Status", "Data", ""].map((h, i) => (
                         <th key={i} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-4 py-3 whitespace-nowrap">
                           {h}
                         </th>
@@ -397,7 +397,7 @@ export default function LeadsCentralPage() {
 
             {totalPages > 1 && (
               <div className="flex items-center justify-end gap-3 px-6 py-4 border-t border-border">
-                <span className="text-xs text-muted-foreground">Pagina {page} de {totalPages}</span>
+                <span className="text-xs text-muted-foreground">Página {page} de {totalPages}</span>
                 <button
                   onClick={() => setPage((p) => Math.max(1, p - 1))}
                   disabled={page === 1}

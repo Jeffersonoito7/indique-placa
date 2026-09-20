@@ -39,6 +39,17 @@ export async function GET(req: NextRequest) {
   const consultorId = await validarSessao(token, "consultor");
   if (!consultorId) return NextResponse.json({ error: "Sessao expirada" }, { status: 401 });
 
+  // Verificar se consultor ou associacao tem parceiros habilitado
+  const { data: cData } = await supabaseAdmin
+    .from("consultores")
+    .select("parceiros_habilitado, associacoes(parceiros_habilitado)")
+    .eq("id", consultorId)
+    .single();
+
+  const assocFlag = (cData?.associacoes as unknown as { parceiros_habilitado: boolean } | null)?.parceiros_habilitado ?? false;
+  const habilitado = (cData?.parceiros_habilitado ?? false) || assocFlag;
+  if (!habilitado) return NextResponse.json({ error: "Recurso não disponível" }, { status: 403 });
+
   const { searchParams } = req.nextUrl;
   const cidade = (searchParams.get("cidade") ?? "").trim();
   const tipo = (searchParams.get("tipo") ?? "").trim();

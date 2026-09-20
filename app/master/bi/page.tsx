@@ -83,11 +83,11 @@ export default function BIPage() {
           <BarChart3 className="h-5 w-5 text-violet-400" />
           <div>
             <h1 className="text-base font-bold text-foreground">Business Intelligence</h1>
-            <p className="text-[11px] text-muted-foreground mt-0.5">Visao consolidada da plataforma</p>
+            <p className="text-[11px] text-muted-foreground mt-0.5">Visão consolidada da plataforma</p>
           </div>
         </div>
         <div className="flex items-center gap-2">
-          <span className="text-xs text-muted-foreground">Periodo:</span>
+          <span className="text-xs text-muted-foreground">Período:</span>
           {(["7d", "30d", "90d"] as const).map((p) => (
             <button
               key={p}
@@ -120,13 +120,13 @@ export default function BIPage() {
               <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Totais Gerais</h2>
               <div className="grid grid-cols-2 md:grid-cols-3 xl:grid-cols-7 gap-4">
                 {[
-                  { label: "Associacoes", value: fmt(totais!.associacoes), icon: Building2, color: "text-violet-400", border: "border-t-violet-500" },
+                  { label: "Associações", value: fmt(totais!.associacoes), icon: Building2, color: "text-violet-400", border: "border-t-violet-500" },
                   { label: "Gestores", value: fmt(totais!.gestores), icon: ShieldCheck, color: "text-cyan-400", border: "border-t-cyan-500" },
                   { label: "Consultores", value: fmt(totais!.consultores), icon: Users, color: "text-emerald-400", border: "border-t-emerald-500" },
                   { label: "Indicadores", value: fmt(totais!.indicadores), icon: UserCheck, color: "text-amber-400", border: "border-t-amber-500" },
                   { label: "Leads", value: fmt(totais!.leads), icon: ClipboardList, color: "text-blue-400", border: "border-t-blue-500" },
                   { label: "Fechamentos", value: fmt(totais!.fechamentos), icon: TrendingUp, color: "text-emerald-400", border: "border-t-emerald-500" },
-                  { label: "Comissoes", value: fmtBrl(totais!.comissoes_total), icon: DollarSign, color: "text-amber-400", border: "border-t-amber-500", wide: true },
+                  { label: "Comissões", value: fmtBrl(totais!.comissoes_total), icon: DollarSign, color: "text-amber-400", border: "border-t-amber-500", wide: true },
                 ].map((item) => {
                   const Icon = item.icon;
                   return (
@@ -146,14 +146,14 @@ export default function BIPage() {
 
             {/* Secao 2 - Por Associacao */}
             <section>
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Por Associacao</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Por Associação</h2>
               <Card className="shadow-sm">
                 <CardContent className="p-0">
                   <div className="overflow-x-auto">
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-border bg-muted/40">
-                          {["Nome", "Plano", "Gestores", "Consultores", "Indicadores", "Leads", "Fechamentos", "Conversao"].map((h) => (
+                          {["Nome", "Plano", "Gestores", "Consultores", "Indicadores", "Leads", "Fechamentos", "Conversão"].map((h) => (
                             <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-4 py-3">{h}</th>
                           ))}
                         </tr>
@@ -192,7 +192,7 @@ export default function BIPage() {
 
             {/* Secao 3 - Rankings */}
             <section>
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Rankings do Periodo</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Rankings do Período</h2>
               <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
                 {/* Top Consultores */}
                 <Card className="shadow-sm border-t-4 border-t-emerald-500">
@@ -218,7 +218,7 @@ export default function BIPage() {
                       </div>
                     ))}
                     {data.ranking_consultores.length === 0 && (
-                      <div className="text-center text-muted-foreground text-xs py-8">Sem dados no periodo</div>
+                      <div className="text-center text-muted-foreground text-xs py-8">Sem dados no período</div>
                     )}
                   </CardContent>
                 </Card>
@@ -247,7 +247,7 @@ export default function BIPage() {
                       </div>
                     ))}
                     {data.ranking_gestores.length === 0 && (
-                      <div className="text-center text-muted-foreground text-xs py-8">Sem dados no periodo</div>
+                      <div className="text-center text-muted-foreground text-xs py-8">Sem dados no período</div>
                     )}
                   </CardContent>
                 </Card>
@@ -276,7 +276,7 @@ export default function BIPage() {
                       </div>
                     ))}
                     {data.ranking_indicadores.length === 0 && (
-                      <div className="text-center text-muted-foreground text-xs py-8">Sem dados no periodo</div>
+                      <div className="text-center text-muted-foreground text-xs py-8">Sem dados no período</div>
                     )}
                   </CardContent>
                 </Card>
@@ -292,7 +292,7 @@ export default function BIPage() {
                     <table className="w-full">
                       <thead>
                         <tr className="border-b border-border bg-muted/40">
-                          {["Cidade", "Consultores", "Leads", "Fechamentos", "Conversao"].map((h) => (
+                          {["Cidade", "Consultores", "Leads", "Fechamentos", "Conversão"].map((h) => (
                             <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-4 py-3">{h}</th>
                           ))}
                         </tr>
@@ -329,13 +329,13 @@ export default function BIPage() {
 
             {/* Secao 5 - Evolucao Mensal */}
             <section>
-              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Evolucao Mensal (ultimos 6 meses)</h2>
+              <h2 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground mb-3">Evolução Mensal (últimos 6 meses)</h2>
               <Card className="shadow-sm">
                 <CardContent className="p-0">
                   <table className="w-full">
                     <thead>
                       <tr className="border-b border-border bg-muted/40">
-                        {["Mes", "Leads", "Fechamentos", "Conversao", "Progresso Leads", "Progresso Fechamentos"].map((h) => (
+                        {["Mês", "Leads", "Fechamentos", "Conversão", "Progresso Leads", "Progresso Fechamentos"].map((h) => (
                           <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-4 py-3">{h}</th>
                         ))}
                       </tr>

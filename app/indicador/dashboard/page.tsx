@@ -53,15 +53,12 @@ export default function IndicadorDashboard() {
   useEffect(() => {
     fetch("/api/indicador/dashboard")
       .then((r) => {
-        if (r.status === 401) {
-          router.replace("/indicador/login");
-          return null;
-        }
+        if (r.status === 401) { router.replace("/indicador/login"); return null; }
+        if (!r.ok) throw new Error(String(r.status));
         return r.json();
       })
-      .then((json) => {
-        if (json) setData(json);
-      })
+      .then((json) => { if (json) setData(json); })
+      .catch(() => {})
       .finally(() => setLoading(false));
   }, [router]);
 
@@ -93,10 +90,10 @@ export default function IndicadorDashboard() {
       {/* Header */}
       <div style={{ padding: "20px 16px 12px" }}>
         <div style={{ fontSize: 20, fontWeight: 700, color: "var(--foreground)", lineHeight: 1.2 }}>
-          Ola, {primeiroNome}!
+          Olá, {primeiroNome}!
         </div>
         <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginTop: 2 }}>
-          Suas indicacoes
+          Suas indicações
         </div>
         <div style={{ marginTop: 10 }}>
           <PushSubscribeIndicador />
@@ -122,10 +119,10 @@ export default function IndicadorDashboard() {
             <AlertCircle size={20} style={{ color: "#ef4444", flexShrink: 0, marginTop: 2 }} />
             <div style={{ flex: 1 }}>
               <div style={{ fontSize: 13, fontWeight: 700, color: "#ef4444", marginBottom: 2 }}>
-                Chave PIX nao cadastrada
+                Chave PIX não cadastrada
               </div>
               <div style={{ fontSize: 12, color: "var(--muted-foreground)", lineHeight: 1.5 }}>
-                Voce ainda nao cadastrou sua chave PIX. Sem ela, nao conseguimos te pagar quando fechar uma venda.
+                Você ainda não cadastrou sua chave PIX. Sem ela, não conseguimos te pagar quando fechar uma venda.
               </div>
             </div>
             <a
@@ -164,11 +161,11 @@ export default function IndicadorDashboard() {
             background: "var(--card)",
             borderRadius: 16,
             padding: 16,
-            borderTop: "3px solid #f59e0b",
+            border: "1px solid var(--border)",
             boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
           }}
         >
-          <div style={{ fontSize: 32, fontWeight: 700, color: "#f59e0b", lineHeight: 1 }}>
+          <div style={{ fontSize: 32, fontWeight: 700, color: "#00c389", lineHeight: 1 }}>
             {total}
           </div>
           <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 4 }}>
@@ -182,11 +179,11 @@ export default function IndicadorDashboard() {
             background: "var(--card)",
             borderRadius: 16,
             padding: 16,
-            borderTop: "3px solid #10b981",
+            border: "1px solid var(--border)",
             boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
           }}
         >
-          <div style={{ fontSize: 32, fontWeight: 700, color: "#10b981", lineHeight: 1 }}>
+          <div style={{ fontSize: 32, fontWeight: 700, color: "var(--foreground)", lineHeight: 1 }}>
             {fechados}
           </div>
           <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 4 }}>
@@ -201,11 +198,11 @@ export default function IndicadorDashboard() {
             background: "var(--card)",
             borderRadius: 16,
             padding: 16,
-            borderTop: "3px solid #3b82f6",
+            border: "1px solid var(--border)",
             boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
           }}
         >
-          <div style={{ fontSize: 32, fontWeight: 700, color: "#3b82f6", lineHeight: 1 }}>
+          <div style={{ fontSize: 32, fontWeight: 700, color: "var(--foreground)", lineHeight: 1 }}>
             {emAndamento}
           </div>
           <div style={{ fontSize: 12, color: "var(--muted-foreground)", marginTop: 4 }}>
@@ -234,7 +231,7 @@ export default function IndicadorDashboard() {
           }}
         >
           <Plus size={20} />
-          Nova Indicacao
+          Nova Indicação
         </Link>
       </div>
 
@@ -257,58 +254,113 @@ export default function IndicadorDashboard() {
               Nenhuma meta ativa
             </div>
             <div style={{ color: "var(--muted-foreground)", fontSize: 12 }}>
-              Converse com seu consultor para definir metas e ganhar bonus!
+              Converse com seu consultor para definir metas e ganhar bônus!
             </div>
           </div>
         ) : (
-          <div
-            style={{
-              background: "var(--card)",
-              borderRadius: 14,
-              padding: "14px 16px",
-              boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-            }}
-          >
-            <div
-              style={{
-                fontSize: 13,
-                fontWeight: 700,
-                color: "var(--foreground)",
-                marginBottom: 12,
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-              }}
-            >
+          <div>
+            <div style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)", marginBottom: 10, display: "flex", alignItems: "center", gap: 6 }}>
               <Target size={15} style={{ color: "#f59e0b" }} />
               Suas Metas
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+            <div style={{ display: "flex", gap: 12, overflowX: "auto", paddingBottom: 4 }}>
               {metas.map((m) => {
                 const pct = Math.min(100, Math.round((m.progresso / m.quantidade_indicacoes) * 100));
                 const batida = m.progresso >= m.quantidade_indicacoes;
                 const quase = !batida && pct >= 80;
-                const barColor = batida ? "#10b981" : quase ? "#f59e0b" : "#3b82f6";
+                const faltam = Math.max(0, m.quantidade_indicacoes - m.progresso);
+                const ringColor = batida ? "#10b981" : quase ? "#f59e0b" : "#3b82f6";
+                const ringTrack = batida ? "rgba(16,185,129,0.15)" : quase ? "rgba(245,158,11,0.15)" : "rgba(59,130,246,0.15)";
+
+                // SVG donut: r=40, circumference = 2*pi*40 ≈ 251.3
+                const R = 40;
+                const C = 2 * Math.PI * R;
+                const dash = (pct / 100) * C;
+
                 return (
-                  <div key={m.id}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                      <span style={{ fontSize: 13, fontWeight: 600, color: "var(--foreground)" }}>{m.nome}</span>
-                      {batida ? (
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "rgba(16,185,129,0.12)", color: "#10b981", textTransform: "uppercase" }}>Meta batida</span>
-                      ) : quase ? (
-                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 99, background: "rgba(245,158,11,0.12)", color: "#f59e0b", textTransform: "uppercase" }}>Quase la!</span>
-                      ) : null}
+                  <div
+                    key={m.id}
+                    style={{
+                      background: "var(--card)",
+                      borderRadius: 16,
+                      padding: "16px 14px",
+                      boxShadow: "0 1px 6px rgba(0,0,0,0.1)",
+                      minWidth: 160,
+                      flex: "0 0 auto",
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      gap: 10,
+                      border: batida ? "1.5px solid rgba(16,185,129,0.35)" : "1px solid var(--border)",
+                    }}
+                  >
+                    {/* Nome da meta */}
+                    <div style={{ fontSize: 11, fontWeight: 700, color: "var(--muted-foreground)", textAlign: "center", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                      {m.nome}
                     </div>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                      <div style={{ flex: 1, height: 6, background: "var(--muted)", borderRadius: 99, overflow: "hidden" }}>
-                        <div style={{ width: `${pct}%`, height: "100%", background: barColor, borderRadius: 99, transition: "width 0.4s ease" }} />
+
+                    {/* Donut SVG */}
+                    <div style={{ position: "relative", width: 100, height: 100 }}>
+                      <svg width="100" height="100" viewBox="0 0 100 100" style={{ transform: "rotate(-90deg)" }}>
+                        {/* Track */}
+                        <circle cx="50" cy="50" r={R} fill="none" stroke={ringTrack} strokeWidth="10" />
+                        {/* Progress */}
+                        <circle
+                          cx="50" cy="50" r={R}
+                          fill="none"
+                          stroke={ringColor}
+                          strokeWidth="10"
+                          strokeLinecap="round"
+                          strokeDasharray={`${dash} ${C}`}
+                          style={{ transition: "stroke-dasharray 0.6s ease" }}
+                        />
+                      </svg>
+                      {/* Center text */}
+                      <div style={{
+                        position: "absolute", inset: 0,
+                        display: "flex", flexDirection: "column",
+                        alignItems: "center", justifyContent: "center",
+                      }}>
+                        <span style={{ fontSize: 22, fontWeight: 800, color: ringColor, lineHeight: 1 }}>
+                          {pct}%
+                        </span>
+                        {batida && (
+                          <span style={{ fontSize: 9, fontWeight: 700, color: "#10b981", marginTop: 2 }}>BATIDA</span>
+                        )}
                       </div>
-                      <span style={{ fontSize: 11, color: "var(--muted-foreground)", fontVariantNumeric: "tabular-nums", whiteSpace: "nowrap" }}>
-                        {m.progresso}/{m.quantidade_indicacoes}
-                      </span>
                     </div>
-                    <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 3 }}>
-                      Bonus: <span style={{ fontWeight: 700, color: "#10b981" }}>{moeda(m.bonus_valor)}</span>
+
+                    {/* Contadores */}
+                    <div style={{ textAlign: "center" }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)", fontVariantNumeric: "tabular-nums" }}>
+                        {m.progresso} <span style={{ color: "var(--muted-foreground)", fontWeight: 400 }}>/ {m.quantidade_indicacoes} placas</span>
+                      </div>
+                      {!batida && (
+                        <div style={{ fontSize: 11, color: "var(--muted-foreground)", marginTop: 2 }}>
+                          Faltam <span style={{ fontWeight: 700, color: ringColor }}>{faltam}</span> placa{faltam !== 1 ? "s" : ""}
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Bonus */}
+                    <div style={{
+                      background: batida ? "rgba(16,185,129,0.1)" : "rgba(59,130,246,0.08)",
+                      borderRadius: 8,
+                      padding: "6px 10px",
+                      textAlign: "center",
+                      width: "100%",
+                    }}>
+                      {batida ? (
+                        <div style={{ fontSize: 11, color: "#10b981", fontWeight: 700 }}>
+                          Bonus garantido!<br />
+                          <span style={{ fontSize: 15 }}>{moeda(m.bonus_valor)}</span>
+                        </div>
+                      ) : (
+                        <div style={{ fontSize: 10, color: "var(--muted-foreground)", lineHeight: 1.4 }}>
+                          {faltam} placa{faltam !== 1 ? "s" : ""} para ganhar<br />
+                          <span style={{ fontSize: 14, fontWeight: 800, color: "#3b82f6" }}>{moeda(m.bonus_valor)}</span>
+                        </div>
+                      )}
                     </div>
                   </div>
                 );
@@ -321,12 +373,12 @@ export default function IndicadorDashboard() {
       {/* Ultimas indicacoes */}
       <div style={{ padding: "0 16px 32px" }}>
         <div style={{ fontSize: 13, fontWeight: 700, color: "var(--foreground)", marginBottom: 10 }}>
-          Ultimas Indicacoes
+          Últimas Indicações
         </div>
         {leads.length === 0 ? (
           <div style={{ fontSize: 13, color: "var(--muted-foreground)", textAlign: "center", padding: "24px 0" }}>
-            Voce ainda nao fez nenhuma indicacao.{" "}
-            <Link href="/indicador/indicar" style={{ color: "#f59e0b", fontWeight: 600 }}>
+            Você ainda não fez nenhuma indicação.{" "}
+            <Link href="/indicador/indicar" style={{ color: "#00c389", fontWeight: 600 }}>
               Indicar agora
             </Link>
           </div>
@@ -368,7 +420,7 @@ export default function IndicadorDashboard() {
                   </div>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                     <span style={{ fontSize: 13, color: lead.nome_lead ? "var(--foreground)" : "var(--muted-foreground)", fontStyle: lead.nome_lead ? "normal" : "italic" }}>
-                      {lead.nome_lead ?? "Proprietario a confirmar"}
+                      {lead.nome_lead ?? "Proprietário a confirmar"}
                     </span>
                     <span style={{ fontSize: 11, color: "var(--muted-foreground)" }}>{data}</span>
                   </div>

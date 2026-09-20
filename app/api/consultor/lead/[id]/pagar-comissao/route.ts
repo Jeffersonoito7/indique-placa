@@ -10,7 +10,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   if (!token) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
 
   const consultorId = await validarSessao(token, "consultor");
-  if (!consultorId) return NextResponse.json({ error: "Sessao expirada" }, { status: 401 });
+  if (!consultorId) return NextResponse.json({ error: "Sessão expirada" }, { status: 401 });
 
   const { id } = await params;
 
@@ -26,7 +26,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   }
 
   if (lead.status !== "fechado") {
-    return NextResponse.json({ error: "So e possivel pagar comissao de leads fechados" }, { status: 400 });
+    return NextResponse.json({ error: "Só é possível pagar comissão de leads fechados" }, { status: 400 });
   }
 
   if (lead.comissao_paga) {
@@ -104,7 +104,7 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
             chaveDestino: chavePix,
             valorReais: valorComissao,
             idEnvio,
-            descricao: "Comissao indicacao - Indique Placa",
+            descricao: "Comissão indicação - Indique Placa",
           });
 
           pixEnviado = resultado.ok;

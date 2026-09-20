@@ -24,7 +24,7 @@ export default async function IndicadorMetasPage() {
   if (!indicador.consultor_id) {
     return (
       <div className="flex-1 flex items-center justify-center p-8">
-        <div className="text-center text-sm text-muted-foreground">Voce nao esta vinculado a nenhum consultor.</div>
+        <div className="text-center text-sm text-muted-foreground">Você não está vinculado a nenhum consultor.</div>
       </div>
     );
   }

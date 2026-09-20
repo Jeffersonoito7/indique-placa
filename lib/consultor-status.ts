@@ -28,7 +28,7 @@ export async function verificarBloqueioConsultor(consultor_id: string): Promise<
   if (total_pendente >= limite) {
     return {
       bloqueado: true,
-      motivo: `Voce tem ${total_pendente} comissoes pendentes de pagamento. Pague para desbloquear.`,
+      motivo: `Você tem ${total_pendente} comissões pendentes de pagamento. Pague para desbloquear.`,
       total_pendente,
       limite,
     };

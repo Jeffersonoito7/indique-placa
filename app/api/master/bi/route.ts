@@ -49,13 +49,13 @@ export async function GET(req: NextRequest) {
       .from("indicacoes")
       .select("id, consultor_id, associacao_id, status, comissao_valor, criado_em")
       .gte("criado_em", desde)
-      .limit(1000),
+      .limit(20000),
     supabaseAdmin
       .from("indicacoes")
       .select("indicador_id, status, comissao_valor")
       .gte("criado_em", desde)
       .not("indicador_id", "is", null)
-      .limit(1000),
+      .limit(20000),
     supabaseAdmin
       .from("indicacoes")
       .select("status, criado_em")
@@ -70,8 +70,8 @@ export async function GET(req: NextRequest) {
     supabaseAdmin.from("indicadores").select("id, nome, consultor_id, associacao_id, consultores(nome)").limit(5000),
   ]);
 
-  if ((indicacoesDoPeriodo?.length ?? 0) >= 1000) {
-    console.warn("[master/bi] Limite de 1000 indicacoes atingido no periodo", periodo);
+  if ((indicacoesDoPeriodo?.length ?? 0) >= 20000) {
+    console.warn("[master/bi] Limite de 20000 indicacoes atingido no periodo", periodo, "— dados podem estar incompletos");
   }
 
   const inds = indicacoesDoPeriodo ?? [];

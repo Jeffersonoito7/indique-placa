@@ -45,7 +45,7 @@ export default function ComissoesPage() {
         return r.json();
       })
       .then((d: ComissaoTipo[]) => setComissoes(d))
-      .catch(() => setErroNovo("Erro ao carregar configuracoes de comissao."))
+      .catch(() => setErroNovo("Erro ao carregar configurações de comissão."))
       .finally(() => setCarregando(false));
   };
 

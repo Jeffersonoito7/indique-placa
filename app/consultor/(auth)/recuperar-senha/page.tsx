@@ -63,13 +63,12 @@ function vibrar() {
   if (typeof navigator !== "undefined" && "vibrate" in navigator) navigator.vibrate(40);
 }
 
-
 type Etapa = "telefone" | "otp" | "sucesso";
 
 export default function RecuperarSenhaConsultorPage() {
   const router = useRouter();
   const [etapa, setEtapa] = useState<Etapa>("telefone");
-  const [email, setEmail] = useState("");
+  const [telefone, setTelefone] = useState("");
   const [codigo, setCodigo] = useState("");
   const [novaSenha, setNovaSenha] = useState("");
   const [confirmar, setConfirmar] = useState("");
@@ -84,11 +83,11 @@ export default function RecuperarSenhaConsultorPage() {
       const res = await fetch("/api/consultor/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email }),
+        body: JSON.stringify({ telefone }),
       });
       const json = await res.json();
       if (!res.ok) { setErro("Erro ao enviar código. Tente novamente."); return; }
-      if (!json.enviado) { setErro("E-mail não encontrado. Verifique se digitou corretamente."); return; }
+      if (!json.enviado) { setErro("Telefone não encontrado. Verifique se digitou corretamente."); return; }
       setEtapa("otp");
     } catch { setErro("Erro de conexão. Tente novamente."); }
     finally { setCarregando(false); }
@@ -104,7 +103,7 @@ export default function RecuperarSenhaConsultorPage() {
       const res = await fetch("/api/consultor/recuperar-senha", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, codigo, novaSenha }),
+        body: JSON.stringify({ telefone, codigo, novaSenha }),
       });
       const json = await res.json();
       if (!res.ok) { setErro(json.error ?? "Código inválido ou expirado."); return; }
@@ -135,7 +134,7 @@ export default function RecuperarSenhaConsultorPage() {
                 <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#10b981" strokeWidth="2.5"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div className="crp-titulo">Senha alterada!</div>
-              <p className="crp-sub">Entre com seu email e a nova senha.</p>
+              <p className="crp-sub">Entre com seu telefone e a nova senha.</p>
               <button className="crp-btn" onClick={() => { vibrar(); router.push("/consultor/login"); }}>
                 Ir para o login
               </button>
@@ -146,9 +145,9 @@ export default function RecuperarSenhaConsultorPage() {
             <>
               <div className="crp-titulo">Digite o código</div>
               <div className="crp-info">
-                Um código de 6 dígitos foi enviado para o seu<br />
-                <strong>email {email}</strong>.<br />
-                Pode demorar até 2 minutos. Verifique também a caixa de spam.
+                Um código de 6 dígitos foi enviado via<br />
+                <strong>WhatsApp para {telefone}</strong>.<br />
+                Pode demorar até 1 minuto.
               </div>
               <form onSubmit={confirmarOTP}>
                 {erro && <div className="crp-erro">{erro}</div>}
@@ -187,8 +186,8 @@ export default function RecuperarSenhaConsultorPage() {
                 </button>
               </form>
               <div style={{ marginTop: 16, textAlign: "center" }}>
-                <button className="crp-link" onClick={() => { setEtapa("telefone"); setErro(""); setCodigo(""); setEmail(""); }}>
-                  Usar outro email
+                <button className="crp-link" onClick={() => { setEtapa("telefone"); setErro(""); setCodigo(""); setTelefone(""); }}>
+                  Usar outro telefone
                 </button>
               </div>
             </>
@@ -197,20 +196,21 @@ export default function RecuperarSenhaConsultorPage() {
           {etapa === "telefone" && (
             <>
               <div className="crp-titulo">Esqueceu a senha?</div>
-              <p className="crp-sub">Digite seu email. Vamos enviar um código de verificação.</p>
+              <p className="crp-sub">Digite seu WhatsApp cadastrado. Enviaremos um código de verificação.</p>
               <form onSubmit={solicitarOTP}>
                 {erro && <div className="crp-erro">{erro}</div>}
                 <input
                   className="crp-campo"
-                  type="text" inputMode="email"
-                  placeholder="seu@email.com"
-                  value={email}
+                  type="tel"
+                  inputMode="tel"
+                  placeholder="(11) 99999-9999"
+                  value={telefone}
                   required
                   autoFocus
-                  onChange={e => setEmail(e.target.value)}
+                  onChange={e => setTelefone(e.target.value)}
                 />
                 <button className="crp-btn" type="submit" disabled={carregando}>
-                  {carregando ? "Enviando..." : "Enviar código por email"}
+                  {carregando ? "Enviando..." : "Enviar código via WhatsApp"}
                 </button>
               </form>
             </>

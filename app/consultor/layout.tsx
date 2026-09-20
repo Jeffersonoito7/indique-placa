@@ -2,7 +2,8 @@
 
 import { usePathname } from "next/navigation";
 import AppShell from "@/components/app-shell";
-import { LayoutDashboard, ClipboardList, UserCheck, Trophy, User, DollarSign, Target, Percent, MessageCircle, Search, Zap, Megaphone, Link2 } from "lucide-react";
+import { LayoutDashboard, ClipboardList, UserCheck, Trophy, User, DollarSign, Target, Percent, MessageCircle, Search, Zap, Megaphone, Link2, MessageCircleQuestion } from "lucide-react";
+import { ManifestLink } from "@/components/manifest-link";
 
 const navItems = [
   { group: "Painel", items: [
@@ -13,18 +14,18 @@ const navItems = [
     { href: "/consultor/indicadores", label: "Meus Indicadores", icon: UserCheck },
     { href: "/consultor/ranking", label: "Ranking", icon: Trophy },
     { href: "/consultor/financeiro", label: "Financeiro", icon: DollarSign },
-    { href: "/consultor/comissoes", label: "Comissoes", icon: Percent },
+    { href: "/consultor/comissoes", label: "Comissões", icon: Percent },
     { href: "/consultor/metas", label: "Metas", icon: Target },
     { href: "/consultor/whatsapp", label: "WhatsApp", icon: MessageCircle },
-    { href: "/consultor/parceiros", label: "Buscar Parceiros", icon: Search },
     { href: "/consultor/trafego", label: "Trafego Pago", icon: Megaphone },
   ]},
-  { group: "Captacao", items: [
-    { href: "/consultor/links", label: "Links de Captacao", icon: Link2 },
+  { group: "Captação", items: [
+    { href: "/consultor/links", label: "Links de Captação", icon: Link2 },
   ]},
   { group: "Conta", items: [
     { href: "/consultor/perfil", label: "Meu Perfil", icon: User },
     { href: "/consultor/upgrade", label: "Upgrade Pro", icon: Zap },
+    { href: "/consultor/suporte", label: "Suporte", icon: MessageCircleQuestion },
   ]},
 ];
 
@@ -33,6 +34,8 @@ export default function ConsultorLayout({ children }: { children: React.ReactNod
   if (pathname === "/consultor/login" || pathname === "/consultor/cadastro" || pathname === "/consultor/recuperar-senha") return <>{children}</>;
 
   return (
+    <>
+    <ManifestLink href="/manifest.json" />
     <AppShell
       navItems={navItems}
       badgeLabel="CONSULTOR"
@@ -49,5 +52,6 @@ export default function ConsultorLayout({ children }: { children: React.ReactNod
     >
       {children}
     </AppShell>
+    </>
   );
 }

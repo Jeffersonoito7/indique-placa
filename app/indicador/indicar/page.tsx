@@ -62,7 +62,7 @@ export default function IndicarPage() {
 
   useEffect(() => {
     fetch("/api/indicador/tipos-veiculo")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((d: TipoVeiculo[]) => { if (Array.isArray(d) && d.length > 0) setTipos(d); })
       .catch(() => {});
   }, []);
@@ -227,13 +227,13 @@ export default function IndicarPage() {
             <div className="flex items-start gap-3 bg-red-500/10 border border-red-500/30 rounded-2xl p-4">
               <AlertCircle className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
               <div className="flex-1">
-                <div className="text-sm font-bold text-red-600 dark:text-red-400">Consultor temporariamente indisponivel</div>
+                <div className="text-sm font-bold text-red-600 dark:text-red-400">Consultor temporariamente indisponível</div>
                 <div className="text-xs text-muted-foreground mt-0.5">
-                  Seu consultor esta temporariamente indisponivel. Entre em contato com ele diretamente.
+                  Seu consultor está temporariamente indisponível. Entre em contato com ele diretamente.
                 </div>
                 {consultorBloqueado.fone && (
                   <a
-                    href={`https://wa.me/55${consultorBloqueado.fone.replace(/\D/g, "")}?text=${encodeURIComponent("Oi, estou tentando fazer uma indicacao pelo Indique Placa mas esta aparecendo uma mensagem de indisponibilidade.")}`}
+                    href={`https://wa.me/55${consultorBloqueado.fone.replace(/\D/g, "")}?text=${encodeURIComponent("Oi, estou tentando fazer uma indicação pelo Indique Placa mas está aparecendo uma mensagem de indisponibilidade.")}`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-block mt-2 text-xs font-bold text-emerald-600 dark:text-emerald-400 underline"

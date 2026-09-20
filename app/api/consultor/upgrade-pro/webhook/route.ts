@@ -49,7 +49,27 @@ export async function POST(req: NextRequest) {
     const txid = typeof pix.txid === "string" ? pix.txid : null;
     if (!txid) continue;
 
-    // Atualiza status da cobranca para pago APENAS se ainda estiver pendente (idempotencia)
+    // Valor pago informado pela Efi no payload
+    const valorPago = pix.valor != null ? parseFloat(String(pix.valor)) : null;
+
+    // Busca a cobranca pendente para validar o valor esperado antes de ativar o plano
+    const { data: cobrancaPendente } = await supabaseAdmin
+      .from("cobrancas")
+      .select("usuario_id, usuario_tipo, tipo_periodo, valor")
+      .eq("txid", txid)
+      .eq("status", "pendente")
+      .maybeSingle();
+
+    if (!cobrancaPendente?.usuario_id) continue;
+
+    // Rejeita se o valor pago for inferior ao esperado (tolerancia de R$0,01 por arredondamento)
+    const valorEsperado = typeof cobrancaPendente.valor === "number" ? cobrancaPendente.valor : parseFloat(String(cobrancaPendente.valor ?? "0"));
+    if (valorPago !== null && valorPago < valorEsperado - 0.01) {
+      console.error(`[webhook/consultor] Valor insuficiente txid=${txid} esperado=${valorEsperado} recebido=${valorPago}`);
+      continue;
+    }
+
+    // Marca como pago (idempotencia garantida pelo .eq("status", "pendente") acima)
     const { data: cobranca } = await supabaseAdmin
       .from("cobrancas")
       .update({ status: "pago", pago_em: new Date().toISOString() })
@@ -58,7 +78,6 @@ export async function POST(req: NextRequest) {
       .select("usuario_id, usuario_tipo, tipo_periodo")
       .maybeSingle();
 
-    // Se retornou null, o txid ja foi processado ou nao existe — nao faz nada
     if (!cobranca?.usuario_id) continue;
 
     // Por enquanto so trata consultores; futuramente expandir para outros tipos
@@ -69,10 +88,14 @@ export async function POST(req: NextRequest) {
     const planoAte = new Date();
     planoAte.setDate(planoAte.getDate() + (isAnual ? 365 : 30));
 
-    await supabaseAdmin
+    const { error: updatePlanoErr } = await supabaseAdmin
       .from("consultores")
       .update({ plano: "pro", plano_ativo_ate: planoAte.toISOString() })
       .eq("id", cobranca.usuario_id);
+
+    if (updatePlanoErr) {
+      console.error(`[webhook/consultor] Falha ao ativar plano txid=${txid} usuario=${cobranca.usuario_id}:`, updatePlanoErr.message);
+    }
   }
 
   return NextResponse.json({ ok: true });

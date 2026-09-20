@@ -39,7 +39,7 @@ export default function ConsultorPerfilPage() {
 
   useEffect(() => {
     fetch("/api/consultor/perfil/dados")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((d: ConsultorPerfil) => {
         setConsultor(d);
         setNome(d.nome ?? "");
@@ -61,11 +61,15 @@ export default function ConsultorPerfilPage() {
       const fd = new FormData();
       fd.append("foto", file);
       const res = await fetch("/api/consultor/perfil/foto", { method: "POST", body: fd });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setMensagem({ tipo: "erro", texto: err.error ?? "Erro ao enviar foto" });
+        return;
+      }
       const json = await res.json();
-      if (!res.ok) { setMensagem({ tipo: "erro", texto: json.error ?? "Erro ao enviar foto" }); return; }
       setFotoUrl(json.url);
     } catch {
-      setMensagem({ tipo: "erro", texto: "Erro de conexao. Tente novamente." });
+      setMensagem({ tipo: "erro", texto: "Erro de conexão. Tente novamente." });
     } finally {
       setUploadando(false);
       if (fileRef.current) fileRef.current.value = "";
@@ -89,13 +93,17 @@ export default function ConsultorPerfilPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(body),
       });
-      const json = await res.json();
-      if (!res.ok) { setMensagem({ tipo: "erro", texto: json.error ?? "Erro ao salvar" }); return; }
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setMensagem({ tipo: "erro", texto: err.error ?? "Erro ao salvar perfil" });
+        return;
+      }
+      await res.json();
       setMensagem({ tipo: "ok", texto: "Perfil atualizado com sucesso!" });
       setSenhaAtual("");
       setNovaSenha("");
     } catch {
-      setMensagem({ tipo: "erro", texto: "Erro de conexao. Tente novamente." });
+      setMensagem({ tipo: "erro", texto: "Erro de conexão. Tente novamente." });
     } finally {
       setSalvando(false);
     }
@@ -151,7 +159,7 @@ export default function ConsultorPerfilPage() {
                 )}
               </div>
               <div>
-                <p className="text-xs text-muted-foreground mb-3">JPG, PNG ou WebP. Maximo 2MB.</p>
+                <p className="text-xs text-muted-foreground mb-3">JPG, PNG ou WebP. Máximo 2MB.</p>
                 <button
                   type="button"
                   onClick={() => fileRef.current?.click()}
@@ -255,7 +263,7 @@ export default function ConsultorPerfilPage() {
                       <input
                         type={verNovaSenha ? "text" : "password"}
                         value={novaSenha}
-                        placeholder="Minimo 6 caracteres"
+                        placeholder="Mínimo 6 caracteres"
                         onChange={(e) => setNovaSenha(e.target.value)}
                         className="w-full px-3 py-2.5 pr-10 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                       />
@@ -274,7 +282,7 @@ export default function ConsultorPerfilPage() {
                     className="inline-flex items-center gap-2 px-5 py-2.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-sm transition-colors disabled:opacity-50"
                   >
                     <Save className="h-4 w-4" />
-                    {salvando ? "Salvando..." : "Salvar alteracoes"}
+                    {salvando ? "Salvando..." : "Salvar alterações"}
                   </button>
                 </div>
               </form>
@@ -285,11 +293,11 @@ export default function ConsultorPerfilPage() {
           <Card className="border-t-4 border-t-violet-500 shadow-sm">
             <CardHeader className="pb-2">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
-                <Link2 className="h-4 w-4 text-violet-500" /> Meus Links de Captacao
+                <Link2 className="h-4 w-4 text-violet-500" /> Meus Links de Captação
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4 pt-2">
-              <CopiarLink titulo="Link de Indicacao" descricao="Envie para clientes indicarem conhecidos" url={linkIndicacao} cor="blue" />
+              <CopiarLink titulo="Link de Indicação" descricao="Envie para clientes indicarem conhecidos" url={linkIndicacao} cor="blue" />
               <CopiarLink titulo="Link para Indicadores" descricao="Envie para pessoas que querem te ajudar a captar" url={linkIndicador} cor="violet" />
             </CardContent>
           </Card>

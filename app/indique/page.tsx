@@ -26,13 +26,17 @@ function fmtTelBR(v: string): string {
   return `(${n.slice(0,2)}) ${n.slice(2,7)}-${n.slice(7)}`;
 }
 
-interface TipoVeiculo { tipo: string; label: string; }
+interface TipoVeiculo { tipo: string; label: string; comissao_indicador?: number; }
 
 const TIPOS_PADRAO: TipoVeiculo[] = [
-  { tipo: "moto", label: "Moto" },
-  { tipo: "carro", label: "Carro" },
-  { tipo: "caminhao", label: "Caminhão" },
+  { tipo: "moto",    label: "Moto",    comissao_indicador: 50  },
+  { tipo: "carro",  label: "Carro",   comissao_indicador: 100 },
+  { tipo: "caminhao", label: "Caminhão", comissao_indicador: 500 },
 ];
+
+function moeda(v: number) {
+  return v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+}
 
 function FormIndicacao() {
   const params = useSearchParams();
@@ -43,7 +47,7 @@ function FormIndicacao() {
   useEffect(() => {
     if (!consultorId) return;
     fetch(`/api/publico/tipos-veiculo?consultor_id=${encodeURIComponent(consultorId)}`)
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((d: TipoVeiculo[]) => { if (Array.isArray(d) && d.length > 0) setTipos(d); })
       .catch(() => {});
   }, [consultorId]);
@@ -81,9 +85,12 @@ function FormIndicacao() {
           tipo_veiculo: tipoVeiculo,
         }),
       });
-      const json = await res.json();
-      if (!res.ok) setErro(json.error ?? "Erro ao enviar");
-      else setSucesso(true);
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setErro(err.error ?? "Erro ao enviar indicação");
+      } else {
+        setSucesso(true);
+      }
     } catch { setErro("Erro de conexão."); }
     finally { setCarregando(false); }
   };
@@ -100,8 +107,28 @@ function FormIndicacao() {
     );
   }
 
+  // Calcula range de ganhos para o banner
+  const comissoes = tipos.map((t) => t.comissao_indicador ?? 0).filter((v) => v > 0);
+  const minComissao = comissoes.length > 0 ? Math.min(...comissoes) : 0;
+  const maxComissao = comissoes.length > 0 ? Math.max(...comissoes) : 0;
+
   return (
     <form onSubmit={enviar} style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+      {/* Banner de ganhos */}
+      {maxComissao > 0 && (
+        <div style={{ background: "linear-gradient(135deg, rgba(245,158,11,0.12), rgba(180,83,9,0.08))", border: "1px solid rgba(245,158,11,0.25)", borderRadius: 12, padding: "14px 16px", textAlign: "center" }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: "#D97706", letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 4 }}>
+            Renda extra por indicação
+          </div>
+          <div style={{ fontSize: 22, fontWeight: 900, color: "#F59E0B", letterSpacing: -0.5 }}>
+            {minComissao === maxComissao ? moeda(maxComissao) : `${moeda(minComissao)} a ${moeda(maxComissao)}`}
+          </div>
+          <div style={{ fontSize: 12, color: "#9CA3AF", marginTop: 4 }}>
+            por cada indicação convertida em venda
+          </div>
+        </div>
+      )}
+
       {erro && (
         <div style={{ background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", borderRadius: 10, padding: "10px 14px", fontSize: 12, color: "#f87171" }}>
           {erro}
@@ -114,7 +141,7 @@ function FormIndicacao() {
           Tipo de veículo
         </label>
         <div style={{ display: "grid", gridTemplateColumns: tipos.length <= 3 ? "1fr 1fr 1fr" : "1fr 1fr", gap: 8 }}>
-          {tipos.map(({ tipo, label }) => (
+          {tipos.map(({ tipo, label, comissao_indicador }) => (
             <button
               key={tipo}
               type="button"
@@ -130,9 +157,18 @@ function FormIndicacao() {
                 cursor: "pointer",
                 fontFamily: "inherit",
                 transition: "all 0.15s",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 2,
               }}
             >
-              {label}
+              <span>{label}</span>
+              {comissao_indicador != null && comissao_indicador > 0 && (
+                <span style={{ fontSize: 10, fontWeight: 600, color: tipoVeiculo === tipo ? "#D97706" : "#6B7280" }}>
+                  {moeda(comissao_indicador)}
+                </span>
+              )}
             </button>
           ))}
         </div>

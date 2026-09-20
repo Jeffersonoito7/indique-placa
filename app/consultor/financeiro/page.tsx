@@ -118,7 +118,7 @@ export default async function ConsultorFinanceiroPage() {
           <CardHeader className="pb-3 border-b border-border">
             <CardTitle className="text-sm font-semibold flex items-center gap-2">
               <CreditCard className="h-4 w-4 text-muted-foreground" />
-              Historico de Pagamentos (Plano Pro)
+              Histórico de Pagamentos (Plano Pro)
             </CardTitle>
           </CardHeader>
           <CardContent className="p-0">

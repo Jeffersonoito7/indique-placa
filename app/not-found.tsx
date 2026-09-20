@@ -10,10 +10,10 @@ export default function NotFound() {
         404
       </div>
       <div style={{ fontSize: 20, fontWeight: 700, color: "var(--foreground)", marginTop: -8 }}>
-        Pagina nao encontrada
+        Página não encontrada
       </div>
       <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginTop: 8, marginBottom: 24 }}>
-        O endereco que voce acessou nao existe ou foi removido.
+        O endereço que você acessou não existe ou foi removido.
       </div>
       <a
         href="/"
@@ -22,7 +22,7 @@ export default function NotFound() {
           background: "#f59e0b", color: "#000", textDecoration: "none",
         }}
       >
-        Ir para o inicio
+        Ir para o início
       </a>
     </div>
   );

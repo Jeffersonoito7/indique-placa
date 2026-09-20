@@ -11,7 +11,7 @@ export default function ConsultorLinksPage() {
 
   useEffect(() => {
     fetch("/api/consultor/links")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then(async (d) => {
         if (!d.linkIndicador) { setErro("Não foi possível carregar o link."); return; }
         setLink(d.linkIndicador);
@@ -66,6 +66,18 @@ export default function ConsultorLinksPage() {
                 >
                   {copiado ? "Copiado!" : "Copiar"}
                 </button>
+                <a
+                  href={link}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  style={{
+                    flexShrink: 0, padding: "6px 14px", background: "#10b981",
+                    color: "#fff", borderRadius: 8, fontSize: 13,
+                    fontWeight: 600, textDecoration: "none",
+                  }}
+                >
+                  Abrir
+                </a>
               </div>
 
               {qrUrl && (

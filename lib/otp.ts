@@ -8,20 +8,28 @@ export async function criarOTP(email: string, tipo: TipoOTP): Promise<string> {
   const codigo = String(randomInt(100000, 1000000));
   const expiraEm = new Date(Date.now() + 10 * 60 * 1000).toISOString();
 
-  // Invalida tokens anteriores do mesmo email+tipo
-  await supabaseAdmin
+  // Invalida tokens anteriores do mesmo email+tipo (falha nao e bloqueante)
+  const { error: invalidErr } = await supabaseAdmin
     .from("otp_tokens")
     .update({ usado: true })
     .eq("email", email)
     .eq("tipo", tipo)
     .eq("usado", false);
 
-  await supabaseAdmin.from("otp_tokens").insert({
+  if (invalidErr) {
+    console.error("[otp] Falha ao invalidar OTPs anteriores:", invalidErr.message);
+  }
+
+  const { error: insertErr } = await supabaseAdmin.from("otp_tokens").insert({
     email,
     tipo,
     codigo,
     expira_em: expiraEm,
   });
+
+  if (insertErr) {
+    throw new Error(`Falha ao criar OTP: ${insertErr.message}`);
+  }
 
   return codigo;
 }

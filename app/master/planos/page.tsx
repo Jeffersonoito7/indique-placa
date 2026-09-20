@@ -137,12 +137,13 @@ export default function PlanosPage() {
 
   useEffect(() => {
     fetch("/api/master/planos")
-      .then((r) => r.json())
+      .then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then((d) => {
         setAssociacao(d.associacao ?? []);
         setConsultor(d.consultor ?? []);
         setGestor(d.gestor ?? []);
       })
+      .catch(() => {})
       .finally(() => setCarregando(false));
   }, []);
 

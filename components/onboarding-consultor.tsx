@@ -33,20 +33,20 @@ export function OnboardingConsultor({ totalLeads, totalIndicadores }: Onboarding
       numero: 1,
       icone: <Smartphone size={16} />,
       titulo: "Conecte o WhatsApp",
-      texto: "Va em WhatsApp no menu lateral e conecte seu numero para enviar mensagens automaticas",
+      texto: "Vá em WhatsApp no menu lateral e conecte seu número para enviar mensagens automáticas",
       acao: { label: "Conectar agora", href: "/consultor/whatsapp" },
     },
     {
       numero: 2,
       icone: <Link2 size={16} />,
       titulo: "Compartilhe seu link",
-      texto: "Envie o link de indicacao para amigos, clientes e conhecidos. Cada um que indicar uma placa vai gerar um lead pra voce",
+      texto: "Envie o link de indicação para amigos, clientes e conhecidos. Cada um que indicar uma placa vai gerar um lead pra você",
       acao: { label: "Ver meus links", href: "/consultor/perfil" },
     },
     {
       numero: 3,
       icone: <DollarSign size={16} />,
-      titulo: "Feche vendas e pague comissoes",
+      titulo: "Feche vendas e pague comissões",
       texto: "Quando converter um lead, marque como fechado. O sistema mostra o que deve pagar ao indicador",
       acao: null,
     },
@@ -78,7 +78,7 @@ export function OnboardingConsultor({ totalLeads, totalIndicadores }: Onboarding
         Bem-vindo ao Indique Placa!
       </div>
       <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginBottom: 16 }}>
-        Siga esses 3 passos para comecar a fechar vendas:
+        Siga esses 3 passos para começar a fechar vendas:
       </div>
 
       <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -129,7 +129,7 @@ export function OnboardingConsultor({ totalLeads, totalIndicadores }: Onboarding
           background: "none", border: "none", cursor: "pointer", padding: 0,
         }}
       >
-        Nao mostrar novamente
+        Não mostrar novamente
       </button>
     </div>
   );

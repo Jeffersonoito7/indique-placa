@@ -30,9 +30,9 @@ export default async function ComissoesPage() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Historico de Comissoes</h1>
+        <h1 className="text-base font-bold text-foreground">Histórico de Comissões</h1>
         <p className="text-[11px] text-muted-foreground mt-0.5">
-          Vendas fechadas e status de pagamento das suas comissoes
+          Vendas fechadas e status de pagamento das suas comissões
         </p>
       </div>
 
@@ -77,13 +77,13 @@ export default async function ComissoesPage() {
           <CardContent className="p-0">
             {indicacoes.length === 0 ? (
               <div className="text-center text-muted-foreground text-sm py-16 px-8">
-                Voce ainda nao fechou nenhuma venda. Continue indicando!
+                Você ainda não fechou nenhuma venda. Continue indicando!
               </div>
             ) : (
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-border bg-muted/40">
-                    {["Placa", "Lead", "Veiculo", "Data", "Comissao", "Status"].map((h) => (
+                    {["Placa", "Lead", "Veículo", "Data", "Comissão", "Status"].map((h) => (
                       <th
                         key={h}
                         className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3"

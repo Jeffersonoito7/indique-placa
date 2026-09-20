@@ -47,11 +47,12 @@ export default function WhatsAppPage() {
 
   useEffect(() => {
     fetch("/api/consultor/whatsapp/config")
-      .then((r) => r.json())
+      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
       .then((d) => {
         if (!d.error) setConfig({ ...DEFAULT_CONFIG, ...d });
         setMensagemCampanha(d.mensagem_indicacao ?? DEFAULT_CONFIG.mensagem_indicacao);
       })
+      .catch(() => {})
       .finally(() => setLoadingConfig(false));
 
     verificarStatus();
@@ -63,7 +64,7 @@ export default function WhatsAppPage() {
 
   function verificarStatus() {
     fetch("/api/consultor/whatsapp/status")
-      .then((r) => r.json())
+      .then((r) => r.ok ? r.json() : Promise.reject(r.status))
       .then((d) => setConectado(!!d.conectado))
       .catch(() => setConectado(false));
   }
@@ -109,7 +110,7 @@ export default function WhatsAppPage() {
       setQrcode(null);
       if (pollRef.current) clearInterval(pollRef.current);
     } catch {
-      setErroWpp("Erro de conexao ao desconectar.");
+      setErroWpp("Erro de conexão ao desconectar.");
     } finally {
       setLoadingDesconectar(false);
     }
@@ -125,10 +126,10 @@ export default function WhatsAppPage() {
         body: JSON.stringify(config),
       });
       const d = await res.json();
-      if (!res.ok) { setErroWpp(d.error ?? "Erro ao salvar configuracao."); return; }
+      if (!res.ok) { setErroWpp(d.error ?? "Erro ao salvar configuração."); return; }
       setConfig({ ...DEFAULT_CONFIG, ...d });
     } catch {
-      setErroWpp("Erro de conexao ao salvar.");
+      setErroWpp("Erro de conexão ao salvar.");
     } finally {
       setSalvando(false);
     }
@@ -162,7 +163,7 @@ export default function WhatsAppPage() {
       setLinks(data.links ?? []);
       setEnviados(data.enviados ?? 0);
     } catch {
-      setErroWpp("Erro de conexao ao iniciar campanha.");
+      setErroWpp("Erro de conexão ao iniciar campanha.");
     } finally {
       setRodandoCampanha(false);
     }
@@ -204,7 +205,7 @@ export default function WhatsAppPage() {
           </div>
         )}
         <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
-          Conexao, disparadores e exportacao de dados
+          Conexão, disparadores e exportação de dados
         </p>
       </div>
 
@@ -219,7 +220,7 @@ export default function WhatsAppPage() {
                 : "text-[var(--muted-foreground)] hover:text-[var(--foreground)]"
             }`}
           >
-            {tab === "conexao" ? "Conexao" : "Disparadores"}
+            {tab === "conexao" ? "Conexão" : "Disparadores"}
           </button>
         ))}
       </div>
@@ -230,7 +231,7 @@ export default function WhatsAppPage() {
             <Card className="shadow-sm">
               <CardHeader className="pb-3 border-b border-[var(--border)]">
                 <CardTitle className="text-sm font-semibold flex items-center justify-between">
-                  <span>Modo Automatico (Evolution API)</span>
+                  <span>Modo Automático (Evolution API)</span>
                   <span className={`flex items-center gap-1.5 text-xs font-semibold px-2.5 py-1 rounded-full ${conectado ? "bg-emerald-500/10 text-emerald-500" : "bg-[var(--muted)] text-[var(--muted-foreground)]"}`}>
                     {conectado ? <Wifi className="h-3.5 w-3.5" /> : <WifiOff className="h-3.5 w-3.5" />}
                     {conectado ? "WhatsApp Conectado" : "Desconectado"}
@@ -243,9 +244,9 @@ export default function WhatsAppPage() {
                     <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 p-4 space-y-3">
                       <p className="text-xs font-semibold text-[var(--foreground)] uppercase tracking-wide">Como conectar — 3 passos</p>
                       {[
-                        { n: "1", t: "Clique em \"Gerar QR Code\" abaixo", d: "Um QR Code aparecera nesta tela em segundos." },
+                        { n: "1", t: "Clique em \"Gerar QR Code\" abaixo", d: "Um QR Code aparecerá nesta tela em segundos." },
                         { n: "2", t: "Abra o WhatsApp no seu celular", d: "Toque nos 3 pontos (Android) ou em Ajustes (iPhone) e escolha \"Aparelhos conectados\"." },
-                        { n: "3", t: "Escaneie o QR Code com a camera do celular", d: "Aponte a camera para o QR Code que apareceu aqui. A conexao e feita automaticamente." },
+                        { n: "3", t: "Escaneie o QR Code com a câmera do celular", d: "Aponte a câmera para o QR Code que apareceu aqui. A conexão é feita automaticamente." },
                       ].map((s) => (
                         <div key={s.n} className="flex gap-3 items-start">
                           <div className="w-6 h-6 rounded-full bg-emerald-500/15 text-emerald-500 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">{s.n}</div>
@@ -266,7 +267,7 @@ export default function WhatsAppPage() {
                   <div className="space-y-4">
                     <div className="rounded-xl border border-emerald-500/20 bg-emerald-500/5 p-4">
                       <p className="text-sm font-semibold text-[var(--foreground)] mb-1">Escaneie agora com o celular</p>
-                      <p className="text-xs text-[var(--muted-foreground)]">No WhatsApp, va em <strong>Aparelhos conectados</strong> e aponte a camera para o QR abaixo:</p>
+                      <p className="text-xs text-[var(--muted-foreground)]">No WhatsApp, vá em <strong>Aparelhos conectados</strong> e aponte a câmera para o QR abaixo:</p>
                     </div>
                     <div className="flex flex-col items-center gap-3">
                       <img src={`data:image/png;base64,${qrcode}`} alt="QR Code WhatsApp" className="w-52 h-52 border-2 border-emerald-500/30 rounded-2xl" />
@@ -284,7 +285,7 @@ export default function WhatsAppPage() {
                       <Wifi className="h-5 w-5 text-emerald-500 flex-shrink-0" />
                       <div>
                         <p className="text-sm font-semibold text-emerald-500">WhatsApp conectado com sucesso</p>
-                        <p className="text-xs text-[var(--muted-foreground)] mt-0.5">As mensagens automaticas estao ativas. Configure os disparadores na aba ao lado.</p>
+                        <p className="text-xs text-[var(--muted-foreground)] mt-0.5">As mensagens automáticas estão ativas. Configure os disparadores na aba ao lado.</p>
                       </div>
                     </div>
                     <button onClick={desconectar} disabled={loadingDesconectar} className={`${btnBase} bg-red-500/10 text-red-500 hover:bg-red-500/20`}>
@@ -301,14 +302,14 @@ export default function WhatsAppPage() {
               </CardHeader>
               <CardContent className="pt-4 space-y-3">
                 <p className="text-xs text-[var(--muted-foreground)]">
-                  Prefere nao conectar o WhatsApp aqui? Use o modo manual.
+                  Prefere não conectar o WhatsApp aqui? Use o modo manual.
                 </p>
                 <div className="rounded-xl border border-[var(--border)] bg-[var(--muted)]/40 p-4 space-y-2">
                   {[
-                    "Voce digita os numeros na aba Disparadores",
-                    "O sistema gera links prontos para cada numero",
-                    "Voce clica em cada link, o WhatsApp Web abre com a mensagem pronta",
-                    "Voce so clica em Enviar no celular ou no computador",
+                    "Você digita os números na aba Disparadores",
+                    "O sistema gera links prontos para cada número",
+                    "Você clica em cada link, o WhatsApp Web abre com a mensagem pronta",
+                    "Você só clica em Enviar no celular ou no computador",
                   ].map((txt, i) => (
                     <div key={i} className="flex gap-2 items-start text-xs text-[var(--foreground)]">
                       <span className="text-emerald-500 font-bold mt-0.5">{i + 1}.</span>
@@ -325,20 +326,20 @@ export default function WhatsAppPage() {
         {aba === "disparadores" && (
           <>
             {loadingConfig ? (
-              <p className="text-sm text-[var(--muted-foreground)]">Carregando configuracoes...</p>
+              <p className="text-sm text-[var(--muted-foreground)]">Carregando configurações...</p>
             ) : (
               <>
                 <Card className="shadow-sm">
                   <CardHeader className="pb-3 border-b border-[var(--border)]">
                     <CardTitle className="text-sm font-semibold">
-                      Mensagem automatica para prospecto
+                      Mensagem automática para prospecto
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4 space-y-4">
                     <div className="flex items-center justify-between">
                       <div>
                         <p className="text-sm font-medium text-[var(--foreground)]">
-                          Ativar envio automatico
+                          Ativar envio automático
                         </p>
                         <p className="text-xs text-[var(--muted-foreground)]">
                           Envia mensagem ao novo lead assim que ele chegar
@@ -383,7 +384,7 @@ export default function WhatsAppPage() {
                       </label>
                       <div className="flex gap-4">
                         {[
-                          { value: "evolution", label: "Evolution (automatico)" },
+                          { value: "evolution", label: "Evolution (automático)" },
                           { value: "manual", label: "WhatsApp Web (manual)" },
                         ].map((opt) => (
                           <label key={opt.value} className="flex items-center gap-2 cursor-pointer">
@@ -411,12 +412,12 @@ export default function WhatsAppPage() {
 
                 <Card className="shadow-sm">
                   <CardHeader className="pb-3 border-b border-[var(--border)]">
-                    <CardTitle className="text-sm font-semibold">Campanha de indicacao</CardTitle>
+                    <CardTitle className="text-sm font-semibold">Campanha de indicação</CardTitle>
                   </CardHeader>
                   <CardContent className="pt-4 space-y-4">
                     <div>
                       <label className="text-xs font-medium text-[var(--foreground)] block mb-1">
-                        Numeros (um por linha)
+                        Números (um por linha)
                       </label>
                       <textarea
                         rows={5}
@@ -441,11 +442,11 @@ export default function WhatsAppPage() {
 
                     <div>
                       <label className="text-xs font-medium text-[var(--foreground)] block mb-2">
-                        Horarios preferidos
+                        Horários preferidos
                       </label>
                       <div className="flex gap-4">
                         {[
-                          { value: "manha", label: "Manha (9h-11h)" },
+                          { value: "manha", label: "Manhã (9h-11h)" },
                           { value: "tarde", label: "Tarde (14h-16h)" },
                           { value: "noite", label: "Noite (18h-20h)" },
                         ].map((h) => (
@@ -465,7 +466,7 @@ export default function WhatsAppPage() {
                     <div className="grid grid-cols-2 gap-4">
                       <div>
                         <label className="text-xs font-medium text-[var(--foreground)] block mb-1">
-                          Intervalo minimo (seg): {config.intervalo_min}s
+                          Intervalo mínimo (seg): {config.intervalo_min}s
                         </label>
                         <input
                           type="range"
@@ -480,7 +481,7 @@ export default function WhatsAppPage() {
                       </div>
                       <div>
                         <label className="text-xs font-medium text-[var(--foreground)] block mb-1">
-                          Intervalo maximo (seg): {config.intervalo_max}s
+                          Intervalo máximo (seg): {config.intervalo_max}s
                         </label>
                         <input
                           type="range"
@@ -497,7 +498,7 @@ export default function WhatsAppPage() {
 
                     <div>
                       <label className="text-xs font-medium text-[var(--foreground)] block mb-1">
-                        Limite diario de envios
+                        Limite diário de envios
                       </label>
                       <input
                         type="number"

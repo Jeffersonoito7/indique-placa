@@ -15,6 +15,7 @@ interface Gestor {
   criado_em: string;
   associacao: string | null;
   associacao_id: string | null;
+  parceiros_habilitado: boolean;
 }
 
 interface Associacao { id: string; nome: string }
@@ -97,13 +98,14 @@ function ModalEditar({ gestor, associacoes, onClose, onFeito }: { gestor: Gestor
   const [plano, setPlano] = useState(gestor.plano);
   const [associacao_id, setAssociacaoId] = useState(gestor.associacao_id ?? "");
   const [novaSenha, setNovaSenha] = useState("");
+  const [parceirosHabilitado, setParceirosHabilitado] = useState(gestor.parceiros_habilitado);
   const [erro, setErro] = useState("");
   const [salvando, setSalvando] = useState(false);
 
   const salvar = async () => {
     setErro("");
     setSalvando(true);
-    const body: Record<string, unknown> = { nome, fone: fone || null, plano, associacao_id: associacao_id || null };
+    const body: Record<string, unknown> = { nome, fone: fone || null, plano, associacao_id: associacao_id || null, parceiros_habilitado: parceirosHabilitado };
     if (novaSenha) body.nova_senha = novaSenha;
     const res = await fetch(`/api/master/gestores/${gestor.id}`, {
       method: "PATCH",
@@ -145,6 +147,27 @@ function ModalEditar({ gestor, associacoes, onClose, onFeito }: { gestor: Gestor
             <KeyRound size={14} className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-500" />
             <input className={cn(campo, "pl-8")} placeholder="Nova senha (deixe em branco para manter)" type="password" value={novaSenha} onChange={(e) => setNovaSenha(e.target.value)} />
           </div>
+          <div className="flex items-center justify-between py-2 border-t border-white/10">
+            <div>
+              <p className="text-sm text-slate-200 font-medium">Buscar Parceiros</p>
+              <p className="text-xs text-slate-500">Habilitar feature individualmente</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => setParceirosHabilitado((v) => !v)}
+              className={cn(
+                "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                parceirosHabilitado ? "bg-[#00c389]" : "bg-white/20"
+              )}
+            >
+              <span
+                className={cn(
+                  "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                  parceirosHabilitado ? "translate-x-6" : "translate-x-1"
+                )}
+              />
+            </button>
+          </div>
         </div>
 
         <div className="flex gap-3 mt-5">
@@ -169,11 +192,13 @@ export default function MasterGestoresPage() {
   const carregar = useCallback(async () => {
     setCarregando(true);
     const [rG, rA] = await Promise.all([
-      fetch("/api/master/gestores").then((r) => r.json()),
-      fetch("/api/master/associacoes").then((r) => r.json()),
-    ]);
+      fetch("/api/master/gestores").then((r) => r.ok ? r.json() : Promise.reject(r.status)),
+      fetch("/api/master/associacoes").then((r) => r.ok ? r.json() : Promise.reject(r.status)),
+    ]).catch(() => [[], {}]);
     setGestores(Array.isArray(rG) ? rG : []);
-    setAssociacoes(Array.isArray(rA?.lista) ? rA.lista : Array.isArray(rA) ? rA : []);
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const ra = rA as any;
+    setAssociacoes(Array.isArray(ra?.lista) ? ra.lista : Array.isArray(ra) ? ra : []);
     setCarregando(false);
   }, []);
 
@@ -231,7 +256,7 @@ export default function MasterGestoresPage() {
       ) : gestores.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center text-muted-foreground text-sm">
-            Nenhum gestor cadastrado. Clique em "Novo Gestor" para comecar.
+            Nenhum gestor cadastrado. Clique em "Novo Gestor" para começar.
           </CardContent>
         </Card>
       ) : (

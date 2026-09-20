@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { UserCheck, Plus, X, Copy, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { detectarTipoPix, corTipoPix } from "@/lib/pix-utils";
 
 type Indicador = {
   id: string;
@@ -47,18 +48,28 @@ function IndicadoresTable({ indicadores }: { indicadores: Indicador[] }) {
             <td className="px-6 py-3.5 text-sm text-muted-foreground font-mono">{ind.telefone ?? "-"}</td>
             <td className="px-6 py-3.5 text-sm">
               {ind.chave_pix ? (
-                <div className="flex items-center gap-2">
-                  <span className="font-mono text-xs text-foreground">{ind.chave_pix}</span>
-                  <button
-                    onClick={() => copiarPix(ind.id, ind.chave_pix!)}
-                    className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
-                    title="Copiar chave PIX"
-                  >
-                    {copiadoId === ind.id
-                      ? <Check className="h-3.5 w-3.5 text-emerald-500" />
-                      : <Copy className="h-3.5 w-3.5" />
-                    }
-                  </button>
+                <div className="flex flex-col gap-1">
+                  <div className="flex items-center gap-2">
+                    <span className="font-mono text-xs text-foreground truncate max-w-[180px]">{ind.chave_pix}</span>
+                    <button
+                      onClick={() => copiarPix(ind.id, ind.chave_pix!)}
+                      className="flex-shrink-0 text-muted-foreground hover:text-foreground transition-colors"
+                      title="Copiar chave PIX"
+                    >
+                      {copiadoId === ind.id
+                        ? <Check className="h-3.5 w-3.5 text-emerald-500" />
+                        : <Copy className="h-3.5 w-3.5" />
+                      }
+                    </button>
+                  </div>
+                  {(() => {
+                    const info = detectarTipoPix(ind.chave_pix);
+                    return (
+                      <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded-full border w-fit ${corTipoPix(info.tipo)}`}>
+                        {info.label}
+                      </span>
+                    );
+                  })()}
                 </div>
               ) : (
                 <span className="italic text-muted-foreground text-xs">nao cadastrada</span>
@@ -104,16 +115,16 @@ export default function ConsultorIndicadoresPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ ...form, telefone: form.telefone.replace(/\D/g, "") }),
       });
-      const json = await res.json();
       if (!res.ok) {
-        setErroModal(json.error ?? "Erro ao adicionar indicador");
+        const err = await res.json().catch(() => ({}));
+        setErroModal(err.error ?? "Erro ao adicionar indicador");
       } else {
         setModalAberto(false);
         setForm({ nome: "", email: "", telefone: "", senha: "" });
         await carregar();
       }
     } catch {
-      setErroModal("Erro de conexao.");
+      setErroModal("Erro de conexão.");
     } finally {
       setEnviando(false);
     }
@@ -204,7 +215,7 @@ export default function ConsultorIndicadoresPage() {
               </div>
               <div>
                 <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">Senha inicial</label>
-                <input type="password" required minLength={6} placeholder="Minimo 6 caracteres" value={form.senha}
+                <input type="password" required minLength={6} placeholder="Mínimo 6 caracteres" value={form.senha}
                   onChange={(e) => setForm((f) => ({ ...f, senha: e.target.value }))}
                   className="mt-1 w-full px-3 py-2.5 text-sm bg-muted border border-border rounded-xl outline-none focus:border-indigo-500 transition-colors"
                 />

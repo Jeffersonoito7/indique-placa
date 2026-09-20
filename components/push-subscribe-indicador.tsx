@@ -28,7 +28,7 @@ export default function PushSubscribeIndicador() {
   async function ativar() {
     setErro("");
     if (!("serviceWorker" in navigator) || !("PushManager" in window)) {
-      setErro("Seu navegador nao suporta notificacoes push.");
+      setErro("Seu navegador não suporta notificações push.");
       return;
     }
 
@@ -36,7 +36,7 @@ export default function PushSubscribeIndicador() {
     try {
       const permission = await Notification.requestPermission();
       if (permission === "denied") {
-        setErro("Permissao negada. Habilite nas configuracoes do navegador.");
+        setErro("Permissão negada. Habilite nas configurações do navegador.");
         return;
       }
       if (permission !== "granted") return;
@@ -45,7 +45,7 @@ export default function PushSubscribeIndicador() {
 
       const vapidKey = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
       if (!vapidKey) {
-        setErro("Configuracao ausente. Contate o suporte.");
+        setErro("Configuração ausente. Contate o suporte.");
         return;
       }
 
@@ -61,7 +61,7 @@ export default function PushSubscribeIndicador() {
       });
 
       if (!res.ok) {
-        setErro("Erro ao salvar inscricao. Tente novamente.");
+        setErro("Erro ao salvar inscrição. Tente novamente.");
         return;
       }
 
@@ -79,7 +79,7 @@ export default function PushSubscribeIndicador() {
     return (
       <div className="flex items-center gap-1.5 text-emerald-500">
         <BellRing className="h-4 w-4" />
-        <span className="text-xs font-medium">Notificacoes ativas</span>
+        <span className="text-xs font-medium">Notificações ativas</span>
       </div>
     );
   }
@@ -92,7 +92,7 @@ export default function PushSubscribeIndicador() {
         className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/40 bg-emerald-500/10 hover:bg-emerald-500/20 transition-colors text-sm font-medium text-emerald-600 dark:text-emerald-400 disabled:opacity-60"
       >
         <Bell className="h-4 w-4" />
-        {carregando ? "Ativando..." : "Ativar alertas de comissao"}
+        {carregando ? "Ativando..." : "Ativar alertas de comissão"}
       </button>
       {erro && <p className="text-xs text-red-500">{erro}</p>}
     </div>

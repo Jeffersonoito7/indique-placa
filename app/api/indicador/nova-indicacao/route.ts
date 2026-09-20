@@ -4,6 +4,7 @@ import { getIndicadorLogado } from "@/lib/auth";
 import { supabaseAdmin } from "@/lib/supabase-server";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 import { verificarBloqueioConsultor } from "@/lib/consultor-status";
+import { notificarLeadDeIndicadorParaGestor } from "@/lib/whatsapp";
 import { z } from "zod";
 
 const schema = z.object({
@@ -17,7 +18,7 @@ export async function POST(req: NextRequest) {
   const { allowed, retryAfter } = await rateLimit(getRateLimitKey(req, "nova-indicacao"), 20, 60 * 60 * 1000);
   if (!allowed) {
     return NextResponse.json(
-      { error: "Muitas requisicoes. Tente novamente em breve." },
+      { error: "Muitas requisições. Tente novamente em breve." },
       { status: 429, headers: { "Retry-After": String(retryAfter) } }
     );
   }
@@ -32,6 +33,14 @@ export async function POST(req: NextRequest) {
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const { placa, nome_lead, telefone_lead, tipo_veiculo } = parsed.data;
+
+  // Busca gestor_id do indicador para notificacao (getIndicadorLogado nao retorna esse campo)
+  const { data: indicadorFull } = await supabaseAdmin
+    .from("indicadores")
+    .select("gestor_id")
+    .eq("id", indicador.id)
+    .maybeSingle();
+  const gestorIdRecrutador = indicadorFull?.gestor_id ?? null;
 
   let consultorId: string | null = indicador.consultor_id ?? null;
 
@@ -85,7 +94,10 @@ export async function POST(req: NextRequest) {
     status: "novo",
   });
 
-  if (error) return NextResponse.json({ error: "Erro ao salvar indicação" }, { status: 500 });
+  if (error) {
+    if (error.code === "23505") return NextResponse.json({ error: "Esta placa já foi indicada anteriormente." }, { status: 409 });
+    return NextResponse.json({ error: "Erro ao salvar indicação" }, { status: 500 });
+  }
 
   const { data: consultor } = await supabaseAdmin
     .from("consultores")
@@ -93,7 +105,69 @@ export async function POST(req: NextRequest) {
     .eq("id", consultorId)
     .single();
 
-  // Disparo de push notification (falhas nao bloqueiam a resposta principal)
+  // WhatsApp ao consultor com dados do lead (aguarda antes de retornar — void fire-and-forget e cortado pela Vercel)
+  try {
+    const evUrl = process.env.EVOLUTION_API_URL;
+    const evKey = process.env.EVOLUTION_API_KEY;
+    const evInstance = process.env.EVOLUTION_INSTANCE;
+    const foneConsultor = consultor?.fone?.replace(/\D/g, "");
+
+    console.log("[nova-indicacao] wpp check:", { evUrl: !!evUrl, evKey: !!evKey, evInstance: !!evInstance, fone: !!foneConsultor });
+
+    if (evUrl && evKey && evInstance && foneConsultor) {
+      const numero = foneConsultor.startsWith("55") ? foneConsultor : `55${foneConsultor}`;
+      const texto =
+        `*Nova indicação recebida!*\n\n` +
+        `Placa: *${placa}*\n` +
+        `Cliente: ${nome_lead}\n` +
+        `Telefone: ${telefone_lead}\n` +
+        `Indicado por: ${indicador.nome}\n\n` +
+        `Acesse: https://indiqueplaca.com.br/consultor/leads`;
+
+      const resp = await fetch(`${evUrl}/message/sendText/${evInstance}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json", apikey: evKey },
+        body: JSON.stringify({ number: numero, text: texto }),
+      });
+      const respBody = await resp.text();
+      console.log("[nova-indicacao] wpp resp:", resp.status, respBody);
+    }
+  } catch (err) {
+    console.error("[nova-indicacao] erro ao enviar WhatsApp:", err);
+  }
+
+  // Se o indicador foi recrutado diretamente por um gestor, notifica o gestor tambem
+  if (gestorIdRecrutador) {
+    try {
+      const evUrl = process.env.EVOLUTION_API_URL;
+      const evKey = process.env.EVOLUTION_API_KEY;
+      const evInstance = process.env.EVOLUTION_INSTANCE;
+
+      if (evUrl && evKey && evInstance) {
+        const { data: gestor } = await supabaseAdmin
+          .from("gestores")
+          .select("nome, fone")
+          .eq("id", gestorIdRecrutador)
+          .maybeSingle();
+
+        const foneGestor = gestor?.fone?.replace(/\D/g, "");
+        if (gestor && foneGestor) {
+          await notificarLeadDeIndicadorParaGestor({
+            nomeGestor: gestor.nome,
+            telefoneGestor: foneGestor,
+            nomeIndicador: indicador.nome,
+            placa,
+            nomeLead: nome_lead ?? null,
+            telefoneLead: tel,
+          });
+        }
+      }
+    } catch (err) {
+      console.error("[nova-indicacao] erro ao notificar gestor recrutador:", err);
+    }
+  }
+
+  // Push notification via navegador (falha nao bloqueia a resposta)
   void (async () => {
     try {
       const { data: subs } = await supabaseAdmin
@@ -111,7 +185,7 @@ export async function POST(req: NextRequest) {
       );
 
       const payload = JSON.stringify({
-        title: "Nova indicacao recebida!",
+        title: "Nova indicação recebida!",
         body: `Placa ${placa} indicada por ${indicador.nome}`,
         url: "/consultor/leads",
       });

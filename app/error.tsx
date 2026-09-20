@@ -1,6 +1,7 @@
 "use client";
 
-export default function GlobalError({ reset }: { error: Error; reset: () => void }) {
+export default function GlobalError({ error, reset }: { error: Error; reset: () => void }) {
+  console.error("[GlobalError]", error);
   return (
     <div style={{
       minHeight: "100vh", display: "flex", flexDirection: "column",
@@ -12,8 +13,8 @@ export default function GlobalError({ reset }: { error: Error; reset: () => void
       <div style={{ fontSize: 18, fontWeight: 700, color: "var(--foreground)", marginBottom: 8 }}>
         Algo deu errado
       </div>
-      <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginBottom: 24, textAlign: "center", maxWidth: 360 }}>
-        Ocorreu um erro inesperado. Tente novamente ou volte para o inicio.
+      <div style={{ fontSize: 13, color: "var(--muted-foreground)", marginBottom: 12, textAlign: "center", maxWidth: 360 }}>
+        Ocorreu um erro inesperado. Tente novamente ou volte para o início.
       </div>
       <div style={{ display: "flex", gap: 12 }}>
         <button
@@ -33,8 +34,8 @@ export default function GlobalError({ reset }: { error: Error; reset: () => void
             textDecoration: "none",
           }}
         >
-          Inicio
-        </a>
+          Início
+</a>
       </div>
     </div>
   );

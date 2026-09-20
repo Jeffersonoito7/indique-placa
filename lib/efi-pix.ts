@@ -28,7 +28,7 @@ export async function enviarPixIndicador({
   descricao?: string;
 }): Promise<ResultadoEnvio> {
   if (valorReais <= 0) {
-    return { ok: false, erro: "Valor invalido para envio PIX" };
+    return { ok: false, erro: "Valor inválido para envio PIX" };
   }
 
   const efi = new EfiPay({
@@ -45,7 +45,7 @@ export async function enviarPixIndicador({
       valor: valorReais.toFixed(2),
       pagador: {
         chave: credenciais.pix_key,
-        infoPagador: descricao ?? "Comissao indicacao - Indique Placa",
+        infoPagador: descricao ?? "Comissão indicação - Indique Placa",
       },
       favorecido: {
         chave: chaveDestino,

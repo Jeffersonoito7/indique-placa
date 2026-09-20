@@ -64,10 +64,10 @@ function diasDesde(dataStr: string): number {
 function alertaLead(lead: Lead): string | null {
   const dias = diasDesde(lead.criado_em);
   if (lead.status === "novo" && dias > 7) {
-    return "Seu consultor ainda nao entrou em contato com este lead";
+    return "Seu consultor ainda não entrou em contato com este lead";
   }
   if (lead.status === "contato" && dias > 14) {
-    return "Seu lead esta parado ha mais de 14 dias";
+    return "Seu lead está parado há mais de 14 dias";
   }
   return null;
 }
@@ -106,8 +106,8 @@ export default function IndicadorHistoricoPage() {
   return (
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
-        <h1 className="text-base font-bold text-foreground">Minhas Indicacoes</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Acompanhe o status de cada placa que voce indicou</p>
+        <h1 className="text-base font-bold text-foreground">Minhas Indicações</h1>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Acompanhe o status de cada placa que você indicou</p>
       </div>
 
       <div className="flex-1 p-6 bg-muted/30 space-y-4">
@@ -134,7 +134,7 @@ export default function IndicadorHistoricoPage() {
             </Card>
             <Card className="shadow-sm">
               <CardContent className="p-4">
-                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Comissao total</p>
+                <p className="text-[10px] uppercase tracking-wider text-muted-foreground font-semibold">Comissão total</p>
                 <p className="text-lg font-bold text-foreground mt-1">{formatarMoeda(totais.comissao_total)}</p>
                 <p className="text-[10px] text-muted-foreground">{formatarMoeda(totais.comissao_paga)} pago</p>
               </CardContent>
@@ -165,21 +165,21 @@ export default function IndicadorHistoricoPage() {
         <Card className="shadow-sm">
           <CardHeader className="pb-3 border-b border-border">
             <div className="flex items-center justify-between">
-              <CardTitle className="text-sm font-semibold">Historico</CardTitle>
+              <CardTitle className="text-sm font-semibold">Histórico</CardTitle>
               <span className="text-xs text-muted-foreground">
-                {carregando ? "Carregando..." : `${leads.length} indicacoes`}
+                {carregando ? "Carregando..." : `${leads.length} indicações`}
               </span>
             </div>
           </CardHeader>
           <CardContent className="p-0">
             {!carregando && leads.length === 0 ? (
-              <div className="text-center text-muted-foreground text-sm py-16">Nenhuma indicacao encontrada</div>
+              <div className="text-center text-muted-foreground text-sm py-16">Nenhuma indicação encontrada</div>
             ) : (
               <div className="overflow-x-auto">
                 <table className="w-full min-w-[700px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/40">
-                      {["Placa", "Proprietario", "Tipo", "Status", "Consultor", "Data", "Comissao"].map((h) => (
+                      {["Placa", "Proprietário", "Tipo", "Status", "Consultor", "Data", "Comissão"].map((h) => (
                         <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-5 py-3">
                           {h}
                         </th>
@@ -217,7 +217,7 @@ export default function IndicadorHistoricoPage() {
                               </span>
                             </td>
                             <td className="px-5 py-3.5 text-xs text-muted-foreground">
-                              {lead.consultores?.nome ?? <span className="italic text-muted-foreground/40">nao atribuido</span>}
+                              {lead.consultores?.nome ?? <span className="italic text-muted-foreground/40">não atribuído</span>}
                             </td>
                             <td className="px-5 py-3.5 text-xs text-muted-foreground">
                               {new Date(lead.criado_em).toLocaleDateString("pt-BR")}

@@ -74,22 +74,18 @@ function BannerMetric({
 }) {
   return (
     <div
-      className="rounded-2xl p-5 flex flex-col gap-3"
-      style={{
-        background: "rgba(255,255,255,0.05)",
-        border: "1px solid rgba(255,255,255,0.08)",
-        backdropFilter: "blur(8px)",
-      }}
+      className="rounded-2xl p-5 flex flex-col gap-3 bg-white/5 border border-white/[0.08] backdrop-blur"
     >
       <div className="flex items-center justify-between">
         <Icon className={cn("h-4 w-4", iconColor)} style={{ opacity: 0.8 }} />
         {trend && (
           <span
-            className="text-[10px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full"
-            style={{
-              background: trend.positivo ? "rgba(16,185,129,0.15)" : "rgba(239,68,68,0.15)",
-              color: trend.positivo ? "#34d399" : "#f87171",
-            }}
+            className={cn(
+              "text-[10px] font-bold flex items-center gap-1 px-2 py-0.5 rounded-full",
+              trend.positivo
+                ? "bg-emerald-500/15 text-emerald-400"
+                : "bg-red-500/15 text-red-400"
+            )}
           >
             {trend.positivo ? (
               <TrendingUp className="h-3 w-3" />
@@ -102,7 +98,7 @@ function BannerMetric({
       </div>
       <div>
         <div className={cn("text-3xl font-extrabold tracking-tight", valueColor)}>{value}</div>
-        <div className="text-[11px] font-medium mt-0.5" style={{ color: "rgba(255,255,255,0.45)" }}>
+        <div className="text-[11px] font-medium mt-0.5 text-white/45">
           {title}
         </div>
       </div>
@@ -120,8 +116,8 @@ export default async function DashboardPage() {
       sub: "vs. 30 dias anteriores",
       trend: data.trendConsultores,
       icon: Users,
-      iconBg: "bg-blue-500/10", iconColor: "text-blue-500",
-      valueColor: "text-blue-500", borderColor: "border-t-blue-500",
+      iconBg: "bg-white/10", iconColor: "text-white/60",
+      valueColor: "text-[#00c389]", borderColor: "",
     },
     {
       title: "Indicadores",
@@ -129,8 +125,8 @@ export default async function DashboardPage() {
       sub: "vs. 30 dias anteriores",
       trend: data.trendIndicadores,
       icon: UserCheck,
-      iconBg: "bg-violet-500/10", iconColor: "text-violet-500",
-      valueColor: "text-violet-500", borderColor: "border-t-violet-500",
+      iconBg: "bg-white/10", iconColor: "text-white/60",
+      valueColor: "text-white", borderColor: "",
     },
     {
       title: "Leads Recebidos",
@@ -138,8 +134,8 @@ export default async function DashboardPage() {
       sub: "vs. 30 dias anteriores",
       trend: data.trendLeads,
       icon: ClipboardList,
-      iconBg: "bg-amber-500/10", iconColor: "text-amber-500",
-      valueColor: "text-amber-500", borderColor: "border-t-amber-500",
+      iconBg: "bg-white/10", iconColor: "text-white/60",
+      valueColor: "text-white", borderColor: "",
     },
     {
       title: "Vendas Fechadas",
@@ -147,8 +143,8 @@ export default async function DashboardPage() {
       sub: "vs. 30 dias anteriores",
       trend: data.trendFechamentos,
       icon: DollarSign,
-      iconBg: "bg-emerald-500/10", iconColor: "text-emerald-500",
-      valueColor: "text-emerald-500", borderColor: "border-t-emerald-500",
+      iconBg: "bg-white/10", iconColor: "text-white/60",
+      valueColor: "text-white", borderColor: "",
     },
   ];
 
@@ -175,14 +171,7 @@ export default async function DashboardPage() {
               <h1 className="text-2xl font-extrabold text-white tracking-tight">Dashboard</h1>
               <p className="text-sm text-white/50 mt-1">Visão geral da plataforma em tempo real</p>
             </div>
-            <div
-              className="flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full"
-              style={{
-                background: "rgba(16,185,129,0.12)",
-                border: "1px solid rgba(16,185,129,0.25)",
-                color: "#34d399",
-              }}
-            >
+            <div className="flex items-center gap-2 text-xs font-bold px-3 py-1.5 rounded-full bg-emerald-500/[0.12] border border-emerald-500/25 text-emerald-400">
               <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
               AO VIVO
             </div>

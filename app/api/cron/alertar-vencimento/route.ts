@@ -4,7 +4,7 @@ import { supabaseAdmin } from "@/lib/supabase-server";
 export async function GET(req: NextRequest) {
   if (!process.env.CRON_SECRET) {
     console.error("[cron] CRON_SECRET nao configurado — endpoint bloqueado");
-    return NextResponse.json({ error: "Servico indisponivel" }, { status: 503 });
+    return NextResponse.json({ error: "Serviço indisponível" }, { status: 503 });
   }
   const authHeader = req.headers.get("authorization");
   if (authHeader !== `Bearer ${process.env.CRON_SECRET}`) {
@@ -21,6 +21,7 @@ export async function GET(req: NextRequest) {
   // Consultores com plano Pro vencendo nos proximos 3 dias
   const em3Dias = new Date();
   em3Dias.setDate(em3Dias.getDate() + 3);
+  em3Dias.setHours(23, 59, 59, 999);
   const amanha = new Date();
   amanha.setDate(amanha.getDate() + 1);
   amanha.setHours(0, 0, 0, 0);
@@ -46,12 +47,14 @@ export async function GET(req: NextRequest) {
     const ultimoEnvio = c.alerta_vencimento_enviado_em ? new Date(c.alerta_vencimento_enviado_em as string) : null;
     if (ultimoEnvio && ultimoEnvio >= inicioDoDia) continue;
 
+    if (!c.plano_ativo_ate) continue;
     const diasRestantes = Math.ceil(
-      (new Date(c.plano_ativo_ate as string).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
+      (new Date(c.plano_ativo_ate).getTime() - Date.now()) / (1000 * 60 * 60 * 24)
     );
+    if (!isFinite(diasRestantes)) continue;
     const numero = String(c.fone).replace(/\D/g, "");
     const numeroFormatado = numero.startsWith("55") ? numero : `55${numero}`;
-    const msg = `Ola ${c.nome}! Seu plano Pro do Indique Placa vence em ${diasRestantes} dia${diasRestantes === 1 ? "" : "s"}. Acesse indiqueplaca.com.br/consultor/upgrade para renovar e manter todos os seus recursos ativos.`;
+    const msg = `Olá ${c.nome}! Seu plano Pro do Indique Placa vence em ${diasRestantes} dia${diasRestantes === 1 ? "" : "s"}. Acesse indiqueplaca.com.br/consultor/upgrade para renovar e manter todos os seus recursos ativos.`;
 
     try {
       const res = await fetch(`${baseUrl}/message/sendText/${instance}`, {
@@ -62,10 +65,13 @@ export async function GET(req: NextRequest) {
       if (res.ok) {
         enviados++;
         // Registra data do envio para deduplicacao futura
-        await supabaseAdmin
+        const { error: dedupErr } = await supabaseAdmin
           .from("consultores")
           .update({ alerta_vencimento_enviado_em: new Date().toISOString() })
           .eq("id", c.id);
+        if (dedupErr) {
+          console.error(`[cron/alertar] Falha ao registrar deduplicacao consultor=${c.id}:`, dedupErr.message);
+        }
       }
     } catch {
       // ignora erro individual, continua para o proximo

@@ -99,22 +99,20 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
           comissao: comissaoValorFinal || null,
         };
 
-        // Envia push notification ao indicador (falhas nao bloqueiam a resposta)
-        void (async () => {
-          try {
-            const { data: subs } = await supabaseAdmin
-              .from("push_subscriptions")
-              .select("subscription")
-              .eq("indicador_id", lead.indicador_id);
+        // Envia push notification ao indicador (aguarda antes de retornar)
+        try {
+          const { data: subs } = await supabaseAdmin
+            .from("push_subscriptions")
+            .select("subscription")
+            .eq("indicador_id", lead.indicador_id);
 
-            if (!subs || subs.length === 0) return;
+          const vapidEmail = process.env.VAPID_EMAIL;
+          const vapidPublic = process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY;
+          const vapidPrivate = process.env.VAPID_PRIVATE_KEY;
 
+          if (subs && subs.length > 0 && vapidEmail && vapidPublic && vapidPrivate) {
             const webpush = await import("web-push");
-            webpush.setVapidDetails(
-              process.env.VAPID_EMAIL!,
-              process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY!,
-              process.env.VAPID_PRIVATE_KEY!
-            );
+            webpush.setVapidDetails(vapidEmail, vapidPublic, vapidPrivate);
 
             const placaTexto = lead.placa ?? "s/n";
             const comissaoTexto = comissaoValorFinal
@@ -123,7 +121,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
 
             const payload = JSON.stringify({
               title: "Venda fechada!",
-              body: `Sua indicacao da placa ${placaTexto} fechou. Voce ganhou ${comissaoTexto}!`,
+              body: `Sua indicação da placa ${placaTexto} fechou. Você tem ${comissaoTexto} a receber!`,
               url: "/indicador/dashboard",
             });
 
@@ -132,10 +130,10 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
                 webpush.sendNotification(row.subscription as Parameters<typeof webpush.sendNotification>[0], payload)
               )
             );
-          } catch (err) {
-            console.error("Erro ao enviar push notification ao indicador:", err);
           }
-        })();
+        } catch (err) {
+          console.error("Erro ao enviar push notification ao indicador:", err);
+        }
       }
     }
   }
@@ -159,7 +157,7 @@ export async function DELETE(_req: NextRequest, { params }: { params: Promise<{ 
     .select("id")
     .eq("id", id)
     .eq("consultor_id", consultorId)
-    .single();
+    .maybeSingle();
 
   if (!lead) return NextResponse.json({ error: "Lead não encontrado" }, { status: 404 });
 

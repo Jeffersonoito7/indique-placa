@@ -113,9 +113,9 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
     setCarregando(true);
     try {
       const [resConta, resCamp, resAl] = await Promise.all([
-        fetch(`${base}/conta`).then(r => r.json()),
-        fetch(`${base}/campanhas`).then(r => r.json()),
-        fetch(`${base}/alertas`).then(r => r.json()),
+        fetch(`${base}/conta`).then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        fetch(`${base}/campanhas`).then(r => r.ok ? r.json() : Promise.reject(r.status)),
+        fetch(`${base}/alertas`).then(r => r.ok ? r.json() : Promise.reject(r.status)),
       ]);
       setConta(resConta.conta ?? null);
       setCampanhas(resCamp.campanhas ?? []);
@@ -162,13 +162,13 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
 
     // Valida tipo
     if (!file.type.startsWith("video/")) {
-      setErroVideo("Selecione um arquivo de video valido (MP4, MOV ou AVI).");
+      setErroVideo("Selecione um arquivo de vídeo válido (MP4, MOV ou AVI).");
       return;
     }
     // Valida tamanho maximo 500 MB
     const MAX_BYTES = 500 * 1024 * 1024;
     if (file.size > MAX_BYTES) {
-      setErroVideo("Video muito grande. Maximo 500 MB.");
+      setErroVideo("Vídeo muito grande. Máximo 500 MB.");
       return;
     }
 
@@ -234,7 +234,7 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
       let tentativas = 0;
       const poll = async (): Promise<void> => {
         if (tentativas >= MAX_POLLING) {
-          setErroVideo("Tempo limite de processamento atingido. O video pode ainda estar sendo processado pelo Meta.");
+          setErroVideo("Tempo limite de processamento atingido. O vídeo pode ainda estar sendo processado pelo Meta.");
           setVideoStatus("erro");
           return;
         }
@@ -258,7 +258,7 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
       await poll();
 
     } catch (err) {
-      setErroVideo(err instanceof Error ? err.message : "Falha de conexao ao enviar video. Tente novamente.");
+      setErroVideo(err instanceof Error ? err.message : "Falha de conexão ao enviar vídeo. Tente novamente.");
       setVideoStatus("erro");
     }
   };
@@ -313,7 +313,7 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
 
   const aumentarOrcamento = async (id: string) => {
     const valor = parseFloat(novoOrcamento.replace(",", "."));
-    if (isNaN(valor) || valor < 5) { alert("Valor minimo e R$5"); return; }
+    if (isNaN(valor) || valor < 5) { alert("Valor mínimo é R$5"); return; }
     try {
       await fetch(`${base}/campanhas/${id}`, {
         method: "PATCH",
@@ -556,7 +556,7 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
                 <CardContent className="p-5 flex items-center gap-3">
                   <AlertCircle className="h-5 w-5 text-amber-400 shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-foreground">Conta Meta nao conectada</p>
+                    <p className="text-sm font-semibold text-foreground">Conta Meta não conectada</p>
                     <p className="text-xs text-muted-foreground mt-0.5">Vá em <button onClick={() => setAba("conta")} className="text-violet-400 underline">Conta Meta</button> para conectar sua conta de anúncios.</p>
                   </div>
                 </CardContent>
@@ -749,7 +749,7 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
             ) : (
               <Card className="border-amber-500/20 bg-amber-500/5">
                 <CardContent className="p-5">
-                  <p className="text-sm font-semibold text-amber-400 mb-1">Conta Meta nao conectada</p>
+                  <p className="text-sm font-semibold text-amber-400 mb-1">Conta Meta não conectada</p>
                   <p className="text-xs text-muted-foreground">Conecte sua conta de anúncios do Meta para criar campanhas no Instagram.</p>
                 </CardContent>
               </Card>
@@ -784,7 +784,7 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
                   <div>
                     <label className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider mb-1 block">Chave OpenAI (para agente de copy)</label>
                     <input type="password" className="w-full text-sm bg-background border border-border rounded-lg px-3 py-2 font-mono" placeholder="sk-..." value={formConta.openai_api_key} onChange={e => setFormConta(f => ({ ...f, openai_api_key: e.target.value }))} />
-                    <p className="text-[10px] text-muted-foreground mt-1">Sua chave pessoal em platform.openai.com. Opcional — sem ela o agente de copy fica indisponivel.</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">Sua chave pessoal em platform.openai.com. Opcional — sem ela o agente de copy fica indisponível.</p>
                   </div>
 
                   <button type="submit" disabled={salvandoConta} className="w-full py-2.5 rounded-lg bg-violet-500 hover:bg-violet-600 text-white text-sm font-bold transition-colors disabled:opacity-50">
@@ -804,7 +804,7 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-5 space-y-4">
-                <p className="text-xs text-muted-foreground">Siga os passos abaixo. Voce precisara de uma conta no <strong className="text-foreground">Meta Business Suite</strong> e de uma pagina do Facebook ativa.</p>
+                <p className="text-xs text-muted-foreground">Siga os passos abaixo. Você precisará de uma conta no <strong className="text-foreground">Meta Business Suite</strong> e de uma página do Facebook ativa.</p>
 
                 {([
                   {
@@ -817,29 +817,29 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
                   },
                   {
                     n: "2",
-                    titulo: "Crie uma conta de anuncios",
-                    desc: "Dentro do Business Suite, va em Configuracoes > Contas > Contas de Anuncios > Adicionar. Escolha \"Criar nova conta de anuncios\". O ID aparece no formato act_XXXXXXXXX — copie este numero.",
-                    dica: "ID da conta de anuncios = act_XXXXXXXXX",
+                    titulo: "Crie uma conta de anúncios",
+                    desc: "Dentro do Business Suite, vá em Configurações > Contas > Contas de Anúncios > Adicionar. Escolha \"Criar nova conta de anúncios\". O ID aparece no formato act_XXXXXXXXX — copie este número.",
+                    dica: "ID da conta de anúncios = act_XXXXXXXXX",
                     cor: "bg-violet-500/10 border-violet-500/20",
                   },
                   {
                     n: "3",
-                    titulo: "Conecte sua pagina do Facebook e Instagram",
-                    desc: "Em Configuracoes > Contas > Paginas, adicione sua pagina do Facebook. Depois va em Contas > Contas do Instagram e conecte seu perfil do Instagram. O ID da pagina do Facebook aparece na URL da pagina ou em Configuracoes da pagina > Sobre.",
-                    dica: "ID da pagina = numero de 15 digitos na URL da sua pagina",
+                    titulo: "Conecte sua página do Facebook e Instagram",
+                    desc: "Em Configurações > Contas > Páginas, adicione sua página do Facebook. Depois vá em Contas > Contas do Instagram e conecte seu perfil do Instagram. O ID da página do Facebook aparece na URL da página ou em Configurações da página > Sobre.",
+                    dica: "ID da página = número de 15 dígitos na URL da sua página",
                     cor: "bg-pink-500/10 border-pink-500/20",
                   },
                   {
                     n: "4",
                     titulo: "Gere o Access Token",
-                    desc: "Va em Configuracoes > Usuarios > Usuarios do Sistema. Crie um usuario do sistema (Admin). Clique em \"Gerar novo token\", selecione sua conta de anuncios e marque as permissoes: ads_management e ads_read. Clique em Gerar Token e copie — ele aparece apenas uma vez.",
-                    dica: "Guarde o token em local seguro. Comeca com EAAxxxxxxx",
+                    desc: "Vá em Configurações > Usuários > Usuários do Sistema. Crie um usuário do sistema (Admin). Clique em \"Gerar novo token\", selecione sua conta de anúncios e marque as permissões: ads_management e ads_read. Clique em Gerar Token e copie — ele aparece apenas uma vez.",
+                    dica: "Guarde o token em local seguro. Começa com EAAxxxxxxx",
                     cor: "bg-amber-500/10 border-amber-500/20",
                   },
                   {
                     n: "5",
-                    titulo: "Adicione credito de pagamento",
-                    desc: "Va em Faturamento no menu lateral e adicione um cartao de credito ou metodo de pagamento. Os anuncios so rodam quando ha limite disponivel na conta.",
+                    titulo: "Adicione crédito de pagamento",
+                    desc: "Vá em Faturamento no menu lateral e adicione um cartão de crédito ou método de pagamento. Os anúncios só rodam quando há limite disponível na conta.",
                     cor: "bg-emerald-500/10 border-emerald-500/20",
                   },
                 ] as GuiaStep[]).map(step => (
@@ -873,35 +873,35 @@ export default function TrafegoPainel({ papel }: { papel: Papel }) {
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-5 space-y-4">
-                <p className="text-xs text-muted-foreground">A chave OpenAI e opcional. Ela ativa o agente que gera textos de anuncio automaticamente. Voce paga apenas pelo que usar — em media menos de R$ 0,10 por geracao de copy.</p>
+                <p className="text-xs text-muted-foreground">A chave OpenAI é opcional. Ela ativa o agente que gera textos de anúncio automaticamente. Você paga apenas pelo que usar — em média menos de R$ 0,10 por geração de copy.</p>
 
                 {([
                   {
                     n: "1",
                     titulo: "Crie sua conta na OpenAI",
-                    desc: "Acesse platform.openai.com e clique em \"Sign up\". Voce pode entrar com Google, Microsoft ou e-mail. Confirme seu e-mail quando solicitado.",
+                    desc: "Acesse platform.openai.com e clique em \"Sign up\". Você pode entrar com Google, Microsoft ou e-mail. Confirme seu e-mail quando solicitado.",
                     link: "https://platform.openai.com/signup",
                     linkLabel: "Criar conta OpenAI",
                     cor: "bg-emerald-500/10 border-emerald-500/20",
                   },
                   {
                     n: "2",
-                    titulo: "Adicione credito (minimo USD 5)",
-                    desc: "Apos logar, va em Settings > Billing > Add payment method. Adicione um cartao de credito. Depois clique em \"Add to credit balance\" e adicione pelo menos USD 5,00 (equivale a centenas de geracoes de copy).",
+                    titulo: "Adicione crédito (mínimo USD 5)",
+                    desc: "Após logar, vá em Settings > Billing > Add payment method. Adicione um cartão de crédito. Depois clique em \"Add to credit balance\" e adicione pelo menos USD 5,00 (equivale a centenas de gerações de copy).",
                     dica: "USD 5 = ~R$ 25. Suficiente para meses de uso normal.",
                     cor: "bg-blue-500/10 border-blue-500/20",
                   },
                   {
                     n: "3",
                     titulo: "Gere sua chave de API",
-                    desc: "Va em API Keys no menu lateral (ou acesse platform.openai.com/api-keys). Clique em \"Create new secret key\". Copie a chave que aparece — ela comeca com sk-... e e mostrada apenas uma vez.",
+                    desc: "Vá em API Keys no menu lateral (ou acesse platform.openai.com/api-keys). Clique em \"Create new secret key\". Copie a chave que aparece — ela começa com sk-... e é mostrada apenas uma vez.",
                     dica: "Chave no formato: sk-proj-xxxxxxxxxxxxxxxxxx",
                     cor: "bg-amber-500/10 border-amber-500/20",
                   },
                   {
                     n: "4",
                     titulo: "Cole a chave aqui no painel",
-                    desc: "No formulario acima, campo \"Chave OpenAI\", cole a chave copiada e salve. Pronto — o botao \"Gerar 3 variacoes de copy\" estara disponivel ao criar uma campanha.",
+                    desc: "No formulário acima, campo \"Chave OpenAI\", cole a chave copiada e salve. Pronto — o botão \"Gerar 3 variações de copy\" estará disponível ao criar uma campanha.",
                     cor: "bg-violet-500/10 border-violet-500/20",
                   },
                 ] as GuiaStep[]).map(step => (

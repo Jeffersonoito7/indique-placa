@@ -199,39 +199,46 @@ function Toasts() {
 }
 
 function Calculadora() {
-  const [qtd, setQtd] = useState(5);
-  const [mix, setMix] = useState(50);
-  const motos = Math.round(qtd*(1-mix/100));
-  const carros = Math.round(qtd*(mix/100));
-  const mes = (motos*50+carros*100)*4;
+  const [motos, setMotos] = useState(3);
+  const [carros, setCarros] = useState(2);
+  const [caminhoes, setCaminhoes] = useState(0);
+  const totalSemana = motos + carros + caminhoes;
+  const totalMes = (motos * 50 + carros * 100 + caminhoes * 500) * 4;
   return (
     <div className="calc">
       <div className="calc-inner">
         <span className="sec-eyebrow" style={{ display:"block", textAlign:"center" }}>Simulador de renda</span>
         <h2 className="sec-h2" style={{ textAlign:"center" }}>Quanto você pode ganhar?</h2>
-        <p style={{ fontSize:15, color:"var(--txt2)", textAlign:"center", maxWidth:480, margin:"0 auto" }}>Arraste os controles e veja a projeção real baseada nas comissões.</p>
+        <p style={{ fontSize:15, color:"var(--txt2)", textAlign:"center", maxWidth:480, margin:"0 auto" }}>Defina quantas indicações por semana de cada tipo e veja a projeção mensal.</p>
         <div className="calc-card">
           <div className="calc-sliders">
             <div>
-              <div className="slider-label">Indicações por semana</div>
-              <div className="slider-val">{qtd} <span>indicações</span></div>
-              <input type="range" min={1} max={20} value={qtd} onChange={e=>setQtd(Number(e.target.value))} />
+              <div className="slider-label">🏍️ Motos por semana <span style={{ color:"var(--acc)", fontWeight:700 }}>R$50 cada</span></div>
+              <div className="slider-val">{motos} <span>motos</span></div>
+              <input type="range" min={0} max={20} value={motos} onChange={e=>setMotos(Number(e.target.value))} />
             </div>
             <div>
-              <div className="slider-label">Proporção carros vs motos</div>
-              <div className="slider-val">{mix}% <span>carros</span></div>
-              <input type="range" min={0} max={100} value={mix} onChange={e=>setMix(Number(e.target.value))} />
+              <div className="slider-label">🚗 Carros por semana <span style={{ color:"var(--acc)", fontWeight:700 }}>R$100 cada</span></div>
+              <div className="slider-val">{carros} <span>carros</span></div>
+              <input type="range" min={0} max={20} value={carros} onChange={e=>setCarros(Number(e.target.value))} />
+            </div>
+            <div>
+              <div className="slider-label">🚚 Caminhões por semana <span style={{ color:"var(--acc)", fontWeight:700 }}>R$500 cada</span></div>
+              <div className="slider-val">{caminhoes} <span>caminhões</span></div>
+              <input type="range" min={0} max={10} value={caminhoes} onChange={e=>setCaminhoes(Number(e.target.value))} />
             </div>
           </div>
           <div className="calc-resultado">
             <div>
-              <div className="calc-res-label">Projeção mensal estimada</div>
-              <div className="calc-res-val">{mes.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</div>
+              <div className="calc-res-label">Projeção mensal estimada <span style={{ fontSize:12, opacity:.6 }}>({totalSemana} indicações/semana × 4 semanas)</span></div>
+              <div className="calc-res-val">{totalMes.toLocaleString("pt-BR",{style:"currency",currency:"BRL"})}</div>
             </div>
             <div style={{ textAlign:"right" }}>
               <div className="calc-tags">
-                <span className="ctag">{motos*4} motos x R$50</span>
-                <span className="ctag">{carros*4} carros x R$100</span>
+                {motos > 0 && <span className="ctag">{motos*4} motos x R$50</span>}
+                {carros > 0 && <span className="ctag">{carros*4} carros x R$100</span>}
+                {caminhoes > 0 && <span className="ctag">{caminhoes*4} caminhões x R$500</span>}
+                {totalSemana === 0 && <span className="ctag" style={{ opacity:.5 }}>arraste os controles</span>}
               </div>
             </div>
           </div>
@@ -272,7 +279,7 @@ function FormIndicador() {
     if(tel.length<10){ setErro("Digite um WhatsApp válido com DDD"); return; }
     if(senha.length<6){ setErro("A senha precisa ter pelo menos 6 caracteres"); return; }
     if(senha !== confirmarSenha){ setErro("As senhas não coincidem"); return; }
-    if(!aceitouTermos){ setErro("Voce precisa aceitar os Termos de Uso e a Politica de Privacidade (LGPD) para continuar."); return; }
+    if(!aceitouTermos){ setErro("Você precisa aceitar os Termos de Uso e a Política de Privacidade (LGPD) para continuar."); return; }
     setCarregando(true);
     try {
       const res = await fetch("/api/publico/indicador-cadastro",{
@@ -471,7 +478,7 @@ function FormIndicador() {
                         Li e aceito os{" "}
                         <a href="/termos" target="_blank" rel="noopener noreferrer" style={{ color:"rgba(245,158,11,.8)", textDecoration:"underline" }}>Termos de Uso</a>
                         {" "}e a{" "}
-                        <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color:"rgba(245,158,11,.8)", textDecoration:"underline" }}>Politica de Privacidade</a>
+                        <a href="/privacidade" target="_blank" rel="noopener noreferrer" style={{ color:"rgba(245,158,11,.8)", textDecoration:"underline" }}>Política de Privacidade</a>
                         {" "}(LGPD).
                       </span>
                     </label>

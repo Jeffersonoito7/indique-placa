@@ -17,7 +17,7 @@ export async function GET() {
     .select("tipo, label, comissao_indicador")
     .eq("consultor_id", indicador.consultor_id)
     .eq("ativo", true)
-    .order("created_at", { ascending: true });
+    .order("tipo", { ascending: true });
 
   if (!data || data.length === 0) return NextResponse.json(DEFAULTS);
   return NextResponse.json(data);

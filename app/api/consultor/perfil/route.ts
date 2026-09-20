@@ -38,19 +38,19 @@ export async function PATCH(req: NextRequest) {
 
     const { data: consultorDb } = await supabaseAdmin
       .from("consultores")
-      .select("senha_hash")
+      .select("senha")
       .eq("id", consultor.id)
       .single();
 
-    const senhaCorreta = consultorDb?.senha_hash
-      ? await bcrypt.compare(senha_atual, consultorDb.senha_hash)
+    const senhaCorreta = consultorDb?.senha
+      ? await bcrypt.compare(senha_atual, consultorDb.senha)
       : false;
 
     if (!senhaCorreta) {
       return NextResponse.json({ error: "Senha atual incorreta" }, { status: 400 });
     }
 
-    updates.senha_hash = await bcrypt.hash(nova_senha, 10);
+    updates.senha = await bcrypt.hash(nova_senha, 10);
   }
 
   const { error } = await supabaseAdmin

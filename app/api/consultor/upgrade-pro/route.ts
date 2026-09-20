@@ -37,7 +37,7 @@ async function gerarPix(
   const txid = (cobranca as Record<string, unknown>).txid as string;
   const loc = (cobranca as Record<string, unknown>).loc as Record<string, unknown> | undefined;
   const locId = loc?.id as number | undefined;
-  if (!locId) throw new Error("Erro ao criar localizacao PIX");
+  if (!locId) throw new Error("Erro ao criar localização PIX");
 
   const qrRes = await efi.pixGenerateQRCode({ id: locId });
   return {
@@ -129,6 +129,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ ok: true, ja_pro: true, plano_ativo_ate: consultor.plano_ativo_ate });
   }
 
+  // Idempotencia: nao cria novo PIX se ja existe cobranca pendente
+  const { data: cobExistente } = await supabaseAdmin
+    .from("cobrancas")
+    .select("txid, valor")
+    .eq("usuario_id", consultor.id)
+    .eq("usuario_tipo", "consultor")
+    .eq("status", "pendente")
+    .order("criado_em", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+
+  if (cobExistente) {
+    return NextResponse.json(
+      { error: "Já existe um PIX pendente para esta conta.", txid: cobExistente.txid },
+      { status: 409 }
+    );
+  }
+
   let body: unknown;
   try { body = await req.json(); } catch { body = {}; }
   const { tipo_periodo } = (body as { tipo_periodo?: string }) ?? {};
@@ -165,7 +183,7 @@ export async function POST(req: NextRequest) {
     const valor = Number(assoc.valor_mensalidade_consultor_pro);
 
     if (!assoc.efi_client_id || !assoc.efi_client_secret || !assoc.efi_pix_key || !assoc.efi_certificate_base64) {
-      return NextResponse.json({ error: "Configuracao de pagamento da associacao incompleta. Contate o administrador." }, { status: 422 });
+      return NextResponse.json({ error: "Configuração de pagamento da associação incompleta. Contate o administrador." }, { status: 422 });
     }
 
     try {
@@ -208,7 +226,7 @@ export async function POST(req: NextRequest) {
     }
 
     if (!masterEfiConfigurado()) {
-      return NextResponse.json({ error: "Sistema de pagamento do master nao configurado. Contate o suporte." }, { status: 422 });
+      return NextResponse.json({ error: "Sistema de pagamento do master não configurado. Contate o suporte." }, { status: 422 });
     }
 
     try {

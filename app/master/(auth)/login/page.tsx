@@ -161,7 +161,7 @@ export default function MasterLoginPage() {
       if (!res.ok) setErro(json.error ?? "Credenciais invalidas");
       else router.push("/master/dashboard");
     } catch {
-      setErro("Erro de conexao. Tente novamente.");
+      setErro("Erro de conexão. Tente novamente.");
     } finally {
       setCarregando(false);
     }

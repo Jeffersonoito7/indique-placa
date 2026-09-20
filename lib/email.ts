@@ -46,20 +46,20 @@ export async function enviarEmailBoasVindas({
     : "https://indiqueplaca.com.br/indicador/login";
 
   const mensagemTipo = tipo === "consultor"
-    ? "Agora voce pode gerenciar suas indicacoes, acompanhar leads e fechar vendas."
+    ? "Agora você pode gerenciar suas indicações, acompanhar leads e fechar vendas."
     : tipo === "gestor"
-    ? "Agora voce pode gerenciar sua equipe de consultores e acompanhar o desempenho."
-    : "Agora voce pode indicar placas de veiculos e ganhar comissoes a cada venda fechada.";
+    ? "Agora você pode gerenciar sua equipe de consultores e acompanhar o desempenho."
+    : "Agora você pode indicar placas de veículos e ganhar comissões a cada venda fechada.";
 
   const html = `
     <div style="font-family:Inter,Arial,sans-serif;background:#04091a;padding:40px 20px;min-height:100vh">
       <div style="max-width:420px;margin:0 auto;background:#0c1425;border:1px solid rgba(245,158,11,.2);border-radius:16px;padding:36px 28px">
         <div style="text-align:center;margin-bottom:28px">
           <div style="font-size:22px;font-weight:900;color:#f59e0b;letter-spacing:-0.5px">Indique Placa</div>
-          <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">Sistema de indicacoes</div>
+          <div style="font-size:12px;color:rgba(255,255,255,.4);margin-top:4px">Sistema de indicações</div>
         </div>
         <p style="color:rgba(255,255,255,.7);font-size:14px;line-height:1.6;margin:0 0 16px">
-          Ola, <strong style="color:#fff">${nomeSeguro}</strong>!
+          Olá, <strong style="color:#fff">${nomeSeguro}</strong>!
         </p>
         <p style="color:rgba(255,255,255,.7);font-size:14px;line-height:1.6;margin:0 0 24px">
           Seu cadastro como <strong style="color:#f59e0b">${labelTipo}</strong> foi realizado com sucesso. ${mensagemTipo}
@@ -73,7 +73,7 @@ export async function enviarEmailBoasVindas({
           </a>
         </div>
         <p style="color:rgba(255,255,255,.35);font-size:12px;line-height:1.6;margin:0">
-          Se voce nao se cadastrou no Indique Placa, ignore este e-mail.
+          Se você não se cadastrou no Indique Placa, ignore este e-mail.
         </p>
         <div style="border-top:1px solid rgba(255,255,255,.08);margin-top:28px;padding-top:20px;text-align:center">
           <div style="font-size:11px;color:rgba(255,255,255,.2)">indiqueplaca.com.br</div>
@@ -119,5 +119,5 @@ export async function enviarEmailOTP({
     </div>
   `;
 
-  return enviarEmail(email, `${codigo} e seu codigo de verificacao - Indique Placa`, html);
+  return enviarEmail(email, `${codigo} é seu código de verificação - Indique Placa`, html);
 }

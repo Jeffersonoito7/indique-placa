@@ -52,9 +52,7 @@ async function checkMasterCookie(token: string): Promise<boolean> {
 
 async function checkSessionCookie(token: string, tipo: string): Promise<boolean> {
   try {
-    const secret =
-      process.env.SESSION_SECRET ??
-      (process.env.NODE_ENV !== "production" ? "indique-placa-secret-dev-only" : null);
+    const secret = process.env.SESSION_SECRET;
     if (!secret) return false;
     const dot = token.lastIndexOf(".");
     if (dot === -1) return false;

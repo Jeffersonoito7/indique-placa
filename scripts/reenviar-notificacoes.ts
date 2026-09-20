@@ -36,8 +36,8 @@ if (!whatsappHabilitado) {
   console.warn("  EVOLUTION_API_URL  = " + (EVOLUTION_BASE_URL ?? "(nao definido)"));
   console.warn("  EVOLUTION_API_KEY  = " + (EVOLUTION_API_KEY  ? "***" : "(nao definido)"));
   console.warn("  EVOLUTION_INSTANCE = " + (EVOLUTION_INSTANCE ?? "(nao definido)"));
-  console.warn("  O script vai LISTAR as indicacoes, mas NAO enviara mensagens.");
-  console.warn("  Adicione as variaveis ao .env.local e execute novamente.");
+  console.warn("  O script vai LISTAR as indicações, mas NÃO enviará mensagens.");
+  console.warn("  Adicione as variáveis ao .env.local e execute novamente.");
   console.warn("");
 }
 
@@ -89,7 +89,7 @@ async function notificarNovoLead(opts: {
   const proprietario = opts.nomeLead ? `\n*Proprietário:* ${opts.nomeLead}` : "";
   const contato = opts.telefoneLead ? `\n*Telefone:* ${opts.telefoneLead}` : "";
   const msg =
-    `Ola, *${opts.nomeConsultor}*!\n\n` +
+    `Olá, *${opts.nomeConsultor}*!\n\n` +
     `Nova placa indicada${via}:\n\n` +
     `*Placa:* ${opts.placa}${proprietario}${contato}\n\n` +
     `Acesse o painel para acompanhar: https://app.indiqueplaca.com.br/consultor/leads`;
@@ -122,7 +122,7 @@ async function main() {
   dataLimite.setDate(dataLimite.getDate() - DIAS);
   const dataISO = dataLimite.toISOString();
 
-  console.log(`Buscando indicacoes dos ultimos ${DIAS} dias (desde ${dataLimite.toLocaleDateString("pt-BR")})...\n`);
+  console.log(`Buscando indicações dos últimos ${DIAS} dias (desde ${dataLimite.toLocaleDateString("pt-BR")})...\n`);
 
   const { data, error } = await supabase
     .from("indicacoes")
@@ -145,7 +145,7 @@ async function main() {
   }
 
   if (!data || data.length === 0) {
-    console.log("Nenhuma indicacao encontrada nos ultimos " + DIAS + " dias.");
+    console.log("Nenhuma indicação encontrada nos últimos " + DIAS + " dias.");
     return;
   }
 

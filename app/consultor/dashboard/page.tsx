@@ -128,30 +128,6 @@ export default async function ConsultorDashboard() {
         {/* Onboarding para consultores recem-cadastrados */}
         <OnboardingConsultor totalLeads={totalLeads} totalIndicadores={totalIndicadores} />
 
-        {/* Banner de vencimento do plano Pro */}
-        {alertaVencimento && (
-          <div className="rounded-2xl p-4 bg-violet-600 text-white flex items-center gap-3">
-            <AlertCircle className="h-5 w-5 text-white shrink-0" />
-            <div className="flex-1">
-              <div className="text-sm font-bold leading-tight">
-                {diasParaVencer === 0
-                  ? "Seu plano Pro vence hoje!"
-                  : diasParaVencer! < 0
-                  ? "Seu plano Pro expirou"
-                  : `Seu plano Pro vence em ${diasParaVencer} dia${diasParaVencer === 1 ? "" : "s"}`}
-              </div>
-              <div className="text-xs mt-0.5 text-white/80">
-                Renove agora para manter acesso a campanha WhatsApp, exportacao e todos os recursos Pro.
-              </div>
-            </div>
-            <a
-              href="/consultor/upgrade"
-              className="shrink-0 text-xs font-bold bg-white/20 hover:bg-white/30 text-white rounded-lg px-3 py-2 transition-colors"
-            >
-              Renovar
-            </a>
-          </div>
-        )}
 
         {/* Banner de bloqueio por inadimplencia */}
         {statusBloqueio.bloqueado && (
@@ -159,17 +135,17 @@ export default async function ConsultorDashboard() {
             <AlertCircle className="h-5 w-5 text-white shrink-0" />
             <div className="flex-1">
               <div className="text-sm font-bold leading-tight">
-                Voce esta bloqueado de receber novas indicacoes
+                Você está bloqueado de receber novas indicações
               </div>
               <div className="text-xs mt-0.5 text-white/80">
-                Voce tem {statusBloqueio.total_pendente} comissoes pendentes de pagamento. Pague para desbloquear.
+                Você tem {statusBloqueio.total_pendente} comissões pendentes de pagamento. Pague para desbloquear.
               </div>
             </div>
             <a
               href="/consultor/leads?status=fechado"
               className="shrink-0 text-xs font-bold bg-white/20 hover:bg-white/30 text-white rounded-lg px-3 py-2 transition-colors"
             >
-              Ver comissoes pendentes
+              Ver comissões pendentes
             </a>
           </div>
         )}
@@ -180,10 +156,10 @@ export default async function ConsultorDashboard() {
             <AlertCircle className="h-5 w-5 text-white shrink-0" />
             <div className="flex-1">
               <div className="text-sm font-bold leading-tight">
-                Voce tem {comissoesPendentes.length} comissao(oes) pendente(s) de pagamento
+                Você tem {comissoesPendentes.length} comissão(ões) pendente(s) de pagamento
               </div>
               <div className="text-xs mt-0.5 text-white/80">
-                Pague logo para nao desmotivar seus indicadores
+                Pague logo para não desmotivar seus indicadores
               </div>
             </div>
             <a
@@ -204,7 +180,7 @@ export default async function ConsultorDashboard() {
           </CardHeader>
           <CardContent className="pt-0">
             <p className="text-xs text-muted-foreground mb-3">
-              Compartilhe este link com quem voce quer cadastrar como indicador. Ele ficara automaticamente vinculado a sua carteira.
+              Compartilhe este link com quem você quer cadastrar como indicador. Ele ficará automaticamente vinculado a sua carteira.
             </p>
             <CopiarLink titulo="Link de Cadastro de Indicadores" descricao={`/indicador/cadastro?c=${consultor.id}`} url={linkIndicador} cor="blue" />
           </CardContent>
@@ -213,14 +189,14 @@ export default async function ConsultorDashboard() {
         {/* KPIs */}
         <div className="grid grid-cols-4 gap-4">
           {[
-            { label: "Placas recebidas", value: totalLeads, icon: ClipboardList, iconBg: "bg-blue-500/10", iconColor: "text-blue-500", valueColor: "text-blue-500", border: "border-t-blue-500" },
-            { label: "Indicadores ativos", value: totalIndicadores, icon: UserCheck, iconBg: "bg-violet-500/10", iconColor: "text-violet-500", valueColor: "text-violet-500", border: "border-t-violet-500" },
-            { label: "Vendas fechadas", value: totalFechados, icon: CheckCircle2, iconBg: "bg-emerald-500/10", iconColor: "text-emerald-500", valueColor: "text-emerald-500", border: "border-t-emerald-500" },
-            { label: "Taxa de conversão", value: `${taxa}%`, icon: TrendingUp, iconBg: "bg-amber-500/10", iconColor: "text-amber-500", valueColor: "text-amber-500", border: "border-t-amber-500" },
+            { label: "Placas recebidas", value: totalLeads, icon: ClipboardList, iconBg: "bg-muted", iconColor: "text-muted-foreground", valueColor: "text-[#00c389]" },
+            { label: "Indicadores ativos", value: totalIndicadores, icon: UserCheck, iconBg: "bg-muted", iconColor: "text-muted-foreground", valueColor: "text-foreground" },
+            { label: "Vendas fechadas", value: totalFechados, icon: CheckCircle2, iconBg: "bg-muted", iconColor: "text-muted-foreground", valueColor: "text-foreground" },
+            { label: "Taxa de conversão", value: `${taxa}%`, icon: TrendingUp, iconBg: "bg-muted", iconColor: "text-muted-foreground", valueColor: "text-foreground" },
           ].map((m) => {
             const Icon = m.icon;
             return (
-              <Card key={m.label} className={cn("border-t-4 shadow-sm", m.border)}>
+              <Card key={m.label} className="border border-border shadow-sm">
                 <CardContent className="p-5">
                   <div className={cn("w-9 h-9 rounded-xl flex items-center justify-center mb-3", m.iconBg)}>
                     <Icon className={cn("h-4 w-4", m.iconColor)} />
@@ -241,7 +217,7 @@ export default async function ConsultorDashboard() {
                 <Trophy className="h-4 w-4 text-amber-500" />
                 Desempenho dos Indicadores
               </CardTitle>
-              <span className="text-[10px] text-muted-foreground">Comissao: {moeda(comissaoIndicador)} por fechamento</span>
+              <span className="text-[10px] text-muted-foreground">Comissão: {moeda(comissaoIndicador)} por fechamento</span>
             </div>
           </CardHeader>
           <CardContent className="p-0">
@@ -427,7 +403,7 @@ export default async function ConsultorDashboard() {
               </CardTitle>
             </CardHeader>
             <CardContent className="p-4">
-              <p className="text-xs text-muted-foreground mb-3">Estes indicadores ainda nao enviaram nenhuma placa. Vale entrar em contato.</p>
+              <p className="text-xs text-muted-foreground mb-3">Estes indicadores ainda não enviaram nenhuma placa. Vale entrar em contato.</p>
               <div className="flex flex-wrap gap-2">
                 {semIndicacao.map((ind) => (
                   <span key={ind.id} className="text-xs font-medium px-3 py-1.5 rounded-full bg-muted border border-border text-foreground">

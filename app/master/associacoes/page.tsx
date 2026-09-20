@@ -32,6 +32,7 @@ interface AssociacaoDetalhe extends Associacao {
   plano_ativo_ate: string | null;
   cobranca_ativa: boolean;
   paga_pelo_time: boolean;
+  parceiros_habilitado: boolean;
   valor_mensalidade_associacao: number;
   valor_mensalidade_gestor: number;
   valor_mensalidade_consultor_pro: number;
@@ -192,7 +193,7 @@ function ModalNovaAssociacao({ onClose, onSalvo }: { onClose: () => void; onSalv
             <input
               className="w-full h-9 px-3 rounded-lg border border-border bg-muted/30 text-sm focus:outline-none focus:ring-2 focus:ring-violet-500/40"
               type="password"
-              placeholder="Minimo 6 caracteres"
+              placeholder="Mínimo 6 caracteres"
               value={form.nova_senha}
               onChange={(e) => set("nova_senha", e.target.value)}
               autoComplete="new-password"
@@ -231,6 +232,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
     plano: assoc.plano,
     cobranca_ativa: assoc.cobranca_ativa,
     paga_pelo_time: assoc.paga_pelo_time,
+    parceiros_habilitado: assoc.parceiros_habilitado,
     valor_mensalidade_associacao: assoc.valor_mensalidade_associacao,
     valor_mensalidade_gestor: assoc.valor_mensalidade_gestor,
     valor_mensalidade_consultor_pro: assoc.valor_mensalidade_consultor_pro,
@@ -260,6 +262,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
         ...form,
         email: form.email || null,
         paga_pelo_time: form.paga_pelo_time,
+        parceiros_habilitado: form.parceiros_habilitado,
         efi_client_id: form.efi_client_id || null,
         efi_client_secret: form.efi_client_secret || null,
         efi_pix_key: form.efi_pix_key || null,
@@ -367,8 +370,8 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
             <div className="grid grid-cols-2 gap-4">
               <div className="col-span-2 flex items-center justify-between p-3 rounded-lg border border-border bg-muted/20">
                 <div>
-                  <p className="text-sm font-semibold">Cobranca Ativa</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Habilita geração de cobranças automaticas</p>
+                  <p className="text-sm font-semibold">Cobrança Ativa</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Habilita geração de cobranças automáticas</p>
                 </div>
                 <button
                   onClick={() => set("cobranca_ativa", !form.cobranca_ativa)}
@@ -389,7 +392,7 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
               <div className="col-span-2 flex items-center justify-between p-3 rounded-lg border border-border bg-muted/20">
                 <div>
                   <p className="text-sm font-semibold">Time Pago pela Associação</p>
-                  <p className="text-[11px] text-muted-foreground mt-0.5">Todos os consultores ganham Pro gratuitamente (a associacao paga ao master)</p>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">Todos os consultores ganham Pro gratuitamente (a associação paga ao master)</p>
                 </div>
                 <button
                   onClick={() => set("paga_pelo_time", !form.paga_pelo_time)}
@@ -402,6 +405,28 @@ function ModalEditarAssociacao({ assoc, onClose, onSalvo }: { assoc: AssociacaoD
                     className={cn(
                       "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
                       form.paga_pelo_time ? "translate-x-6" : "translate-x-1"
+                    )}
+                  />
+                </button>
+              </div>
+
+              <div className="col-span-2 flex items-center justify-between py-3 border-t border-border">
+                <div>
+                  <p className="text-sm font-medium text-foreground">Buscar Parceiros</p>
+                  <p className="text-xs text-muted-foreground">Habilita a feature para todos desta associação</p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => set("parceiros_habilitado", !form.parceiros_habilitado)}
+                  className={cn(
+                    "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                    form.parceiros_habilitado ? "bg-[#00c389]" : "bg-muted-foreground/30"
+                  )}
+                >
+                  <span
+                    className={cn(
+                      "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                      form.parceiros_habilitado ? "translate-x-6" : "translate-x-1"
                     )}
                   />
                 </button>
@@ -550,7 +575,7 @@ export default function AssociacoesPage() {
   };
 
   const inativar = async (id: string, nome: string) => {
-    if (!confirm(`Inativar a associacao "${nome}"?`)) return;
+    if (!confirm(`Inativar a associação "${nome}"?`)) return;
     setInativando(id);
     try {
       await fetch(`/api/master/associacoes/${id}`, { method: "DELETE" });

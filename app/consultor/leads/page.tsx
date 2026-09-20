@@ -94,32 +94,33 @@ function BotaoPagarComissao({ lead, onPago }: { lead: Lead; onPago: (leadId: str
       ? lead.comissao_valor.toLocaleString("pt-BR", { style: "currency", currency: "BRL" })
       : "a combinar";
     const confirmado = window.confirm(
-      `Confirmar pagamento da comissao de ${valor} para ${lead.indicadores?.nome ?? "o indicador"}?`
+      `Confirmar pagamento da comissão de ${valor} para ${lead.indicadores?.nome ?? "o indicador"}?`
     );
     if (!confirmado) return;
     setEnviando(true);
     try {
       const res = await fetch(`/api/consultor/lead/${lead.id}/pagar-comissao`, { method: "POST" });
-      const json = await res.json() as { ok?: boolean; error?: string; pix_enviado?: boolean; sem_chave_pix?: boolean; sem_configuracao?: boolean; ja_pago?: boolean };
       if (!res.ok) {
-        alert(json.error ?? "Erro ao registrar pagamento");
+        const err = await res.json().catch(() => ({})) as { error?: string };
+        alert(err.error ?? "Erro ao registrar pagamento");
         return;
       }
+      const json = await res.json() as { ok?: boolean; error?: string; pix_enviado?: boolean; sem_chave_pix?: boolean; sem_configuracao?: boolean; ja_pago?: boolean };
       if (json.ja_pago) {
-        alert("Esta comissao ja foi paga anteriormente.");
+        alert("Esta comissão já foi paga anteriormente.");
         onPago(lead.id);
         return;
       }
       if (json.pix_enviado) {
-        alert("PIX enviado com sucesso! O indicador recebera o valor em instantes.");
+        alert("PIX enviado com sucesso! O indicador receberá o valor em instantes.");
       } else if (json.sem_chave_pix) {
-        alert("Pagamento registrado. O indicador ainda nao cadastrou uma chave PIX. Combine o pagamento manualmente.");
+        alert("Pagamento registrado. O indicador ainda não cadastrou uma chave PIX. Combine o pagamento manualmente.");
       } else {
         alert("Pagamento registrado com sucesso.");
       }
       onPago(lead.id);
     } catch {
-      alert("Erro de conexao");
+      alert("Erro de conexão");
     } finally {
       setEnviando(false);
     }
@@ -131,7 +132,7 @@ function BotaoPagarComissao({ lead, onPago }: { lead: Lead; onPago: (leadId: str
       disabled={enviando}
       className="text-[11px] font-semibold px-2.5 py-1 rounded-lg border border-emerald-500 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/10 transition-colors disabled:opacity-50 whitespace-nowrap"
     >
-      {enviando ? "Enviando PIX..." : "Pagar comissao"}
+      {enviando ? "Enviando PIX..." : "Pagar comissão"}
     </button>
   );
 }
@@ -215,8 +216,12 @@ function PainelPagamento({ lead, onPago }: { lead: Lead; onPago: (leadId: string
     if (valor) form.append("valor", valor);
     try {
       const res = await fetch(`/api/consultor/lead/${lead.id}/pagamento`, { method: "POST", body: form });
+      if (!res.ok) {
+        const err = await res.json().catch(() => ({}));
+        setErro(err.error ?? "Erro ao registrar pagamento");
+        return;
+      }
       const json = await res.json();
-      if (!res.ok) { setErro(json.error ?? "Erro ao registrar"); return; }
       onPago(lead.id, valor ? Number(valor) : null, json.comprovante_url);
       setAberto(false);
     } catch { setErro("Erro de conexao"); }
@@ -234,7 +239,7 @@ function PainelPagamento({ lead, onPago }: { lead: Lead; onPago: (leadId: string
         </button>
       ) : (
         <div className="space-y-2">
-          <div className="text-[10px] font-bold text-muted-foreground uppercase">Pix: {lead.indicadores.chave_pix ?? "nao cadastrado"}</div>
+          <div className="text-[10px] font-bold text-muted-foreground uppercase">Pix: {lead.indicadores.chave_pix ?? "não cadastrado"}</div>
           <input
             type="number"
             placeholder="Valor pago (R$)"
@@ -306,7 +311,7 @@ function LeadCard({
         {lead.nome_lead ? (
           <span className="text-sm font-medium text-foreground truncate">{lead.nome_lead}</span>
         ) : (
-          <span className="text-xs italic text-muted-foreground/60">Proprietario a confirmar</span>
+          <span className="text-xs italic text-muted-foreground/60">Proprietário a confirmar</span>
         )}
         {lead.tipo_veiculo && (
           <span className="ml-auto text-[10px] font-medium bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full capitalize flex-shrink-0">
@@ -513,12 +518,12 @@ export default function ConsultorLeadsPage() {
         const pixTexto = chave_pix ?? "nao cadastrada";
         const tel = telefone.replace(/\D/g, "");
         const texto = encodeURIComponent(
-          `Oi ${nome}, sua indicacao da placa ${placa} fechou! Voce ganhou ${comissaoTexto}. Sua chave PIX e ${pixTexto}.`
+          `Oi ${nome}, sua indicação da placa ${placa} fechou! Você tem ${comissaoTexto} a receber. Efetuaremos o pagamento na sua chave PIX: ${pixTexto}.`
         );
         window.open(`https://wa.me/55${tel}?text=${texto}`, "_blank");
       }
     } catch {
-      setErroKanban("Erro ao mover o card. Verifique sua conexao e tente novamente.");
+      setErroKanban("Erro ao mover o card. Verifique sua conexão e tente novamente.");
     } finally {
       setAtualizando((prev) => {
         const next = new Set(prev);
@@ -529,7 +534,7 @@ export default function ConsultorLeadsPage() {
   }
 
   async function apagarLead(id: string) {
-    const confirmado = window.confirm("Apagar este lead? Esta acao nao pode ser desfeita.");
+    const confirmado = window.confirm("Apagar este lead? Esta ação não pode ser desfeita.");
     if (!confirmado) return;
     setApagando((prev) => new Set(prev).add(id));
     try {
@@ -543,7 +548,7 @@ export default function ConsultorLeadsPage() {
       setLeadsLista((prev) => prev.filter((l) => l.id !== id));
       setTotalLista((prev) => Math.max(0, prev - 1));
     } catch {
-      alert("Erro de conexao");
+      alert("Erro de conexão");
     } finally {
       setApagando((prev) => {
         const next = new Set(prev);
@@ -588,7 +593,7 @@ export default function ConsultorLeadsPage() {
               </span>
             )}
           </h1>
-          <p className="text-[11px] text-muted-foreground mt-0.5">Gestao de indicacoes recebidas</p>
+          <p className="text-[11px] text-muted-foreground mt-0.5">Gestão de indicações recebidas</p>
         </div>
         <div className="flex items-center gap-2">
           <input
@@ -645,7 +650,7 @@ export default function ConsultorLeadsPage() {
               <table className="w-full text-sm">
                 <thead>
                   <tr className="bg-muted/40 border-b border-border">
-                    {["Placa", "Proprietario", "Indicado por", "Tipo", "Status", "Data", ""].map((h) => (
+                    {["Placa", "Proprietário", "Indicado por", "Tipo", "Status", "Data", ""].map((h) => (
                       <th key={h} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-4 py-2.5">
                         {h}
                       </th>
@@ -664,7 +669,7 @@ export default function ConsultorLeadsPage() {
                   ) : !leadsLista.length ? (
                     <tr>
                       <td colSpan={7} className="text-center py-12 text-sm text-muted-foreground">
-                        Nenhuma indicacao encontrada
+                        Nenhuma indicação encontrada
                       </td>
                     </tr>
                   ) : (
@@ -709,7 +714,7 @@ export default function ConsultorLeadsPage() {
                               {lead.status === "fechado" && lead.indicadores?.nome && (
                                 lead.comissao_paga ? (
                                   <div className="flex flex-col">
-                                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Comissao paga</span>
+                                    <span className="text-[11px] font-bold text-emerald-600 dark:text-emerald-400">Comissão paga</span>
                                     {lead.comissao_paga_em && (
                                       <span className="text-[10px] text-muted-foreground">
                                         {new Date(lead.comissao_paga_em).toLocaleString("pt-BR")}
@@ -762,7 +767,7 @@ export default function ConsultorLeadsPage() {
                 onClick={() => setPage((p) => p + 1)}
                 className="text-xs font-semibold px-3 py-1.5 rounded-lg border border-border bg-background hover:bg-muted transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
               >
-                Proximo
+                Próximo
               </button>
             </div>
           </div>
@@ -822,7 +827,7 @@ export default function ConsultorLeadsPage() {
                   >
                     {leadsColuna.length === 0 ? (
                       <div className="text-center text-xs text-muted-foreground py-10 border border-dashed border-border rounded-lg">
-                        Nenhuma indicacao aqui ainda
+                        Nenhuma indicação aqui ainda
                       </div>
                     ) : (
                       leadsColuna.map((lead) => (

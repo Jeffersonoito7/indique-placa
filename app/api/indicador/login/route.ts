@@ -7,6 +7,9 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { timingSafeEqual } from "crypto";
 
+// Hash dummy para comparar quando indicador nao existe (evita timing oracle que revela telefones validos)
+const DUMMY_HASH = "$2a$12$N9qo8uLOickgx2ZMRZoMyeIjZAgcfl7p92ldGxad68LJZdL17lhWy";
+
 const schema = z.object({
   telefone: z.string().min(10).max(20),
   senha: z.string().min(1).max(128),
@@ -34,7 +37,13 @@ export async function POST(req: NextRequest) {
     .from("indicadores")
     .select("id, nome, telefone, senha, status")
     .eq("telefone", tel)
-    .single();
+    .maybeSingle();
+
+  // Sempre executa bcrypt.compare para nao revelar por timing se o telefone existe
+  const isHashed = !indicador || indicador.senha?.startsWith("$2b$") || indicador.senha?.startsWith("$2a$");
+  if (!indicador || !isHashed) {
+    await bcrypt.compare(senha, DUMMY_HASH);
+  }
 
   if (!indicador) {
     return NextResponse.json({ error: "Telefone ou senha incorretos" }, { status: 401 });
@@ -43,8 +52,6 @@ export async function POST(req: NextRequest) {
   if (indicador.status && indicador.status !== "ativo") {
     return NextResponse.json({ error: "Conta inativa. Entre em contato com o suporte." }, { status: 403 });
   }
-
-  const isHashed = indicador.senha?.startsWith("$2b$") || indicador.senha?.startsWith("$2a$");
   let senhaCorreta: boolean;
   if (isHashed) {
     senhaCorreta = await bcrypt.compare(senha, indicador.senha ?? "");

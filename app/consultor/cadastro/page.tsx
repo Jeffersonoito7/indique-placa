@@ -3,7 +3,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import { useRouter } from "next/navigation";
 import { ESTADOS_CIDADES, ESTADOS_NOMES } from "@/lib/cidades-brasil";
-import { PlacaMercosul } from "@/components/placa-mercosul";
 
 /* ─── ESTILOS ─────────────────────────────────────────────────────────────
    Sistema de tokens local (custom properties) no topo do escopo .lp-cad.
@@ -73,7 +72,7 @@ const STYLES = `
     backdrop-filter: blur(20px);
     border-bottom: 1px solid var(--line);
   }
-  .nav-logo { height: 30px; object-fit: contain; }
+  .nav-logo { height: 44px; object-fit: contain; }
   .btn-primary {
     display: inline-flex; align-items: center; justify-content: center; gap: var(--sp-2);
     background: var(--brand); color: var(--brand-ink);
@@ -102,7 +101,7 @@ const STYLES = `
     -webkit-mask-image: radial-gradient(ellipse 70% 55% at 50% 30%, #000 30%, transparent 78%);
             mask-image: radial-gradient(ellipse 70% 55% at 50% 30%, #000 30%, transparent 78%);
   }
-  .hero-in { position: relative; z-index: 2; max-width: 960px; margin: 0 auto; }
+  .hero-in { position: relative; z-index: 2; max-width: 960px; margin: 0 auto; text-align: center; }
 
   .hero-plate { display: inline-block; margin-bottom: var(--sp-5); animation: lpFadeUp .6s ease both; }
 
@@ -117,15 +116,16 @@ const STYLES = `
 
   .hero-headline {
     font-size: clamp(36px, 6vw, 68px); font-weight: 800;
-    line-height: 1.04; letter-spacing: -.02em;
-    color: var(--ink);
-    margin: var(--sp-5) 0 var(--sp-4);
+    line-height: 1.12; letter-spacing: -.02em;
+    color: var(--ink); text-align: center;
+    margin: var(--sp-6) auto var(--sp-7);
     animation: lpFadeUp .7s ease both .08s;
   }
   .accent { color: var(--brand); }
   .hero-sub {
     font-size: clamp(15px, 1.6vw, 18px); color: var(--ink-2);
     line-height: 1.65; max-width: 560px; margin: 0 auto var(--sp-7);
+    text-align: center;
     animation: lpFadeUp .7s ease both .14s;
   }
 
@@ -342,11 +342,11 @@ const TICKER_ITEMS = [
   "+1 lead recebido em São Paulo",
   "+3 placas fechadas hoje",
   "+1 novo indicador ativo",
-  "+R$ 150 em comissoes",
+  "+R$ 150 em comissões",
   "+2 leads recebidos em Recife",
   "+5 placas fechadas esta semana",
   "+1 lead recebido em BH",
-  "+R$ 300 em comissoes",
+  "+R$ 300 em comissões",
 ];
 
 type Associacao = { id: string; nome: string };
@@ -385,11 +385,11 @@ export default function ConsultorCadastroPage() {
 
   useEffect(() => {
     fetch("/api/publico/associacoes")
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then(d => setAssociacoes(d.associacoes ?? []));
     // Busca contadores reais do banco
     fetch("/api/publico/stats")
-      .then(r => r.json())
+      .then(r => { if (!r.ok) throw new Error(String(r.status)); return r.json(); })
       .then(d => {
         const base = d.placas_mes ?? 0;
         setPlacasBase(base);
@@ -437,14 +437,14 @@ export default function ConsultorCadastroPage() {
     e.preventDefault();
     setErro("");
     const tel = telefone.replace(/\D/g,"");
-    if (tel.length < 10) { setErro("Digite um WhatsApp valido com DDD"); return; }
+    if (tel.length < 10) { setErro("Digite um WhatsApp válido com DDD"); return; }
     if (!estado) { setErro("Selecione o estado"); return; }
     if (!cidade) { setErro("Selecione a cidade"); return; }
     const nomeAssoc = associacaoId === "outra" ? associacaoTexto : associacaoNome;
     if (!nomeAssoc.trim()) { setErro("Informe a associação"); return; }
     if (senha.length < 6) { setErro("A senha precisa ter no mínimo 6 caracteres"); return; }
     if (senha !== confirmarSenha) { setErro("As senhas não coincidem"); return; }
-    if (!aceitouTermos) { setErro("Voce precisa aceitar os Termos de Uso e a Politica de Privacidade (LGPD) para continuar."); return; }
+    if (!aceitouTermos) { setErro("Você precisa aceitar os Termos de Uso e a Política de Privacidade (LGPD) para continuar."); return; }
     setCarregando(true);
     try {
       const payload: Record<string, unknown> = { nome, telefone, email, cidade: `${cidade} - ${estado}`, associacao: nomeAssoc, senha };
@@ -476,24 +476,17 @@ export default function ConsultorCadastroPage() {
           <div className="hero-rails" />
 
           <div className="hero-in">
-            <div className="hero-plate">
-              <PlacaMercosul placa="BRA2E19" tamanho="sm" />
-            </div>
-
             <div className="chip">
               <span className="lp-dot" />
               Sistema de vendas em escala
             </div>
 
             <h1 className="hero-headline">
-              Pare de vender sozinho.<br />
-              <span className="accent">Monte seu time</span> e<br />
-              exploda suas vendas.
+              Monte um time de indicadores que{" "}
+              <span className="accent">traz leads</span>{" "}
+              enquanto você fecha negócios.
             </h1>
 
-            <p className="hero-sub">
-              Pare de depender só de você mesmo. Com o Indique Placa você monta um time de indicadores que traz leads enquanto você fecha negócios e dorme.
-            </p>
 
             {/* PAINEL DEMO ANIMADO */}
             <div className="demo-panel">
@@ -510,7 +503,7 @@ export default function ConsultorCadastroPage() {
                 <div className="demo-body">
                   {/* COLUNA 1 — contador de placas */}
                   <div className="demo-col" style={{ position: "relative", overflow: "hidden" }}>
-                    <div className="col-label">Placas vendidas este mes</div>
+                    <div className="col-label">Placas vendidas este mês</div>
                     <div className="big-counter" key={placas}>{placas}</div>
                     <div className="counter-label">{placas > placasBase ? `+${placas - placasBase} agora mesmo` : "ao vivo"}</div>
 
@@ -567,7 +560,7 @@ export default function ConsultorCadastroPage() {
                         <div className="mini-stat-val">{indicadores}</div>
                       </div>
                       <div className="mini-stat blue">
-                        <div className="mini-stat-label">Conversao</div>
+                        <div className="mini-stat-label">Conversão</div>
                         <div className="mini-stat-val">68%</div>
                       </div>
                     </div>
@@ -609,11 +602,11 @@ export default function ConsultorCadastroPage() {
                       <div className="ring" />
                     </div>
                     <span className="db-val">{indicadores}</span>
-                    <span className="db-label">indicadores ativos</span>
+                    <span className="db-label">Indicadores ativos</span>
                   </div>
                   <div className="db-item">
                     <span className="db-val">+{placas - placasBase}</span>
-                    <span className="db-label">placas esta sessao</span>
+                    <span className="db-label">Placas esta sessão</span>
                   </div>
                   <div className="db-item">
                     <span className="db-muted">Atualizado agora</span>
@@ -646,9 +639,9 @@ export default function ConsultorCadastroPage() {
         {/* NUMEROS */}
         <div className="lp-nums">
           {[
-            { val: "3x",   label: "Aumento medio de vendas com indicadores ativos" },
-            { val: "200+", label: "Placas vendidas por mes pelos top consultores" },
-            { val: "2min", label: "Para ativar seu painel e comecar a captar hoje" },
+            { val: "3x",   label: "Aumento médio de vendas com indicadores ativos" },
+            { val: "200+", label: "Placas vendidas por mês pelos top consultores" },
+            { val: "2min", label: "Para ativar seu painel e começar a captar hoje" },
             { val: "100%", label: "Gratuito para consultores. Sempre." },
           ].map(({ val, label }) => (
             <div key={val} className="num-item">
@@ -693,7 +686,7 @@ export default function ConsultorCadastroPage() {
             <h2 className="section-title">Tudo que você precisava<br />para vender em escala</h2>
             <div className="benefits-grid">
               {[
-                { glyph: "painel",  title: "Painel em tempo real", desc: "Veja cada lead chegando, cada indicador ativo, suas conversoes. Dashboard limpo e moderno.", wide: true },
+                { glyph: "painel",  title: "Painel em tempo real", desc: "Veja cada lead chegando, cada indicador ativo, suas conversões. Dashboard limpo e moderno.", wide: true },
                 { glyph: "time",    title: "Time sem custo fixo", desc: "Seus indicadores só ganham quando você ganha. Zero risco. Zero custo fixo." },
                 { glyph: "link",    title: "Link exclusivo seu", desc: "Seu link único leva candidatos direto para a página de indicadores vinculada a você." },
                 { glyph: "celular", title: "100% pelo celular", desc: "Acompanhe leads e indicadores de qualquer lugar. Rápido e sempre disponível." },
@@ -715,13 +708,13 @@ export default function ConsultorCadastroPage() {
         {/* PROVA */}
         <div className="lp-proof">
           <div className="proof-stars">★★★★★</div>
-          <p className="proof-quote">&ldquo;Eu vendia 20 placas por mes sozinho. Com meus indicadores, no segundo mes ja tinha batido 80. Hoje trabalho menos e ganho muito mais.&rdquo;</p>
+          <p className="proof-quote">&ldquo;Eu vendia 20 placas por mês sozinho. Com meus indicadores, no segundo mês já tinha batido 80. Hoje trabalho menos e ganho muito mais.&rdquo;</p>
           <div className="proof-author">Consultor de proteção veicular, São Paulo, SP</div>
         </div>
 
         {/* URGENCIA */}
         <div className="lp-urgencia">
-          <div className="urgencia-title">Cada dia sem indicadores e um dia perdendo vendas</div>
+          <div className="urgencia-title">Cada dia sem indicadores é um dia perdendo vendas</div>
           <div className="urgencia-desc">Enquanto você vende sozinho, outros consultores já estão com times de 10, 20, 50 indicadores trazendo clientes todo dia. O cadastro é grátis e leva 2 minutos.</div>
         </div>
 
@@ -731,7 +724,7 @@ export default function ConsultorCadastroPage() {
           <div className="form-inner">
             <div className="section-badge">Quero fazer parte</div>
             <h2 className="form-title">
-              Seu time de indicadores<br /><span className="accent">comeca aqui.</span>
+              Seu time de indicadores<br /><span className="accent">começa aqui.</span>
             </h2>
             <p className="form-lead">2 minutos de cadastro. Acesso imediato ao painel. Sem custo, sem contrato.</p>
 
@@ -834,7 +827,7 @@ export default function ConsultorCadastroPage() {
                       Li e aceito os{" "}
                       <a href="/termos" target="_blank" rel="noopener noreferrer">Termos de Uso</a>
                       {" "}e a{" "}
-                      <a href="/privacidade" target="_blank" rel="noopener noreferrer">Politica de Privacidade</a>
+                      <a href="/privacidade" target="_blank" rel="noopener noreferrer">Política de Privacidade</a>
                       {" "}(LGPD).
                     </span>
                   </label>
@@ -842,7 +835,7 @@ export default function ConsultorCadastroPage() {
                     {carregando ? "Cadastrando..." : <>Quero meu painel gratuito <Glyph name="check" size={16} /></>}
                   </button>
                   <div className="form-alt">
-                    Ja tem cadastro?{" "}
+                    Já tem cadastro?{" "}
                     <a href="/consultor/login">Entrar no painel</a>
                   </div>
                 </form>
@@ -851,7 +844,7 @@ export default function ConsultorCadastroPage() {
           </div>
         </section>
 
-        <footer className="lp-footer">© 2026 Indique Placa. Todos os direitos reservados</footer>
+        <footer className="lp-footer">© 2026 Indique Placa. Todos os direitos reservados.</footer>
       </div>
     </>
   );

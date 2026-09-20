@@ -29,7 +29,7 @@ type Parceiro = {
 };
 
 function Estrelas({ rating }: { rating: number | null }) {
-  if (rating === null) return <span className="text-xs text-[var(--muted-foreground)]">sem avaliacao</span>;
+  if (rating === null) return <span className="text-xs text-[var(--muted-foreground)]">sem avaliação</span>;
   const cheia = Math.floor(rating);
   const meia = rating - cheia >= 0.5;
   return (
@@ -74,7 +74,7 @@ export default function ParceirosPage() {
       const data = await res.json();
       if (!res.ok) {
         if (res.status === 503) {
-          setErro("Buscador temporariamente indisponivel. Entre em contato com o suporte para ativar.");
+          setErro("Buscador temporariamente indisponível. Entre em contato com o suporte para ativar.");
         } else {
           setErro(data.error ?? "Erro ao buscar parceiros.");
         }
@@ -91,7 +91,7 @@ export default function ParceirosPage() {
 
   function mensagemWhatsApp(parceiro: Parceiro) {
     const msg = encodeURIComponent(
-      `Ola! Sou consultor de protecao veicular e gostaria de apresentar uma oportunidade de parceria. Podemos conversar?`
+      `Olá! Sou consultor de proteção veicular e gostaria de apresentar uma oportunidade de parceria. Podemos conversar?`
     );
     const fone = parceiro.telefone.replace(/\D/g, "");
     return fone ? `https://wa.me/55${fone}?text=${msg}` : `https://wa.me/?text=${msg}`;
@@ -176,8 +176,8 @@ export default function ParceirosPage() {
 
         {isMock && total !== null && (
           <div className="rounded-lg bg-amber-500/10 border border-amber-500/20 px-4 py-3">
-            <p className="text-sm text-amber-500 font-semibold">Modo de demonstracao</p>
-            <p className="text-xs text-amber-400/80 mt-0.5">Os resultados abaixo sao exemplos fictícios. Para buscar empresas reais do Google Maps, o administrador precisa ativar a integracao Google Places no painel master.</p>
+            <p className="text-sm text-amber-500 font-semibold">Modo de demonstração</p>
+            <p className="text-xs text-amber-400/80 mt-0.5">Os resultados abaixo são exemplos fictícios. Para buscar empresas reais do Google Maps, o administrador precisa ativar a integração Google Places no painel master.</p>
           </div>
         )}
 

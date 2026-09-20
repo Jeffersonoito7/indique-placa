@@ -32,12 +32,12 @@ export async function POST(req: NextRequest) {
 
   const { data: consultor } = await supabaseAdmin
     .from("consultores")
-    .select("id, nome, fone, senha_hash, status")
+    .select("id, nome, fone, senha, status")
     .eq("email", email.toLowerCase())
     .maybeSingle();
 
   // Sempre executa bcrypt para nao revelar por timing se o email existe
-  const hashParaComparar = consultor?.senha_hash ?? DUMMY_HASH;
+  const hashParaComparar = consultor?.senha ?? DUMMY_HASH;
   const senhaCorreta = await bcrypt.compare(senha, hashParaComparar);
 
   if (!consultor || !senhaCorreta) {

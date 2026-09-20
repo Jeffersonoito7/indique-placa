@@ -17,15 +17,16 @@ export async function GET(request: NextRequest) {
   const { searchParams } = request.nextUrl;
   const pageParam = searchParams.get("page");
 
-  // Modo legado: sem "page" => retorna os ultimos 500 leads (usado pelo kanban)
-  // Limite evita timeout em consultores com volume alto
+  // Modo kanban: sem "page" => retorna leads ativos (novo/contato) + fechados/perdidos recentes
+  // Limite de 200 evita timeout em carteiras grandes
   if (!pageParam) {
     const { data, error } = await supabaseAdmin
       .from("indicacoes")
       .select(CAMPOS)
       .eq("consultor_id", consultorId)
+      .in("status", ["novo", "contato", "fechado", "perdido"])
       .order("criado_em", { ascending: false })
-      .limit(500);
+      .limit(200);
 
     if (error) return NextResponse.json({ error: "Erro ao buscar leads" }, { status: 500 });
     return NextResponse.json(data ?? []);

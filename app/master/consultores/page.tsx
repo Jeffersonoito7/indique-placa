@@ -23,6 +23,7 @@ interface Consultor {
   gestor_id: string | null;
   total_leads: number;
   total_fechados: number;
+  parceiros_habilitado: boolean;
 }
 
 const statusStyle: Record<string, string> = {
@@ -67,7 +68,7 @@ function ModalRedistribuir({
     if (!resLeads.ok) { setErro("Erro ao buscar leads"); setSalvando(false); return; }
     const { lista } = await resLeads.json();
 
-    if (!lista?.length) { setErro("Este consultor nao tem leads para redistribuir"); setSalvando(false); return; }
+    if (!lista?.length) { setErro("Este consultor não tem leads para redistribuir"); setSalvando(false); return; }
 
     const res = await fetch("/api/master/leads/transferir", {
       method: "POST",
@@ -95,7 +96,7 @@ function ModalRedistribuir({
         </div>
         <div className="p-6 flex flex-col gap-4">
           <p className="text-sm text-muted-foreground">
-            Todos os leads de <span className="font-semibold text-foreground">{consultor.nome}</span> ({consultor.total_leads} leads) serao transferidos.
+            Todos os leads de <span className="font-semibold text-foreground">{consultor.nome}</span> ({consultor.total_leads} leads) serão transferidos.
           </p>
           <div>
             <label className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-1.5 block">Consultor Destino</label>
@@ -171,7 +172,7 @@ export default function ConsultoresPage() {
     const res = await fetch(`/api/master/consultor/${editando.id}`, {
       method: "PATCH",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ status: editando.status }),
+      body: JSON.stringify({ status: editando.status, parceiros_habilitado: editando.parceiros_habilitado }),
     });
     setSalvando(false);
     if (res.ok) { setEditando(null); carregar(); }
@@ -185,7 +186,7 @@ export default function ConsultoresPage() {
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border">
         <h1 className="text-base font-bold text-foreground">Consultores</h1>
-        <p className="text-[11px] text-muted-foreground mt-0.5">Gestao de consultores da plataforma</p>
+        <p className="text-[11px] text-muted-foreground mt-0.5">Gestão de consultores da plataforma</p>
       </div>
 
       <div className="flex-1 p-8 bg-muted/30">
@@ -219,7 +220,7 @@ export default function ConsultoresPage() {
                   value={filtroAssoc}
                   onChange={(e) => setFiltroAssoc(e.target.value)}
                 >
-                  <option value="">Todas as associacoes</option>
+                  <option value="">Todas as associações</option>
                   {associacoes.map((a) => <option key={a.id} value={a.id}>{a.nome}</option>)}
                 </select>
                 <select
@@ -242,7 +243,7 @@ export default function ConsultoresPage() {
                 <table className="w-full">
                   <thead>
                     <tr className="border-b border-border bg-muted/40">
-                      {["Nome", "Email", "Associacao", "Gestor", "Plano", "Status", "Leads", "Fechados", "Cadastro", ""].map((h, i) => (
+                      {["Nome", "Email", "Associação", "Gestor", "Plano", "Status", "Leads", "Fechados", "Cadastro", ""].map((h, i) => (
                         <th key={i} className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-4 py-3 whitespace-nowrap">
                           {h}
                         </th>
@@ -328,6 +329,27 @@ export default function ConsultoresPage() {
                 <option value="ativo">Ativo</option>
                 <option value="inativo">Inativo</option>
               </select>
+            </div>
+            <div className="flex items-center justify-between py-3 border-t border-border">
+              <div>
+                <p className="text-sm font-medium text-foreground">Buscar Parceiros</p>
+                <p className="text-xs text-muted-foreground">Habilitar feature individualmente</p>
+              </div>
+              <button
+                type="button"
+                onClick={() => setEditando({ ...editando, parceiros_habilitado: !editando.parceiros_habilitado })}
+                className={cn(
+                  "relative inline-flex h-6 w-11 items-center rounded-full transition-colors",
+                  editando.parceiros_habilitado ? "bg-[#00c389]" : "bg-muted-foreground/30"
+                )}
+              >
+                <span
+                  className={cn(
+                    "inline-block h-4 w-4 transform rounded-full bg-white transition-transform",
+                    editando.parceiros_habilitado ? "translate-x-6" : "translate-x-1"
+                  )}
+                />
+              </button>
             </div>
             <div className="flex gap-3 mt-6">
               <button

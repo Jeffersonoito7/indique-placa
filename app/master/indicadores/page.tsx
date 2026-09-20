@@ -19,11 +19,18 @@ interface Consultor {
   nome: string;
 }
 
+interface AssociacaoLista {
+  id: string;
+  nome: string;
+  consultor_padrao_id: string | null;
+}
+
 const VAZIO = { nome: "", telefone: "", email: "", senha: "", consultor_id: "" };
 
 export default function IndicadoresPage() {
   const [lista, setLista] = useState<Indicador[]>([]);
   const [consultores, setConsultores] = useState<Consultor[]>([]);
+  const [associacoes, setAssociacoes] = useState<AssociacaoLista[]>([]);
   const [excluindo, setExcluindo] = useState<string | null>(null);
 
   // modal novo
@@ -35,6 +42,7 @@ export default function IndicadoresPage() {
   // modal editar
   const [modalEditar, setModalEditar] = useState<Indicador | null>(null);
   const [consultorEditado, setConsultorEditado] = useState("");
+  const [assocSelecionada, setAssocSelecionada] = useState("");
   const [salvandoEditar, setSalvandoEditar] = useState(false);
   const [erroEditar, setErroEditar] = useState("");
 
@@ -45,10 +53,15 @@ export default function IndicadoresPage() {
 
   const carregarConsultores = async () => {
     const res = await fetch("/api/master/consultores");
-    if (res.ok) setConsultores((await res.json()) ?? []);
+    if (res.ok) setConsultores((await res.json()).lista ?? []);
   };
 
-  useEffect(() => { carregar(); carregarConsultores(); }, []);
+  const carregarAssociacoes = async () => {
+    const res = await fetch("/api/master/associacoes-lista");
+    if (res.ok) setAssociacoes((await res.json()) ?? []);
+  };
+
+  useEffect(() => { carregar(); carregarConsultores(); carregarAssociacoes(); }, []);
 
   const abrirNovo = () => { setForm(VAZIO); setErro(""); setModalNovo(true); };
   const fecharNovo = () => { setModalNovo(false); setErro(""); };
@@ -78,7 +91,22 @@ export default function IndicadoresPage() {
   const abrirEditar = (ind: Indicador) => {
     setModalEditar(ind);
     setConsultorEditado(ind.consultor_id ?? "");
+    setAssocSelecionada("");
     setErroEditar("");
+  };
+
+  const aoSelecionarAssoc = (assocId: string) => {
+    setAssocSelecionada(assocId);
+    if (!assocId) return;
+    const assoc = associacoes.find((a) => a.id === assocId);
+    if (!assoc) return;
+    if (!assoc.consultor_padrao_id) {
+      setErroEditar("Esta associação não tem consultor padrão configurado. Configure em /master/configuracoes da associação.");
+      setConsultorEditado("");
+    } else {
+      setErroEditar("");
+      setConsultorEditado(assoc.consultor_padrao_id);
+    }
   };
 
   const fecharEditar = () => { setModalEditar(null); setErroEditar(""); };
@@ -263,17 +291,46 @@ export default function IndicadoresPage() {
             </div>
             <form onSubmit={salvarEditar} className="px-6 py-5 space-y-4">
               {erroEditar && <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-2.5 text-sm text-red-400">{erroEditar}</div>}
+
+              {/* Atalho: selecionar por associação */}
               <div>
-                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Consultor vinculado</label>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Transferir para associação <span className="text-muted-foreground/50 font-normal normal-case">(usa consultor padrão)</span>
+                </label>
+                <select
+                  className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40"
+                  value={assocSelecionada}
+                  onChange={e => aoSelecionarAssoc(e.target.value)}
+                >
+                  <option value="">Selecionar associação...</option>
+                  {associacoes.map(a => (
+                    <option key={a.id} value={a.id}>
+                      {a.nome}{!a.consultor_padrao_id ? " (sem consultor padrão)" : ""}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Ou escolher consultor específico */}
+              <div>
+                <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                  Ou escolher consultor específico
+                </label>
                 <select
                   className="mt-1.5 w-full px-3 py-2.5 rounded-lg border border-border bg-muted/40 text-sm text-foreground focus:outline-none focus:ring-2 focus:ring-violet-500/40"
                   value={consultorEditado}
-                  onChange={e => setConsultorEditado(e.target.value)}
+                  onChange={e => { setConsultorEditado(e.target.value); setAssocSelecionada(""); setErroEditar(""); }}
                 >
                   <option value="">Sem consultor vinculado</option>
                   {consultores.map(c => <option key={c.id} value={c.id}>{c.nome}</option>)}
                 </select>
               </div>
+
+              {consultorEditado && (
+                <div className="text-xs text-emerald-500 bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2">
+                  Consultor selecionado: {consultores.find(c => c.id === consultorEditado)?.nome ?? consultorEditado}
+                </div>
+              )}
               <div className="flex gap-3 pt-2">
                 <button type="button" onClick={fecharEditar} className="flex-1 py-2.5 rounded-lg border border-border text-sm font-semibold text-muted-foreground hover:bg-accent transition-colors">Cancelar</button>
                 <button type="submit" disabled={salvandoEditar} className="flex-1 py-2.5 rounded-lg bg-violet-600 hover:bg-violet-700 text-white text-sm font-semibold transition-colors disabled:opacity-50">{salvandoEditar ? "Salvando..." : "Salvar"}</button>

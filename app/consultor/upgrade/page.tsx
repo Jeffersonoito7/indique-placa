@@ -48,18 +48,19 @@ export default function UpgradeProPage() {
           setEstado({ tipo: "pago", valor: data.valor });
         }
       })
-      .catch(() => setEstado({ tipo: "erro", mensagem: "Erro ao carregar configuracao." }));
+      .catch(() => setEstado({ tipo: "erro", mensagem: "Erro ao carregar configuração." }));
   }, [router]);
 
   async function assinar() {
     setCarregando(true);
     try {
       const res = await fetch("/api/consultor/upgrade-pro", { method: "POST" });
-      const data = await res.json();
       if (!res.ok) {
-        setEstado({ tipo: "erro", mensagem: data.error ?? "Erro ao gerar cobranca." });
+        const err = await res.json().catch(() => ({}));
+        setEstado({ tipo: "erro", mensagem: err.error ?? "Erro ao gerar cobrança." });
         return;
       }
+      const data = await res.json();
       if (data.gratuito) {
         router.replace("/consultor/dashboard?pro=1");
         return;
@@ -94,6 +95,7 @@ export default function UpgradeProPage() {
     setVerificando(true);
     try {
       const res = await fetch(`/api/consultor/upgrade-pro?txid=${encodeURIComponent(txid)}`);
+      if (!res.ok) return;
       const data = await res.json();
       if (data.pago) {
         router.replace("/consultor/dashboard?pro=1");
@@ -123,7 +125,7 @@ export default function UpgradeProPage() {
           Consultor Pro
         </h1>
         <p className="text-[11px] text-[var(--muted-foreground)] mt-0.5">
-          Recursos avancados para multiplicar seus resultados
+          Recursos avançados para multiplicar seus resultados
         </p>
       </div>
 
@@ -134,11 +136,11 @@ export default function UpgradeProPage() {
             <CardContent className="pt-5 flex items-center gap-3">
               <span className="inline-flex items-center gap-1.5 bg-violet-500/10 text-violet-500 text-xs font-bold px-3 py-1.5 rounded-full">
                 <Zap className="h-3.5 w-3.5" />
-                Voce ja e Pro
+                Você já é Pro
               </span>
               {estado.plano_ativo_ate && (
                 <span className="text-sm text-[var(--muted-foreground)]">
-                  Ativo ate {formatarData(estado.plano_ativo_ate)}
+                  Ativo até {formatarData(estado.plano_ativo_ate)}
                 </span>
               )}
             </CardContent>
@@ -160,21 +162,21 @@ export default function UpgradeProPage() {
             {[
               {
                 titulo: "Buscador de Parceiros",
-                desc: "Pesquise oficinas, concessionarias, despachantes e outros negocios na sua cidade. Veja o telefone de cada um e recrute como indicador com um clique no WhatsApp.",
+                desc: "Pesquise oficinas, concessionárias, despachantes e outros negócios na sua cidade. Veja o telefone de cada um e recrute como indicador com um clique no WhatsApp.",
                 icone: "🔍",
               },
               {
-                titulo: "Disparo automatico no WhatsApp",
-                desc: "Quando um novo lead chega, o sistema manda mensagem automaticamente para ele pelo seu WhatsApp conectado. Voce nao precisa fazer nada manualmente.",
+                titulo: "Disparo automático no WhatsApp",
+                desc: "Quando um novo lead chega, o sistema manda mensagem automaticamente para ele pelo seu WhatsApp conectado. Você não precisa fazer nada manualmente.",
                 icone: "⚡",
               },
               {
-                titulo: "Campanha de indicacao",
-                desc: "Cole uma lista de numeros de telefone e o sistema gera links prontos para voce abordar cada contato no WhatsApp com uma mensagem personalizada.",
+                titulo: "Campanha de indicação",
+                desc: "Cole uma lista de números de telefone e o sistema gera links prontos para você abordar cada contato no WhatsApp com uma mensagem personalizada.",
                 icone: "📣",
               },
               {
-                titulo: "Exportacao de dados",
+                titulo: "Exportação de dados",
                 desc: "Baixe todos os seus leads e indicadores em planilha CSV para analisar no Excel ou importar em outro sistema.",
                 icone: "📥",
               },
@@ -197,7 +199,7 @@ export default function UpgradeProPage() {
               <CardTitle className="text-sm font-semibold text-[var(--muted-foreground)]">Free</CardTitle>
             </CardHeader>
             <CardContent className="pt-4 space-y-2">
-              {["Receber leads", "Fechar vendas", "Pagar comissoes aos indicadores"].map((item) => (
+              {["Receber leads", "Fechar vendas", "Pagar comissões aos indicadores"].map((item) => (
                 <div key={item} className="flex items-start gap-2">
                   <Check className="h-4 w-4 text-emerald-500 mt-0.5 shrink-0" />
                   <span className="text-sm text-[var(--foreground)]">{item}</span>
@@ -213,7 +215,7 @@ export default function UpgradeProPage() {
               </CardTitle>
             </CardHeader>
             <CardContent className="pt-4 space-y-2">
-              {["Tudo do Free", "Buscador de parceiros", "WhatsApp automatico", "Campanha de indicacao", "Exportacao CSV"].map((item) => (
+              {["Tudo do Free", "Buscador de parceiros", "WhatsApp automático", "Campanha de indicação", "Exportação CSV"].map((item) => (
                 <div key={item} className="flex items-start gap-2">
                   <Check className="h-4 w-4 text-violet-500 mt-0.5 shrink-0" />
                   <span className="text-sm text-[var(--foreground)]">{item}</span>
@@ -234,14 +236,14 @@ export default function UpgradeProPage() {
           <div className="flex items-center gap-4">
             {estado.valor > 0 && (
               <p className="text-sm text-[var(--muted-foreground)]">
-                {formatarMoeda(estado.valor)}/mes
+                {formatarMoeda(estado.valor)}/mês
               </p>
             )}
             <button onClick={assinar} disabled={carregando} className={btnViolet}>
               {carregando
                 ? "Gerando cobranca..."
                 : estado.valor > 0
-                  ? `Assinar por ${formatarMoeda(estado.valor)}/mes`
+                  ? `Assinar por ${formatarMoeda(estado.valor)}/mês`
                   : "Assinar Pro"}
             </button>
           </div>
@@ -257,8 +259,8 @@ export default function UpgradeProPage() {
             </CardHeader>
             <CardContent className="pt-4 space-y-4">
               <p className="text-xs text-[var(--muted-foreground)]">
-                Escaneie o QR Code ou copie o codigo Pix Copia e Cola abaixo. Seu plano sera ativado
-                automaticamente apos a confirmacao do pagamento.
+                Escaneie o QR Code ou copie o código Pix Copia e Cola abaixo. Seu plano será ativado
+                automaticamente após a confirmação do pagamento.
               </p>
 
               {estado.qrcode_image && (
@@ -270,7 +272,7 @@ export default function UpgradeProPage() {
               )}
 
               <div className="space-y-2">
-                <p className="text-xs font-medium text-[var(--foreground)]">Codigo Pix Copia e Cola:</p>
+                <p className="text-xs font-medium text-[var(--foreground)]">Código Pix Copia e Cola:</p>
                 <div className="flex gap-2">
                   <input
                     readOnly
@@ -290,7 +292,7 @@ export default function UpgradeProPage() {
               </div>
 
               <p className="text-[11px] text-[var(--muted-foreground)]">
-                Valido por 1 hora. Apos o pagamento, clique em "Verificar Pagamento".
+                Válido por 1 hora. Após o pagamento, clique em "Verificar Pagamento".
               </p>
 
               <button

@@ -82,8 +82,8 @@ export default function ConfiguracoesPage() {
 
   useEffect(() => {
     Promise.all([
-      fetch("/api/master/configuracoes").then((r) => r.json()),
-      fetch("/api/master/configuracoes-master").then((r) => r.json()),
+      fetch("/api/master/configuracoes").then((r) => r.ok ? r.json() : Promise.reject(r.status)),
+      fetch("/api/master/configuracoes-master").then((r) => r.ok ? r.json() : Promise.reject(r.status)),
     ]).then(([res, resMaster]) => {
       const config = res.config;
       if (config) setForm({
@@ -109,7 +109,7 @@ export default function ConfiguracoesPage() {
         valor_associacao_ouro: Number(cm.valor_associacao_ouro ?? 0),
         cobranca_associacao_ativa: Boolean(cm.cobranca_associacao_ativa),
       });
-    }).finally(() => setCarregando(false));
+    }).catch(() => {}).finally(() => setCarregando(false));
   }, []);
 
   const salvar = async () => {
@@ -324,7 +324,7 @@ export default function ConfiguracoesPage() {
                       type="text"
                       value={form.nome_associacao}
                       onChange={set("nome_associacao")}
-                      placeholder="Ex: Minha Associacao"
+                      placeholder="Ex: Minha Associação"
                       className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                     />
                   </div>
@@ -337,7 +337,7 @@ export default function ConfiguracoesPage() {
                       type="text"
                       value={form.slogan}
                       onChange={set("slogan")}
-                      placeholder="Ex: Protecao que vale a pena"
+                      placeholder="Ex: Proteção que vale a pena"
                       className="w-full px-3 py-2.5 text-sm rounded-lg border border-border bg-background focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
                     />
                   </div>
@@ -404,19 +404,19 @@ export default function ConfiguracoesPage() {
               <CardHeader className="pb-3 border-b border-border">
                 <CardTitle className="text-sm font-semibold flex items-center gap-2">
                   <DollarSign className="h-4 w-4 text-muted-foreground" />
-                  Precos e Cobrancas (Master)
+                  Preços e Cobranças (Master)
                 </CardTitle>
               </CardHeader>
               <CardContent className="p-6 space-y-5">
                 <div>
-                  <p className="text-[11px] text-muted-foreground mb-4">Configure os valores cobrados pelo master. Associacoes podem sobrescrever o valor dos consultores nas proprias configuracoes de cobranca.</p>
+                  <p className="text-[11px] text-muted-foreground mb-4">Configure os valores cobrados pelo master. Associações podem sobrescrever o valor dos consultores nas próprias configurações de cobrança.</p>
                 </div>
 
                 {/* Consultores */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/20">
                   <div>
                     <p className="text-sm font-semibold">Cobrar Consultores</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Master cobra consultores sem associacao ativa ou cujas associacoes nao cobram</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Master cobra consultores sem associação ativa ou cujas associações não cobram</p>
                   </div>
                   <button
                     onClick={() => setMaster("cobranca_consultor_ativa", !formMaster.cobranca_consultor_ativa)}
@@ -450,8 +450,8 @@ export default function ConfiguracoesPage() {
                 {/* Associacoes */}
                 <div className="flex items-center justify-between p-3 rounded-lg border border-border bg-muted/20 mt-2">
                   <div>
-                    <p className="text-sm font-semibold">Cobrar Associacoes</p>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">Master cobra mensalidade das associacoes pelo plano ativo</p>
+                    <p className="text-sm font-semibold">Cobrar Associações</p>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">Master cobra mensalidade das associações pelo plano ativo</p>
                   </div>
                   <button
                     onClick={() => setMaster("cobranca_associacao_ativa", !formMaster.cobranca_associacao_ativa)}
@@ -484,7 +484,7 @@ export default function ConfiguracoesPage() {
                     className="flex items-center gap-2 px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold transition-colors disabled:opacity-50"
                   >
                     {sucessoMaster ? <CheckCircle2 className="h-3.5 w-3.5" /> : <Save className="h-3.5 w-3.5" />}
-                    {salvandoMaster ? "Salvando..." : sucessoMaster ? "Salvo!" : "Salvar Precos"}
+                    {salvandoMaster ? "Salvando..." : sucessoMaster ? "Salvo!" : "Salvar Preços"}
                   </button>
                 </div>
               </CardContent>

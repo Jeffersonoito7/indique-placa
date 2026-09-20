@@ -92,9 +92,9 @@ export default function RelatorioPage() {
 
   const cards = [
     { label: "Consultores ativos", valor: totalAtivos, icon: Users, cor: "text-blue-500", bg: "bg-blue-500/10" },
-    { label: "Total de indicacoes", valor: totalIndicacoes, icon: ClipboardList, cor: "text-amber-500", bg: "bg-amber-500/10" },
+    { label: "Total de indicações", valor: totalIndicacoes, icon: ClipboardList, cor: "text-amber-500", bg: "bg-amber-500/10" },
     { label: "Vendas fechadas", valor: totalFechadas, icon: CheckCircle2, cor: "text-emerald-500", bg: "bg-emerald-500/10" },
-    { label: "Taxa de conversao media", valor: `${taxaMedia}%`, icon: TrendingUp, cor: "text-violet-500", bg: "bg-violet-500/10" },
+    { label: "Taxa de conversão média", valor: `${taxaMedia}%`, icon: TrendingUp, cor: "text-violet-500", bg: "bg-violet-500/10" },
   ];
 
   const legendaPeriodo = periodoAtual.de && periodoAtual.ate
@@ -109,7 +109,7 @@ export default function RelatorioPage() {
     <div className="flex-1 flex flex-col">
       <div className="px-8 py-5 border-b border-border flex items-start justify-between">
         <div>
-          <h1 className="text-base font-bold text-foreground">Relatorio de Consultores</h1>
+          <h1 className="text-base font-bold text-foreground">Relatório de Consultores</h1>
           <p className="text-[11px] text-muted-foreground mt-0.5">{legendaPeriodo}</p>
         </div>
 
@@ -125,7 +125,7 @@ export default function RelatorioPage() {
             />
           </div>
           <div className="flex items-center gap-1.5">
-            <label className="text-[11px] text-muted-foreground font-medium">Ate</label>
+            <label className="text-[11px] text-muted-foreground font-medium">Até</label>
             <input
               type="date"
               value={ate}
@@ -184,7 +184,7 @@ export default function RelatorioPage() {
                 <table className="w-full min-w-[700px]">
                   <thead>
                     <tr className="border-b border-border bg-muted/40">
-                      {["Consultor", "Indicacoes", "Fechadas", "Conversao", "Comissoes geradas", "Status"].map((h) => (
+                      {["Consultor", "Indicações", "Fechadas", "Conversão", "Comissões geradas", "Status"].map((h) => (
                         <th
                           key={h}
                           className="text-left text-[10px] font-semibold uppercase tracking-wider text-muted-foreground px-6 py-3"

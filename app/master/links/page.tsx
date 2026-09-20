@@ -21,7 +21,7 @@ const links = [
   },
   {
     titulo: "Link do Gestor",
-    descricao: "Pagina de cadastro para lideres de equipe se registrarem e gerenciarem consultores",
+    descricao: "Página de cadastro para líderes de equipe se registrarem e gerenciarem consultores",
     url: `${BASE}/gestor/cadastro`,
     cor: "border-t-cyan-500",
     iconBg: "bg-cyan-500/10",
@@ -31,7 +31,7 @@ const links = [
   },
   {
     titulo: "Link do Consultor",
-    descricao: "Pagina de cadastro para novos consultores se registrarem na plataforma",
+    descricao: "Página de cadastro para novos consultores se registrarem na plataforma",
     url: `${BASE}/consultor/cadastro`,
     cor: "border-t-blue-500",
     iconBg: "bg-blue-500/10",
@@ -41,7 +41,7 @@ const links = [
   },
   {
     titulo: "Link do Indicador",
-    descricao: "Pagina para captadores de leads se cadastrarem e indicarem clientes",
+    descricao: "Página para captadores de leads se cadastrarem e indicarem clientes",
     url: `${BASE}/indicador/cadastro`,
     cor: "border-t-violet-500",
     iconBg: "bg-violet-500/10",
