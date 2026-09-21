@@ -50,23 +50,44 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
   let pixStatus: string | undefined;
   let pixErro: string | undefined;
 
-  // Marca como pago ANTES de chamar o PIX — UPDATE atomico garante que apenas um
-  // request concorrente prossegue; o segundo retorna ja_pago sem disparar PIX duplo
+  // RESERVA o pagamento antes de chamar o PIX. O UPDATE condicional continua
+  // impedindo envio duplo em cliques simultaneos, mas sem afirmar que ja pagou:
+  // "pago" agora e estado final, alcancado so pela confirmacao.
+  //
+  // Antes, este trecho marcava comissao_paga = true aqui. Se a Efi recusasse, a
+  // comissao ficava paga para sempre sem dinheiro ter saido.
   const { data: updated, error: errUpdate } = await supabaseAdmin
     .from("indicacoes")
-    .update({
-      comissao_paga: true,
-      comissao_paga_em: new Date().toISOString(),
-    })
+    .update({ pix_status: "reservado" })
     .eq("id", id)
     .eq("consultor_id", consultorId)
-    .eq("comissao_paga", false)
+    .in("pix_status", ["pendente", "falhou"])
     .select("id");
 
   if (errUpdate) return NextResponse.json({ error: "Erro ao registrar pagamento" }, { status: 500 });
 
+  // A reserva nao pegou: outro estado ja ocupa o registro. Responder "ja pago"
+  // aqui seria mentira quando o estado e "enviado" ou "reservado", porque o
+  // dinheiro ainda nao foi confirmado. O consultor precisa saber a diferenca.
   if (!updated || updated.length === 0) {
-    return NextResponse.json({ ok: true, ja_pago: true });
+    const { data: atual } = await supabaseAdmin
+      .from("indicacoes")
+      .select("pix_status")
+      .eq("id", id)
+      .maybeSingle();
+
+    const estado = (atual as { pix_status?: string } | null)?.pix_status ?? "desconhecido";
+
+    if (estado === "confirmado" || estado === "manual") {
+      return NextResponse.json({ ok: true, ja_pago: true, pix_status: estado });
+    }
+
+    return NextResponse.json({
+      ok: true,
+      ja_pago: false,
+      em_andamento: true,
+      pix_status: estado,
+    });
   }
 
   // Tenta envio PIX automatico se indicador tem chave PIX e valor > 0
@@ -109,16 +130,43 @@ export async function POST(req: NextRequest, { params }: { params: Promise<{ id:
 
           pixEnviado = resultado.ok;
           pixStatus = resultado.status;
-          if (!resultado.ok) {
+
+          if (resultado.ok) {
+            await supabaseAdmin
+              .from("indicacoes")
+              .update({ pix_status: "enviado", pix_id_envio: idEnvio, pix_erro: null })
+              .eq("id", id);
+          } else {
             pixErro = resultado.erro ?? `Status Efi: ${resultado.status}`;
-            console.error("[pagar-comissao] PIX falhou apos marcar pago", id, pixErro);
+            // Volta para falhou: o consultor pode tentar de novo, e a comissao
+            // NAO fica registrada como paga.
+            await supabaseAdmin
+              .from("indicacoes")
+              .update({ pix_status: "falhou", pix_erro: pixErro })
+              .eq("id", id);
+            console.error("[pagar-comissao] PIX recusado", id, pixErro);
           }
         } catch (err: unknown) {
           pixErro = err instanceof Error ? err.message : "Erro ao enviar PIX";
+          await supabaseAdmin
+            .from("indicacoes")
+            .update({ pix_status: "falhou", pix_erro: pixErro })
+            .eq("id", id);
           console.error("[pagar-comissao] Excecao Efi pixSend:", err);
         }
       }
     }
+  }
+
+  // Sem chave PIX ou sem configuracao da associacao nao ha o que enviar. Soltar
+  // a reserva evita deixar o registro travado em "reservado" para sempre, que
+  // seria dinheiro parado sem ninguem perceber.
+  if (!pixEnviado && !pixErro) {
+    await supabaseAdmin
+      .from("indicacoes")
+      .update({ pix_status: "pendente" })
+      .eq("id", id)
+      .eq("pix_status", "reservado");
   }
 
   return NextResponse.json({
